@@ -110,14 +110,18 @@ int main() {
 
     glClearColor(0,0,0,1);
 
+    glEnable(GL_DEPTH_TEST);
+
     mainLoop->setIdleCallback([&]() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         program->use();
 
         glBindVertexArray(vao);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, drawIdsBuffer);
-        glm::mat4 mvp = proj * camera.GetViewMatrix();
-        glUniformMatrix4fv(4, 1, GL_FALSE, glm::value_ptr(mvp));
+        glm::mat4 view = camera.GetViewMatrix();
+        glUniformMatrix4fv(4, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0)));
+        glUniformMatrix4fv(5, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(6, 1, GL_FALSE, glm::value_ptr(proj));
         glDrawElements(GL_TRIANGLES, cube.indicesCount(), GL_UNSIGNED_INT, nullptr);
         glBindVertexArray(0);
         window->swap();
