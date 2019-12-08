@@ -19,7 +19,7 @@ public:
         glm::vec3 normal;
 
         bool operator==(const VertexData &other) const {
-            return pos == other.pos && color == other.color && texCoord == other.texCoord;
+            return pos == other.pos && color == other.color && texCoord == other.texCoord && other.normal == normal;
         }
     };
 
