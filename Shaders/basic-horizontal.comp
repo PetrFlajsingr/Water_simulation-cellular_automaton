@@ -1,0 +1,81 @@
+#version 450
+struct Cell{
+    float fluidVolume;
+    uint stable;
+};
+
+struct DrawElementsIndirectCommand{
+    uint count;
+    uint instanceCount;
+    uint firstIndex;
+    uint baseVertex;
+    uint baseInstance;
+};
+
+
+layout(local_size_x = 2, local_size_y = 2, local_size_z = 2) in;
+layout(std430, binding=0) buffer WriteBuffer{
+    Cell writeCells[];
+};
+layout(std430, binding=1) buffer ReadBuffer{
+    Cell readCells[];
+};
+layout(std430, binding=2) buffer Positions{
+    vec4 positions[];
+};
+layout(std430, binding=3) buffer DrawArrays{
+    DrawElementsIndirectCommand drawArray;
+};
+
+const float maximumCellVolume = 1.0;
+const float minimumCellVolume = 0.005;
+const float maximumCompression = 0.25;
+const float maximumFlow = 4.0f;
+
+float verticalFlowVolume(float sourceFluidVolume, float destinationFluidVolume){
+    float volumeSum = sourceFluidVolume + destinationFluidVolume;
+    if (volumeSum <= maximumCellVolume){
+        return volumeSum;
+    }
+    else if (volumeSum < 2*maximumCellVolume + maximumCompression){
+        return (pow(maximumCellVolume, 2) + volumeSum * maximumCompression) / (maximumCellVolume + maximumCompression);
+    }
+    else {
+        return (volumeSum + maximumCompression) / 2.0;
+    }
+}
+
+void main() {
+    uvec3 globalSize = uvec3(gl_NumWorkGroups.x * gl_WorkGroupSize.x, gl_NumWorkGroups.y * gl_WorkGroupSize.y, gl_NumWorkGroups.z * gl_WorkGroupSize.z);
+    uint myCellID = (gl_GlobalInvocationID.z * globalSize.x * globalSize.y)+ (gl_GlobalInvocationID.y * globalSize.x) + gl_GlobalInvocationID.x;
+    uint invocationCount = globalSize.x * globalSize.y * globalSize.z;
+
+    drawArray.instanceCount = 0;
+
+
+    if (myCellID < invocationCount){
+        writeCells[myCellID].fluidVolume = 0.0;
+        float inFlow = 0.0;
+        if (gl_GlobalInvocationID.y + 1 < globalSize.y){
+            uint upperCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + (gl_GlobalInvocationID.y + 1) * globalSize.x + gl_GlobalInvocationID.x;
+            inFlow = verticalFlowVolume(readCells[upperCellID].fluidVolume, readCells[myCellID].fluidVolume) - readCells[myCellID].fluidVolume;
+            inFlow = clamp(inFlow, 0, min(maximumFlow, readCells[upperCellID].fluidVolume));
+        }
+        float outFlow = 0.0;
+        if (int(gl_GlobalInvocationID.y) - 1 >= 0){
+            uint bottomCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + (gl_GlobalInvocationID.y - 1) * globalSize.x + gl_GlobalInvocationID.x;
+            outFlow = verticalFlowVolume(readCells[myCellID].fluidVolume, readCells[bottomCellID].fluidVolume) - readCells[bottomCellID].fluidVolume;
+            outFlow = clamp(outFlow, 0, min(maximumFlow, readCells[myCellID].fluidVolume));
+        }
+        writeCells[myCellID].fluidVolume = readCells[myCellID].fluidVolume + (inFlow - outFlow);
+        if (writeCells[myCellID].fluidVolume < minimumCellVolume){
+            writeCells[myCellID].fluidVolume = 0.0;
+        }
+/*        if (myCellID < invocationCount){
+            if (writeCells[myCellID].fluidVolume > 0.0){
+                uint positionID = atomicAdd(drawArray.instanceCount, 1u);
+                positions[positionID] = vec4(gl_GlobalInvocationID, 0.0);
+            }
+        }*/
+    }
+}

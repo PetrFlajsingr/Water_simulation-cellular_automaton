@@ -26,7 +26,7 @@ namespace std {
     };
 }
 
-void Model::loadFromObj(const std::string& modelPath, bool clearBeforeLoad) {
+void Model::loadFromObj(const std::string &modelPath, bool clearBeforeLoad) {
     if (clearBeforeLoad) {
         vertices.clear();
         indices.clear();
@@ -45,10 +45,10 @@ void Model::loadFromObj(const std::string& modelPath, bool clearBeforeLoad) {
     name = "";
 
     for (const auto &shape : shapes) {
-        const auto color = glm::vec3{0.5f};
+        const auto color = glm::vec3{0.0, 0.0, 1.0};
         std::unordered_map<Model::VertexData, uint32_t> uniqueVertices{};
         name += shape.name;
-        if(&shape != &shapes.back()){
+        if (&shape != &shapes.back()) {
             name += " + ";
         }
         for (const auto &index : shape.mesh.indices) {
@@ -60,7 +60,7 @@ void Model::loadFromObj(const std::string& modelPath, bool clearBeforeLoad) {
                     attrib.vertices[3 * index.vertex_index + 2]
             };
 
-           vertex.texCoord = {
+            vertex.texCoord = {
                     attrib.texcoords[2 * index.texcoord_index + 0],
                     1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
             };
@@ -91,7 +91,7 @@ void Model::loadFromObj(const std::string& modelPath, bool clearBeforeLoad) {
 
 }
 
-Model::Model(const std::string& modelPath) {
+Model::Model(const std::string &modelPath) {
     loadFromObj(modelPath);
 }
 
