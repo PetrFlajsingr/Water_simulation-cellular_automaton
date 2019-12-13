@@ -16,11 +16,12 @@
 #include <glm/gtx/component_wise.hpp>
 #include <iostream>
 #include <thread>
+#include <Renderers/GridRenderer.h>
 
 using namespace ge::gl;
 using namespace std::string_literals;
 
-auto camera = Camera(glm::vec3(1.0, 1.0, 5.0));
+auto camera = std::make_shared<Camera>(glm::vec3(1.0, 1.0, 5.0));
 
 bool SDLHandler(const SDL_Event &event) {
   static bool mousePressed = false;
@@ -28,19 +29,19 @@ bool SDLHandler(const SDL_Event &event) {
     switch (event.key.keysym.sym) {
     case SDLK_UP:
     case SDLK_w:
-      camera.ProcessKeyboard(Camera_Movement::FORWARD, 0.1);
+      camera->ProcessKeyboard(Camera_Movement::FORWARD, 0.1);
       return true;
     case SDLK_DOWN:
     case SDLK_s:
-      camera.ProcessKeyboard(Camera_Movement::BACKWARD, 0.1);
+      camera->ProcessKeyboard(Camera_Movement::BACKWARD, 0.1);
       return true;
     case SDLK_LEFT:
     case SDLK_a:
-      camera.ProcessKeyboard(Camera_Movement::LEFT, 0.1);
+      camera->ProcessKeyboard(Camera_Movement::LEFT, 0.1);
       return true;
     case SDLK_RIGHT:
     case SDLK_d:
-      camera.ProcessKeyboard(Camera_Movement::RIGHT, 0.1);
+      camera->ProcessKeyboard(Camera_Movement::RIGHT, 0.1);
       return true;
     default:
       return false;
@@ -50,7 +51,7 @@ bool SDLHandler(const SDL_Event &event) {
     mousePressed = true;
     return true;
   } else if (event.type == SDL_MOUSEMOTION and mousePressed) {
-    camera.ProcessMouseMovement(-event.motion.xrel, event.motion.yrel);
+    camera->ProcessMouseMovement(-event.motion.xrel, event.motion.yrel);
     return true;
   } else if (event.type == SDL_MOUSEBUTTONUP and
              event.button.button == SDL_BUTTON_LEFT) {
@@ -58,28 +59,6 @@ bool SDLHandler(const SDL_Event &event) {
     return true;
   }
   return false;
-}
-
-std::vector<glm::vec3> generateLines(int xLength, int yLength, int zLength) {
-  std::vector<glm::vec3> result{};
-  using namespace MakeRange;
-  for (auto [z, y] : range<int, 2>({zLength + 1, yLength + 1})) {
-    result.emplace_back(glm::vec3{0.0, y, z});
-    result.emplace_back(glm::vec3{xLength, y, z});
-  }
-  for (auto [x, y] : range<int, 2>({xLength + 1, yLength + 1})) {
-    result.emplace_back(glm::vec3{x, y, 0.0});
-    result.emplace_back(glm::vec3{x, y, zLength});
-  }
-  for (auto [x, z] : range<int, 2>({xLength + 1, zLength + 1})) {
-    result.emplace_back(glm::vec3{x, 0.0, z});
-    result.emplace_back(glm::vec3{x, yLength, z});
-  }
-  return result;
-}
-
-std::vector<glm::vec3> generateLines(glm::vec3 length) {
-  return generateLines(length.x, length.y, length.z);
 }
 
 int main() {
@@ -109,8 +88,7 @@ int main() {
 
   auto cellProgram =
       std::make_shared<ge::gl::Program>("basic"_vert, "basic"_frag);
-  auto gridProgram =
-      std::make_shared<ge::gl::Program>("grid"_vert, "grid"_frag);
+  auto gridRenderer = GridRenderer(tankSize, camera, proj);
   auto computeHorizontalProgram =
       std::make_shared<ge::gl::Program>("basic-horizontal"_comp);
   auto computeVerticalProgram =
@@ -123,8 +101,6 @@ int main() {
 
   auto vbo = createBuffer(cube.getVertices());
 
-  const auto grid = generateLines(tankSize);
-  auto vboGrid = createBuffer(grid);
 
   auto drawIdsBuffer = createBuffer(cube.getIndices());
 
@@ -153,8 +129,6 @@ int main() {
                  static_cast<GLsizei>(sizeof(Model::VertexData)),
                  offsetof(Model::VertexData, normal));
 
-  auto vaoGrid = std::make_shared<VertexArray>();
-  vaoGrid->addAttrib(vboGrid, 0, 3, GL_FLOAT, static_cast<GLsizei>(sizeof(glm::vec3)));
 
   glClearColor(0, 0, 0, 1);
 
@@ -208,12 +182,12 @@ int main() {
     vao->bind();
     drawIdsBuffer->bind(GL_ELEMENT_ARRAY_BUFFER);
     positionsBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
-    glm::mat4 view = camera.GetViewMatrix();
+    glm::mat4 view = camera->GetViewMatrix();
     cellProgram->setMatrix4fv("Model", glm::value_ptr(glm::mat4(1.0)), 1,
                               GL_FALSE);
     cellProgram->setMatrix4fv("View", glm::value_ptr(view), 1, GL_FALSE);
     cellProgram->setMatrix4fv("Projection", glm::value_ptr(proj), 1, GL_FALSE);
-    cellProgram->set3fv("cameraPosition", glm::value_ptr(camera.Position));
+    cellProgram->set3fv("cameraPosition", glm::value_ptr(camera->Position));
     indirectBuffer->bind(GL_DRAW_INDIRECT_BUFFER);
     glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr);
     vao->unbind();
@@ -222,14 +196,7 @@ int main() {
     indirectBuffer->unbind(GL_DRAW_INDIRECT_BUFFER);
 
 
-    gridProgram->use();
-    vaoGrid->bind();
-    gridProgram->setMatrix4fv("Model", glm::value_ptr(glm::mat4(1.0)), 1,
-                              GL_FALSE);
-    gridProgram->setMatrix4fv("View", glm::value_ptr(view), 1, GL_FALSE);
-    gridProgram->setMatrix4fv("Projection", glm::value_ptr(proj), 1, GL_FALSE);
-    glDrawArrays(GL_LINES, 0, grid.size());
-    vaoGrid->unbind();
+    gridRenderer.draw();
 
     window->swap();
     std::swap(cellBuffers[0], cellBuffers[1]);
