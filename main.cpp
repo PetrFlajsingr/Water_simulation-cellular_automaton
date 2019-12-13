@@ -18,6 +18,7 @@
 #include <thread>
 #include <Renderers/GridRenderer.h>
 #include <Renderers/CellRenderer.h>
+#include <Renderers/SimulationCompute.h>
 
 using namespace ge::gl;
 using namespace std::string_literals;
@@ -89,19 +90,10 @@ int main() {
 
   auto cellRenderer = CellRenderer(SRC_DIR + "/Resources/Models/cube.obj"s, proj, tankSize);
   auto gridRenderer = GridRenderer(tankSize, camera, proj);
-  auto computeHorizontalProgram =
-      std::make_shared<ge::gl::Program>("basic-horizontal"_comp);
-  auto computeVerticalProgram =
-      std::make_shared<ge::gl::Program>("basic-vertical"_comp);
+  auto simulation = SimulationCompute(tankSize, cellRenderer.getIbo(), cellRenderer.getPositionsBuffer());
 
-  auto cells = std::vector<Cell>(glm::compMul(tankSize));
-  cells[15].setFluidVolume(1.0);
-  cells[7].setFluidVolume(1.0);
-
-
-  std::array<std::shared_ptr<Buffer>, 2> cellBuffers{
-      createBuffer(cells, GL_DYNAMIC_COPY),
-      createBuffer(cells, GL_DYNAMIC_COPY)};
+  simulation.setFluidVolume(15, 1.0);
+  simulation.setFluidVolume(16, 1.0);
 
   glClearColor(0, 0, 0, 1);
 
@@ -112,41 +104,8 @@ int main() {
   FPSCounter fpsCounter;
   mainLoop->setIdleCallback([&]() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    computeHorizontalProgram->use();
-    cellBuffers[0]->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
-    cellBuffers[1]->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
-    cellRenderer.getPositionsBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
-    cellRenderer.getIbo()->bindBase(GL_SHADER_STORAGE_BUFFER, 3);
 
-    Cell *ptrRD;
-    Cell *ptrWR;
-    ptrRD = reinterpret_cast<Cell*>(cellBuffers[1]->map(GL_READ_ONLY));
-    ptrWR = reinterpret_cast<Cell*>(cellBuffers[0]->map(GL_READ_ONLY));
-
-    cellBuffers[0]->unmap();
-    cellBuffers[1]->unmap();
-
-    glDispatchCompute(tankSize.x / 2, tankSize.y / 2, tankSize.z / 2);
-
-    ptrRD = reinterpret_cast<Cell*>(cellBuffers[1]->map(GL_READ_ONLY));
-    ptrWR = reinterpret_cast<Cell*>(cellBuffers[0]->map(GL_READ_ONLY));
-
-    cellBuffers[0]->unmap();
-    cellBuffers[1]->unmap();
-
-    std::swap(cellBuffers[0], cellBuffers[1]);
-    cellBuffers[0]->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
-    cellBuffers[1]->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
-    computeVerticalProgram->use();
-    glDispatchCompute(tankSize.x / 2, tankSize.y / 2, tankSize.z / 2);
-
-    ptrRD = reinterpret_cast<Cell*>(cellBuffers[1]->map(GL_READ_ONLY));
-    ptrWR = reinterpret_cast<Cell*>(cellBuffers[0]->map(GL_READ_ONLY));
-
-    cellBuffers[0]->unmap();
-    cellBuffers[1]->unmap();
-
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    simulation.simulate();
 
     glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 
@@ -155,7 +114,7 @@ int main() {
     gridRenderer.draw();
 
     window->swap();
-    std::swap(cellBuffers[0], cellBuffers[1]);
+    simulation.swapBuffers();
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     fpsCounter.frame();
     print(fpsCounter);
