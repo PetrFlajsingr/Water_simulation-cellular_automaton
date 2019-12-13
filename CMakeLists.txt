@@ -1,15 +1,14 @@
 cmake_minimum_required(VERSION 3.15)
 project(GMU_fluid_simulation_cellular_automata)
 
-set(CMAKE_CXX_STANDARD 17)
-
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fconcepts")
 include(FetchContent)
 
 add_compile_definitions(SRC_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\")
 
 set(SDL2_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SDL2/lib/cmake/SDL2)
 
-find_package(glm CONFIG REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
 find_package(glfw3 3.2 REQUIRED)
 
@@ -47,5 +46,5 @@ add_executable(GMU_fluid_simulation_cellular_automata ${misc_src} ${Graphics_src
         #${ThirdParty_src}
         ${Simulation_src} main.cpp)
 
-target_link_libraries(GMU_fluid_simulation_cellular_automata SDL2_image geGL::geGL SDL2CPP::SDL2CPP glm
+target_link_libraries(GMU_fluid_simulation_cellular_automata SDL2_image geGL::geGL SDL2CPP::SDL2CPP
         glfw)
