@@ -17,6 +17,7 @@
 #include <iostream>
 #include <thread>
 #include <Renderers/GridRenderer.h>
+#include <Renderers/CellRenderer.h>
 
 using namespace ge::gl;
 using namespace std::string_literals;
@@ -86,49 +87,21 @@ int main() {
 
   setShaderLocation(SRC_DIR + "/Shaders"s);
 
-  auto cellProgram =
-      std::make_shared<ge::gl::Program>("basic"_vert, "basic"_frag);
+  auto cellRenderer = CellRenderer(SRC_DIR + "/Resources/Models/cube.obj"s, proj, tankSize);
   auto gridRenderer = GridRenderer(tankSize, camera, proj);
   auto computeHorizontalProgram =
       std::make_shared<ge::gl::Program>("basic-horizontal"_comp);
   auto computeVerticalProgram =
       std::make_shared<ge::gl::Program>("basic-vertical"_comp);
 
-  auto cube = Model(SRC_DIR + "/Resources/Models/cube.obj"s);
   auto cells = std::vector<Cell>(glm::compMul(tankSize));
   cells[15].setFluidVolume(1.0);
   cells[7].setFluidVolume(1.0);
 
-  auto vbo = createBuffer(cube.getVertices());
-
-
-  auto drawIdsBuffer = createBuffer(cube.getIndices());
 
   std::array<std::shared_ptr<Buffer>, 2> cellBuffers{
       createBuffer(cells, GL_DYNAMIC_COPY),
       createBuffer(cells, GL_DYNAMIC_COPY)};
-
-  std::vector<glm::vec4> positions{glm::compMul(tankSize)};
-  auto positionsBuffer = createBuffer(positions, GL_DYNAMIC_DRAW);
-
-  std::array<uint32_t, 5> command{cube.indicesCount(), 2, 0, 0, 0};
-  auto indirectBuffer = createBuffer(command);
-
-  // vertex array object
-  auto vao = std::make_shared<VertexArray>();
-  vao->addAttrib(vbo, 0, 3, GL_FLOAT,
-                 static_cast<GLsizei>(sizeof(Model::VertexData)),
-                 offsetof(Model::VertexData, pos));
-  vao->addAttrib(vbo, 1, 3, GL_FLOAT,
-                 static_cast<GLsizei>(sizeof(Model::VertexData)),
-                 offsetof(Model::VertexData, color));
-  vao->addAttrib(vbo, 2, 2, GL_FLOAT,
-                 static_cast<GLsizei>(sizeof(Model::VertexData)),
-                 offsetof(Model::VertexData, texCoord));
-  vao->addAttrib(vbo, 3, 3, GL_FLOAT,
-                 static_cast<GLsizei>(sizeof(Model::VertexData)),
-                 offsetof(Model::VertexData, normal));
-
 
   glClearColor(0, 0, 0, 1);
 
@@ -142,8 +115,8 @@ int main() {
     computeHorizontalProgram->use();
     cellBuffers[0]->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
     cellBuffers[1]->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
-    positionsBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
-    indirectBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 3);
+    cellRenderer.getPositionsBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
+    cellRenderer.getIbo()->bindBase(GL_SHADER_STORAGE_BUFFER, 3);
 
     Cell *ptrRD;
     Cell *ptrWR;
@@ -177,24 +150,7 @@ int main() {
 
     glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 
-    cellProgram->use();
-
-    vao->bind();
-    drawIdsBuffer->bind(GL_ELEMENT_ARRAY_BUFFER);
-    positionsBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
-    glm::mat4 view = camera->GetViewMatrix();
-    cellProgram->setMatrix4fv("Model", glm::value_ptr(glm::mat4(1.0)), 1,
-                              GL_FALSE);
-    cellProgram->setMatrix4fv("View", glm::value_ptr(view), 1, GL_FALSE);
-    cellProgram->setMatrix4fv("Projection", glm::value_ptr(proj), 1, GL_FALSE);
-    cellProgram->set3fv("cameraPosition", glm::value_ptr(camera->Position));
-    indirectBuffer->bind(GL_DRAW_INDIRECT_BUFFER);
-    glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr);
-    vao->unbind();
-    drawIdsBuffer->unbind(GL_ELEMENT_ARRAY_BUFFER);
-    positionsBuffer->unbind(GL_SHADER_STORAGE_BUFFER);
-    indirectBuffer->unbind(GL_DRAW_INDIRECT_BUFFER);
-
+    cellRenderer.draw(camera->GetViewMatrix(), camera->Position);
 
     gridRenderer.draw();
 
