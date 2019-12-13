@@ -166,26 +166,26 @@ int main() {
   mainLoop->setIdleCallback([&]() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     computeHorizontalProgram->use();
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, cellBuffers[0]->getId());
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, cellBuffers[1]->getId());
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, positionsBuffer->getId());
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, indirectBuffer->getId());
+    cellBuffers[0]->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
+    cellBuffers[1]->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
+    positionsBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
+    indirectBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 3);
 
     Cell *ptrRD;
     Cell *ptrWR;
-    ptrRD = (Cell *)glMapNamedBuffer(cellBuffers[1]->getId(), GL_READ_ONLY);
-    ptrWR = (Cell *)glMapNamedBuffer(cellBuffers[0]->getId(), GL_READ_ONLY);
+    ptrRD = reinterpret_cast<Cell*>(cellBuffers[1]->map(GL_READ_ONLY));
+    ptrWR = reinterpret_cast<Cell*>(cellBuffers[0]->map(GL_READ_ONLY));
 
-    glUnmapNamedBuffer(cellBuffers[0]->getId());
-    glUnmapNamedBuffer(cellBuffers[1]->getId());
+    cellBuffers[0]->unmap();
+    cellBuffers[1]->unmap();
 
     glDispatchCompute(tankSize.x / 2, tankSize.y / 2, tankSize.z / 2);
 
-    ptrRD = (Cell *)glMapNamedBuffer(cellBuffers[1]->getId(), GL_READ_ONLY);
-    ptrWR = (Cell *)glMapNamedBuffer(cellBuffers[0]->getId(), GL_READ_ONLY);
+    ptrRD = reinterpret_cast<Cell*>(cellBuffers[1]->map(GL_READ_ONLY));
+    ptrWR = reinterpret_cast<Cell*>(cellBuffers[0]->map(GL_READ_ONLY));
 
-    glUnmapNamedBuffer(cellBuffers[0]->getId());
-    glUnmapNamedBuffer(cellBuffers[1]->getId());
+    cellBuffers[0]->unmap();
+    cellBuffers[1]->unmap();
 
     std::swap(cellBuffers[0], cellBuffers[1]);
     cellBuffers[0]->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
@@ -193,11 +193,11 @@ int main() {
     computeVerticalProgram->use();
     glDispatchCompute(tankSize.x / 2, tankSize.y / 2, tankSize.z / 2);
 
-    ptrRD = (Cell *)glMapNamedBuffer(cellBuffers[1]->getId(), GL_READ_ONLY);
-    ptrWR = (Cell *)glMapNamedBuffer(cellBuffers[0]->getId(), GL_READ_ONLY);
+    ptrRD = reinterpret_cast<Cell*>(cellBuffers[1]->map(GL_READ_ONLY));
+    ptrWR = reinterpret_cast<Cell*>(cellBuffers[0]->map(GL_READ_ONLY));
 
-    glUnmapNamedBuffer(cellBuffers[0]->getId());
-    glUnmapNamedBuffer(cellBuffers[1]->getId());
+    cellBuffers[0]->unmap();
+    cellBuffers[1]->unmap();
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
