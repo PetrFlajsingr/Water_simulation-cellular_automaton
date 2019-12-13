@@ -30,12 +30,6 @@ private:
     std::shared_ptr<Buffer> ebo;
 
     std::shared_ptr<Buffer> ibo;
-public:
-    const std::shared_ptr<Buffer> &getIbo() const;
-
-    const std::shared_ptr<Buffer> &getPositionsBuffer() const;
-
-private:
 
     std::shared_ptr<Buffer> positionsBuffer;
 
@@ -47,6 +41,10 @@ public:
     CellRenderer(const std::string cellModelPath, const glm::mat4 &projectionMat, const glm::uvec3 &tankSize);
 
     void draw(const glm::mat4 &viewMat, const glm::vec3 &cameraPos);
+
+    const std::shared_ptr<Buffer> &getIbo() const;
+
+    const std::shared_ptr<Buffer> &getPositionsBuffer() const;
 };
 
 
