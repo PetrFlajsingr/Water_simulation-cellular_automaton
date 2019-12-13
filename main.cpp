@@ -247,10 +247,10 @@ int main() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, drawIdsBuffer);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, positionsBuffer);
     glm::mat4 view = camera.GetViewMatrix();
-    glUniformMatrix4fv(4, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0)));
-    glUniformMatrix4fv(5, 1, GL_FALSE, glm::value_ptr(view));
-    glUniformMatrix4fv(6, 1, GL_FALSE, glm::value_ptr(proj));
-    glUniform3fv(7, 1, glm::value_ptr(camera.Position));
+    cellProgram->setMatrix4fv("Model", glm::value_ptr(glm::mat4(1.0)), 1, GL_FALSE);
+    cellProgram->setMatrix4fv("View", glm::value_ptr(view), 1, GL_FALSE);
+    cellProgram->setMatrix4fv("Projection", glm::value_ptr(proj), 1, GL_FALSE);
+    cellProgram->set3fv("cameraPosition", glm::value_ptr(camera.Position));
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuffer);
     glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
@@ -260,9 +260,9 @@ int main() {
 
     gridProgram->use();
     glBindVertexArray(vaoGrid);
-    glUniformMatrix4fv(4, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0)));
-    glUniformMatrix4fv(5, 1, GL_FALSE, glm::value_ptr(view));
-    glUniformMatrix4fv(6, 1, GL_FALSE, glm::value_ptr(proj));
+    gridProgram->setMatrix4fv("Model", glm::value_ptr(glm::mat4(1.0)), 1, GL_FALSE);
+    gridProgram->setMatrix4fv("View", glm::value_ptr(view), 1, GL_FALSE);
+    gridProgram->setMatrix4fv("Projection", glm::value_ptr(proj), 1, GL_FALSE);
     glDrawArrays(GL_LINES, 0, grid.size());
     glBindVertexArray(0);
 
