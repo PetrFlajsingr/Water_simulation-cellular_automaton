@@ -15,6 +15,7 @@
 #include <glm/gtx/component_wise.hpp>
 #include <iostream>
 #include <thread>
+#include "geGL_utils.h"
 
 using namespace ge::gl;
 using namespace std::string_literals;
@@ -119,69 +120,55 @@ int main() {
   cells[15].setFluidVolume(1.0);
   cells[7].setFluidVolume(1.0);
 
-  GLuint vbo;
-  glCreateBuffers(1, &vbo);
-  glNamedBufferData(vbo, cube.verticesCount() * sizeof(Model::VertexData),
-                    cube.getVertices().data(), GL_STATIC_DRAW);
+  auto vbo = createBuffer(cube.getVertices());
 
-  auto grid = generateLines(tankSize);
-  GLuint vboGrid;
-  glCreateBuffers(1, &vboGrid);
-  glNamedBufferData(vboGrid, grid.size() * sizeof(glm::vec3), grid.data(),
-                    GL_STATIC_DRAW);
+  const auto grid = generateLines(tankSize);
+  auto vboGrid = createBuffer(grid);
 
-  GLuint drawIdsBuffer;
-  glCreateBuffers(1, &drawIdsBuffer);
-  glNamedBufferData(drawIdsBuffer, cube.indicesCount() * sizeof(uint32_t),
-                    cube.getIndices().data(), GL_STATIC_DRAW);
+  auto drawIdsBuffer = createBuffer(cube.getIndices());
 
-  std::array<GLuint, 2> cellBuffers{};
-  glCreateBuffers(2, cellBuffers.data());
-  glNamedBufferData(cellBuffers[0], cells.size() * sizeof(Cell), cells.data(),
-                    GL_DYNAMIC_COPY);
-  glNamedBufferData(cellBuffers[1], cells.size() * sizeof(Cell), cells.data(),
-                    GL_DYNAMIC_COPY);
+  std::array<std::shared_ptr<Buffer>, 2> cellBuffers {
+    createBuffer(cells, GL_DYNAMIC_COPY),
+    createBuffer(cells, GL_DYNAMIC_COPY)
+  };
 
   std::vector<glm::vec4> positions{glm::compMul(tankSize)};
-  GLuint positionsBuffer;
-  glCreateBuffers(1, &positionsBuffer);
-  glNamedBufferData(positionsBuffer, positions.size() * sizeof(glm::vec4),
-                    positions.data(), GL_DYNAMIC_DRAW);
+  auto positionsBuffer = createBuffer(positions, GL_DYNAMIC_DRAW);
 
-  GLuint indirectBuffer;
+
   std::array<uint32_t, 5> command{cube.indicesCount(), 2, 0, 0, 0};
-  glCreateBuffers(1, &indirectBuffer);
-  glNamedBufferData(indirectBuffer, sizeof(uint32_t) * command.size(),
-                    command.data(), GL_DYNAMIC_DRAW);
+  auto indirectBuffer = createBuffer(command);
 
   // vertex array object
+  //auto vao = std::make_shared<VertexArray>();
+  //vao->addAttrib(vao, 0, 3, GL_FLOAT, static_cast<GLsizei>(sizeof(Model::VertexData)), offsetof(Model::VertexData, pos));
   GLuint vao;
   glCreateVertexArrays(1, &vao);
   // attrib 0. is vertex positions
   glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE,
                             offsetof(Model::VertexData, pos));
-  glVertexArrayVertexBuffer(vao, 0, vbo, 0,
+  glVertexArrayVertexBuffer(vao, 0, vbo->getId(), 0,
                             static_cast<GLsizei>(sizeof(Model::VertexData)));
   glVertexArrayAttribBinding(vao, 0, 0);
   glEnableVertexArrayAttrib(vao, 0);
 
   glVertexArrayAttribFormat(vao, 1, 3, GL_FLOAT, GL_FALSE,
                             offsetof(Model::VertexData, color));
-  glVertexArrayVertexBuffer(vao, 0, vbo, offsetof(Model::VertexData, color),
+  glVertexArrayVertexBuffer(vao, 0, vbo->getId(), offsetof(Model::VertexData, color),
                             static_cast<GLsizei>(sizeof(Model::VertexData)));
   glVertexArrayAttribBinding(vao, 1, 0);
   glEnableVertexArrayAttrib(vao, 1);
 
   glVertexArrayAttribFormat(vao, 2, 2, GL_FLOAT, GL_FALSE,
                             offsetof(Model::VertexData, texCoord));
-  glVertexArrayVertexBuffer(vao, 0, vbo, 0,
+  glVertexArrayVertexBuffer(vao, 0, vbo->getId(), 0,
                             static_cast<GLsizei>(sizeof(Model::VertexData)));
   glVertexArrayAttribBinding(vao, 2, 0);
   glEnableVertexArrayAttrib(vao, 2);
 
   glVertexArrayAttribFormat(vao, 3, 3, GL_FLOAT, GL_FALSE,
                             offsetof(Model::VertexData, normal));
-  glVertexArrayVertexBuffer(vao, 0, vbo, 0,
+  glVertexArrayVertexBuffer(vao, 0, vbo->getId(), 0,
                             static_cast<GLsizei>(sizeof(Model::VertexData)));
   glVertexArrayAttribBinding(vao, 3, 0);
   glEnableVertexArrayAttrib(vao, 3);
@@ -189,7 +176,7 @@ int main() {
   GLuint vaoGrid;
   glCreateVertexArrays(1, &vaoGrid);
   glVertexArrayAttribFormat(vaoGrid, 0, 3, GL_FLOAT, GL_FALSE, 0);
-  glVertexArrayVertexBuffer(vaoGrid, 0, vboGrid, 0,
+  glVertexArrayVertexBuffer(vaoGrid, 0, vboGrid->getId(), 0,
                             static_cast<GLsizei>(sizeof(glm::vec3)));
   glVertexArrayAttribBinding(vaoGrid, 0, 0);
   glEnableVertexArrayAttrib(vaoGrid, 0);
@@ -204,38 +191,38 @@ int main() {
   mainLoop->setIdleCallback([&]() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     computeHorizontalProgram->use();
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, cellBuffers[0]);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, cellBuffers[1]);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, positionsBuffer);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, indirectBuffer);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, cellBuffers[0]->getId());
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, cellBuffers[1]->getId());
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, positionsBuffer->getId());
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, indirectBuffer->getId());
 
     Cell *ptrRD;
     Cell *ptrWR;
-    ptrRD = (Cell *)glMapNamedBuffer(cellBuffers[1], GL_READ_ONLY);
-    ptrWR = (Cell *)glMapNamedBuffer(cellBuffers[0], GL_READ_ONLY);
+    ptrRD = (Cell *)glMapNamedBuffer(cellBuffers[1]->getId(), GL_READ_ONLY);
+    ptrWR = (Cell *)glMapNamedBuffer(cellBuffers[0]->getId(), GL_READ_ONLY);
 
-    glUnmapNamedBuffer(cellBuffers[0]);
-    glUnmapNamedBuffer(cellBuffers[1]);
+    glUnmapNamedBuffer(cellBuffers[0]->getId());
+    glUnmapNamedBuffer(cellBuffers[1]->getId());
 
     glDispatchCompute(tankSize.x / 2, tankSize.y / 2, tankSize.z / 2);
 
-    ptrRD = (Cell *)glMapNamedBuffer(cellBuffers[1], GL_READ_ONLY);
-    ptrWR = (Cell *)glMapNamedBuffer(cellBuffers[0], GL_READ_ONLY);
+    ptrRD = (Cell *)glMapNamedBuffer(cellBuffers[1]->getId(), GL_READ_ONLY);
+    ptrWR = (Cell *)glMapNamedBuffer(cellBuffers[0]->getId(), GL_READ_ONLY);
 
-    glUnmapNamedBuffer(cellBuffers[0]);
-    glUnmapNamedBuffer(cellBuffers[1]);
+    glUnmapNamedBuffer(cellBuffers[0]->getId());
+    glUnmapNamedBuffer(cellBuffers[1]->getId());
 
     std::swap(cellBuffers[0], cellBuffers[1]);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, cellBuffers[0]);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, cellBuffers[1]);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, cellBuffers[0]->getId());
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, cellBuffers[1]->getId());
     computeVerticalProgram->use();
     glDispatchCompute(tankSize.x / 2, tankSize.y / 2, tankSize.z / 2);
 
-    ptrRD = (Cell *)glMapNamedBuffer(cellBuffers[1], GL_READ_ONLY);
-    ptrWR = (Cell *)glMapNamedBuffer(cellBuffers[0], GL_READ_ONLY);
+    ptrRD = (Cell *)glMapNamedBuffer(cellBuffers[1]->getId(), GL_READ_ONLY);
+    ptrWR = (Cell *)glMapNamedBuffer(cellBuffers[0]->getId(), GL_READ_ONLY);
 
-    glUnmapNamedBuffer(cellBuffers[0]);
-    glUnmapNamedBuffer(cellBuffers[1]);
+    glUnmapNamedBuffer(cellBuffers[0]->getId());
+    glUnmapNamedBuffer(cellBuffers[1]->getId());
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
@@ -244,14 +231,14 @@ int main() {
     cellProgram->use();
 
     glBindVertexArray(vao);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, drawIdsBuffer);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, positionsBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, drawIdsBuffer->getId());
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, positionsBuffer->getId());
     glm::mat4 view = camera.GetViewMatrix();
     cellProgram->setMatrix4fv("Model", glm::value_ptr(glm::mat4(1.0)), 1, GL_FALSE);
     cellProgram->setMatrix4fv("View", glm::value_ptr(view), 1, GL_FALSE);
     cellProgram->setMatrix4fv("Projection", glm::value_ptr(proj), 1, GL_FALSE);
     cellProgram->set3fv("cameraPosition", glm::value_ptr(camera.Position));
-    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuffer);
+    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuffer->getId());
     glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
