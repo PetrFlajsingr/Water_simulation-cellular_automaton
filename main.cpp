@@ -61,23 +61,18 @@ bool SDLHandler(const SDL_Event &event) {
 
 std::vector<glm::vec3> generateLines(int xLength, int yLength, int zLength) {
   std::vector<glm::vec3> result{};
-  for (int z = 0; z <= zLength; ++z) {
-    for (int y = 0; y <= yLength; ++y) {
-      result.emplace_back(glm::vec3{0.0, y, z});
-      result.emplace_back(glm::vec3{xLength, y, z});
-    }
+  using namespace MakeRange;
+  for (auto [z, y] : range<int, 2>({zLength + 1, yLength + 1})) {
+    result.emplace_back(glm::vec3{0.0, y, z});
+    result.emplace_back(glm::vec3{xLength, y, z});
   }
-  for (int x = 0; x <= xLength; ++x) {
-    for (int y = 0; y <= yLength; ++y) {
-      result.emplace_back(glm::vec3{x, y, 0.0});
-      result.emplace_back(glm::vec3{x, y, zLength});
-    }
+  for (auto [x, y] : range<int, 2>({xLength + 1, yLength + 1})) {
+    result.emplace_back(glm::vec3{x, y, 0.0});
+    result.emplace_back(glm::vec3{x, y, zLength});
   }
-  for (int x = 0; x <= xLength; ++x) {
-    for (int z = 0; z <= zLength; ++z) {
-      result.emplace_back(glm::vec3{x, 0.0, z});
-      result.emplace_back(glm::vec3{x, yLength, z});
-    }
+  for (auto [x, z] : range<int, 2>({xLength + 1, zLength + 1})) {
+    result.emplace_back(glm::vec3{x, 0.0, z});
+    result.emplace_back(glm::vec3{x, yLength, z});
   }
   return result;
 }
