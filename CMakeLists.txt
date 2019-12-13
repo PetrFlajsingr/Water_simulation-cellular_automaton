@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 include(FetchContent)
 
+add_compile_definitions(SRC_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\")
+
 set(SDL2_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SDL2/lib/cmake/SDL2)
 
 find_package(glm CONFIG REQUIRED)

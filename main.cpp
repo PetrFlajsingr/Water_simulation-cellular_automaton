@@ -1,4 +1,4 @@
-#include <iostream>
+#include<iostream>
 #include <chrono>
 #include <thread>
 #include <geGL/geGL.h>
@@ -11,8 +11,11 @@
 #include <Camera.h>
 #include <geGL/StaticCalls.h>
 #include <Cell.h>
+#include "GlslShaderLoader.h"
+#include "shader_literals.h"
 
 using namespace ge::gl;
+using namespace std::string_literals;
 
 auto camera = Camera(glm::vec3(1.0, 1.0, 5.0));
 
@@ -80,6 +83,7 @@ std::vector<glm::vec3> generateLines(glm::vec3 length) {
 }
 
 int main() {
+  using namespace ShaderLiterals;
     auto tankSize = glm::uvec3(4, 4, 4);
     auto proj = glm::perspective(glm::radians(45.0f),
                                  static_cast<float>(640) / static_cast<float>(480),
@@ -98,30 +102,14 @@ int main() {
     ge::gl::init(SDL_GL_GetProcAddress);
     ge::gl::setHighDebugMessage();
 
-    auto vs = std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,
-                                               Utilities::readFile(
-                                                       "/home/kuro/CLionProjects/GMU_water_simulation_cellular_automata/Shaders/basic.vert"));
-    auto fs = std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,
-                                               Utilities::readFile(
-                                                       "/home/kuro/CLionProjects/GMU_water_simulation_cellular_automata/Shaders/basic.frag"));
-    auto vsG = std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,
-                                                Utilities::readFile(
-                                                        "/home/kuro/CLionProjects/GMU_water_simulation_cellular_automata/Shaders/grid.vert"));
-    auto fsG = std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,
-                                                Utilities::readFile(
-                                                        "/home/kuro/CLionProjects/GMU_water_simulation_cellular_automata/Shaders/grid.frag"));
-    auto csH = std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER, Utilities::readFile(
-            "/home/kuro/CLionProjects/GMU_water_simulation_cellular_automata/Shaders/basic-horizontal.comp"));
-    auto csV = std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER, Utilities::readFile(
-            "/home/kuro/CLionProjects/GMU_water_simulation_cellular_automata/Shaders/basic-vertical.comp"));
+    setShaderLocation(SRC_DIR + "/Shaders"s);
 
+    auto cellProgram = std::make_shared<ge::gl::Program>("basic"_vert, "basic"_frag);
+    auto gridProgram = std::make_shared<ge::gl::Program>("grid"_vert, "grid"_frag);
+    auto computeHorizontalProgram = std::make_shared<ge::gl::Program>("basic-horizontal"_comp);
+    auto computeVerticalProgram = std::make_shared<ge::gl::Program>("basic-vertical"_comp);
 
-    auto cellProgram = std::make_shared<ge::gl::Program>(vs, fs);
-    auto gridProgram = std::make_shared<ge::gl::Program>(vsG, fsG);
-    auto computeHorizontalProgram = std::make_shared<ge::gl::Program>(csH);
-    auto computeVerticalProgram = std::make_shared<ge::gl::Program>(csV);
-
-    auto cube = Model("/home/kuro/CLionProjects/GMU_water_simulation_cellular_automata/Resources/Models/cube.obj");
+    auto cube = Model(SRC_DIR + "/Resources/Models/cube.obj"s);
     auto cells = std::vector<Cell>(glm::compMul(tankSize));
     cells[15].setFluidVolume(1.0);
     cells[7].setFluidVolume(1.0);
