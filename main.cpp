@@ -84,13 +84,17 @@ std::vector<glm::vec3> generateLines(glm::vec3 length) {
 int main() {
   using namespace ShaderLiterals;
   auto tankSize = glm::uvec3(4, 4, 4);
-  auto proj = glm::perspective(
-      glm::radians(45.0f), static_cast<float>(640) / static_cast<float>(480),
-      0.1f, 100.0f);
+  const auto fieldOfView = 45.f;
+  const auto windowWidth = 640;
+  const auto windowHeight = 480;
+  const auto nearPlane = 0.1f;
+  const auto farPlane = 100.f;
+  auto proj = glm::perspective(glm::radians(fieldOfView),
+                               static_cast<float>(windowWidth) / windowHeight, nearPlane, farPlane);
 
   /*Create Window*/
   auto mainLoop = std::make_shared<sdl2cpp::MainLoop>();
-  auto window = std::make_shared<sdl2cpp::Window>(640, 480);
+  auto window = std::make_shared<sdl2cpp::Window>(windowWidth, windowHeight);
   window->createContext("rendering");
   mainLoop->addWindow("mainWindow", window);
   mainLoop->setEventHandler(SDLHandler);
