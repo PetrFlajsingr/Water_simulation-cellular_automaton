@@ -11,7 +11,7 @@ layout(location = 5) in mat4 fragView;
 void main() {
     const float ambientStrength = 0.1f;
     const vec3 lightColor = vec3(1.0f);
-    const vec3 lightPosition = vec3(15.0f, 0.0f, 15.0f);
+    const vec3 lightPosition = vec3(15.0f, 15.0f, 15.0f);
     vec3 ambient = ambientStrength * lightColor;
 
     vec3 norm = normalize(fragNormal);

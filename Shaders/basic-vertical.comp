@@ -2,6 +2,7 @@
 
 struct Cell{
     float fluidVolume;
+    float fluidHorizontalLefover;
     uint stable;
 };
 
@@ -52,22 +53,24 @@ void main() {
     uint myCellID = (gl_GlobalInvocationID.z * globalSize.x * globalSize.y)+ (gl_GlobalInvocationID.y * globalSize.x) + gl_GlobalInvocationID.x;
     uint invocationCount = globalSize.x * globalSize.y * globalSize.z;
     if (myCellID < invocationCount){
-            float inFlow = 0.0;
-            float outFlow = 0.0;
-            for (int offsetIndex = 0; offsetIndex < verticalNeighbourSize; ++offsetIndex){
-                ivec3 currentNeighbour = ivec3(gl_GlobalInvocationID) + neighbourOffsets[offsetIndex];
-                if (all(greaterThanEqual(currentNeighbour, ivec3(0))) && all(lessThan(currentNeighbour, globalSize))){
-                    inFlow += horizontalFlowVolume(readCells[to1DCoord(currentNeighbour)].fluidVolume, readCells[myCellID].fluidVolume);
-                    outFlow += horizontalFlowVolume(readCells[myCellID].fluidVolume, readCells[to1DCoord(currentNeighbour)].fluidVolume);
-                }
-            }
-            writeCells[myCellID].fluidVolume = readCells[myCellID].fluidVolume + (inFlow - outFlow);
-    }
+        float inFlow = 0.0;
+        float outFlow = 0.0;
+        for (int offsetIndex = 0; offsetIndex < verticalNeighbourSize; ++offsetIndex){
+            ivec3 currentNeighbour = ivec3(gl_GlobalInvocationID) + neighbourOffsets[offsetIndex];
+            if (all(greaterThanEqual(currentNeighbour, ivec3(0))) && all(lessThan(currentNeighbour, globalSize))){
+                inFlow += horizontalFlowVolume(readCells[to1DCoord(currentNeighbour)].fluidHorizontalLefover, readCells[myCellID].fluidVolume);
+                outFlow += horizontalFlowVolume(readCells[myCellID].fluidHorizontalLefover, readCells[to1DCoord(currentNeighbour)].fluidVolume);
 
-    if (myCellID < invocationCount){
+            }
+        }
+        writeCells[myCellID].fluidVolume = readCells[myCellID].fluidVolume + (inFlow - outFlow);
+        if (writeCells[myCellID].fluidVolume < minimumCellVolume){
+            writeCells[myCellID].fluidVolume = 0.0;
+        }
+
         if (writeCells[myCellID].fluidVolume > 0.0){
             uint positionID = atomicAdd(drawArray.instanceCount, 1u);
-            positions[positionID] = vec4(gl_GlobalInvocationID, 0.0);
+            positions[positionID] = vec4(gl_GlobalInvocationID + vec3(0.5, 0.0, 0.5), writeCells[myCellID].fluidVolume);
         }
     }
 

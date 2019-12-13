@@ -23,17 +23,25 @@ layout(location = 5) out mat4 fragView;
 
 
 void main() {
-    vec4 pos = vec4(inPosition, 1.0) + positions[gl_InstanceID];
-    pos.xyz *= 0.1;
-    /*pos.x += gl_InstanceID % 5;
-    pos.y -= (gl_InstanceID / 5) % 5;
-    pos.z -= gl_InstanceID / (25);*/
+    float fluidVolume = positions[gl_InstanceID].w;
+    vec3 cellPosition = positions[gl_InstanceID].xyz;
+    vec3 vertexPos = inPosition.xyz;
+    vec3 color = inColor;
+    if(fluidVolume <= 1.0){
+        vertexPos.y *= fluidVolume;
+        color *= 0.5 * (1-fluidVolume) + 0.5;
+    }
+    else if (fluidVolume > 1.0){
+        color *= 0.5 * (fluidVolume/(1.0/3.0));
+    }
+    vec4 pos = vec4(vertexPos + cellPosition, 1.0);
+    pos.xyz *= 0.5;
     fragPosition =(Model * pos).xyz;
     pos = Projection * View * Model * pos;
     gl_Position = pos;
     fragTexCoord = inTexCoord;
     fragNormal = mat3(transpose(inverse(Model))) * inNormal;
-    fragColor = inColor;
+    fragColor = color;
     fragView = View;
     fragCameraPosition = cameraPosition;
 }

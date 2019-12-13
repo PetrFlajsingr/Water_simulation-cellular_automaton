@@ -4,7 +4,8 @@
 
 #include "Cell.h"
 
-Cell::Cell(float fluidVolume, uint32_t stable) : fluidVolume(fluidVolume), stable(stable) {}
+Cell::Cell(float fluidVolume, uint32_t stable) : fluidVolume(fluidVolume), stable(stable),
+                                                 fluidHorizontalLefover(0.0) {}
 
 void Cell::setFluidVolume(float fluidVolume) {
     Cell::fluidVolume = fluidVolume;

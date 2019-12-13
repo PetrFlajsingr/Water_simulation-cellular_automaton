@@ -1,4 +1,6 @@
 #include <iostream>
+#include <chrono>
+#include <thread>
 #include <geGL/geGL.h>
 #include <SDL2CPP/Window.h>
 #include <SDL2CPP/MainLoop.h>
@@ -12,7 +14,7 @@
 
 using namespace ge::gl;
 
-auto camera = Camera(glm::vec3(0.0, 0.0, 5.0));
+auto camera = Camera(glm::vec3(1.0, 1.0, 5.0));
 
 bool SDLHandler(const SDL_Event &event) {
     static bool mousePressed = false;
@@ -50,8 +52,35 @@ bool SDLHandler(const SDL_Event &event) {
     return false;
 }
 
+std::vector<glm::vec3> generateLines(int xLength, int yLength, int zLength) {
+    std::vector<glm::vec3> result{};
+    for (int z = 0; z <= zLength; ++z) {
+        for (int y = 0; y <= yLength; ++y) {
+            result.emplace_back(glm::vec3{0.0, y, z});
+            result.emplace_back(glm::vec3{xLength, y, z});
+        }
+    }
+    for (int x = 0; x <= xLength; ++x) {
+        for (int y = 0; y <= yLength; ++y) {
+            result.emplace_back(glm::vec3{x, y, 0.0});
+            result.emplace_back(glm::vec3{x, y, zLength});
+        }
+    }
+    for (int x = 0; x <= xLength; ++x) {
+        for (int z = 0; z <= zLength; ++z) {
+            result.emplace_back(glm::vec3{x, 0.0, z});
+            result.emplace_back(glm::vec3{x, yLength, z});
+        }
+    }
+    return result;
+}
+
+std::vector<glm::vec3> generateLines(glm::vec3 length) {
+    return generateLines(length.x, length.y, length.z);
+}
+
 int main() {
-    auto tankSize = glm::uvec3(2,2,2);
+    auto tankSize = glm::uvec3(4, 4, 4);
     auto proj = glm::perspective(glm::radians(45.0f),
                                  static_cast<float>(640) / static_cast<float>(480),
                                  0.1f,
@@ -75,27 +104,37 @@ int main() {
     auto fs = std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,
                                                Utilities::readFile(
                                                        "/home/kuro/CLionProjects/GMU_water_simulation_cellular_automata/Shaders/basic.frag"));
+    auto vsG = std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,
+                                                Utilities::readFile(
+                                                        "/home/kuro/CLionProjects/GMU_water_simulation_cellular_automata/Shaders/grid.vert"));
+    auto fsG = std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,
+                                                Utilities::readFile(
+                                                        "/home/kuro/CLionProjects/GMU_water_simulation_cellular_automata/Shaders/grid.frag"));
     auto csH = std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER, Utilities::readFile(
             "/home/kuro/CLionProjects/GMU_water_simulation_cellular_automata/Shaders/basic-horizontal.comp"));
     auto csV = std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER, Utilities::readFile(
             "/home/kuro/CLionProjects/GMU_water_simulation_cellular_automata/Shaders/basic-vertical.comp"));
 
 
-    auto graphicsProgram = std::make_shared<ge::gl::Program>(vs, fs);
+    auto cellProgram = std::make_shared<ge::gl::Program>(vs, fs);
+    auto gridProgram = std::make_shared<ge::gl::Program>(vsG, fsG);
     auto computeHorizontalProgram = std::make_shared<ge::gl::Program>(csH);
     auto computeVerticalProgram = std::make_shared<ge::gl::Program>(csV);
 
     auto cube = Model("/home/kuro/CLionProjects/GMU_water_simulation_cellular_automata/Resources/Models/cube.obj");
     auto cells = std::vector<Cell>(glm::compMul(tankSize));
-    cells[5].setFluidVolume(1.0);
-/*    cells[510].setFluidVolume(1.0);
-    cells[502].setFluidVolume(1.0);
-    cells[503].setFluidVolume(1.0);*/
+    cells[15].setFluidVolume(1.0);
+    cells[7].setFluidVolume(1.0);
 
     GLuint vbo;
     glCreateBuffers(1, &vbo);
     glNamedBufferData(vbo, cube.verticesCount() * sizeof(Model::VertexData), cube.getVertices().data(),
                       GL_STATIC_DRAW);
+
+    auto grid = generateLines(tankSize);
+    GLuint vboGrid;
+    glCreateBuffers(1, &vboGrid);
+    glNamedBufferData(vboGrid, grid.size() * sizeof(glm::vec3), grid.data(), GL_STATIC_DRAW);
 
     GLuint drawIdsBuffer;
     glCreateBuffers(1, &drawIdsBuffer);
@@ -144,6 +183,13 @@ int main() {
     glVertexArrayAttribBinding(vao, 3, 0);
     glEnableVertexArrayAttrib(vao, 3);
 
+    GLuint vaoGrid;
+    glCreateVertexArrays(1, &vaoGrid);
+    glVertexArrayAttribFormat(vaoGrid, 0, 3, GL_FLOAT, GL_FALSE, 0);
+    glVertexArrayVertexBuffer(vaoGrid, 0, vboGrid, 0, static_cast<GLsizei>(sizeof(glm::vec3)));
+    glVertexArrayAttribBinding(vaoGrid, 0, 0);
+    glEnableVertexArrayAttrib(vaoGrid, 0);
+
     glClearColor(0, 0, 0, 1);
 
     glEnable(GL_DEPTH_TEST);
@@ -164,34 +210,36 @@ int main() {
         ptrRD = (Cell *) glMapNamedBuffer(cellBuffers[1], GL_READ_ONLY);
         ptrWR = (Cell *) glMapNamedBuffer(cellBuffers[0], GL_READ_ONLY);
 
-        glUnmapNamedBuffer(cellBuffers[0]);glUnmapNamedBuffer(cellBuffers[1]);
+        glUnmapNamedBuffer(cellBuffers[0]);
+        glUnmapNamedBuffer(cellBuffers[1]);
 
 
-        glDispatchCompute(tankSize.x/2, tankSize.y/2, tankSize.z/2);
+        glDispatchCompute(tankSize.x / 2, tankSize.y / 2, tankSize.z / 2);
 
         ptrRD = (Cell *) glMapNamedBuffer(cellBuffers[1], GL_READ_ONLY);
         ptrWR = (Cell *) glMapNamedBuffer(cellBuffers[0], GL_READ_ONLY);
 
-        glUnmapNamedBuffer(cellBuffers[0]);glUnmapNamedBuffer(cellBuffers[1]);
+        glUnmapNamedBuffer(cellBuffers[0]);
+        glUnmapNamedBuffer(cellBuffers[1]);
 
         std::swap(cellBuffers[0], cellBuffers[1]);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, cellBuffers[0]);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, cellBuffers[1]);
         computeVerticalProgram->use();
-        glDispatchCompute(tankSize.x/2, tankSize.y/2, tankSize.z/2);
+        glDispatchCompute(tankSize.x / 2, tankSize.y / 2, tankSize.z / 2);
 
         ptrRD = (Cell *) glMapNamedBuffer(cellBuffers[1], GL_READ_ONLY);
         ptrWR = (Cell *) glMapNamedBuffer(cellBuffers[0], GL_READ_ONLY);
 
-        glUnmapNamedBuffer(cellBuffers[0]);glUnmapNamedBuffer(cellBuffers[1]);
+        glUnmapNamedBuffer(cellBuffers[0]);
+        glUnmapNamedBuffer(cellBuffers[1]);
 
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 
-
         glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 
-        graphicsProgram->use();
+        cellProgram->use();
 
         glBindVertexArray(vao);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, drawIdsBuffer);
@@ -204,13 +252,25 @@ int main() {
         glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuffer);
         glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr);
         glBindVertexArray(0);
+        glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+        gridProgram->use();
+        glBindVertexArray(vaoGrid);
+        glUniformMatrix4fv(4, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0)));
+        glUniformMatrix4fv(5, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(6, 1, GL_FALSE, glm::value_ptr(proj));
+        glDrawArrays(GL_LINES, 0, grid.size());
+        glBindVertexArray(0);
+
         window->swap();
         std::swap(cellBuffers[0], cellBuffers[1]);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     });
 
     (*mainLoop)();
 
     return 0;
 }
+

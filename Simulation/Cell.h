@@ -11,15 +11,14 @@
 class Cell {
 private:
     float fluidVolume;
+    float fluidHorizontalLefover;
+    uint32_t stable;
+
 public:
     void setFluidVolume(float fluidVolume);
 
-private:
-    uint32_t stable;
-public:
     void setStable(uint32_t stable);
 
-public:
     explicit Cell(float fluidVolume = 0.0, uint32_t stable = 0);
 
 };
