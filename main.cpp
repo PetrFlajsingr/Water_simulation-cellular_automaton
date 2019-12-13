@@ -1,4 +1,5 @@
 #include "GlslShaderLoader.h"
+#include "geGL_utils.h"
 #include "io/print.h"
 #include "shader_literals.h"
 #include "time/FPSCounter.h"
@@ -15,7 +16,6 @@
 #include <glm/gtx/component_wise.hpp>
 #include <iostream>
 #include <thread>
-#include "geGL_utils.h"
 
 using namespace ge::gl;
 using namespace std::string_literals;
@@ -91,7 +91,8 @@ int main() {
   const auto nearPlane = 0.1f;
   const auto farPlane = 100.f;
   auto proj = glm::perspective(glm::radians(fieldOfView),
-                               static_cast<float>(windowWidth) / windowHeight, nearPlane, farPlane);
+                               static_cast<float>(windowWidth) / windowHeight,
+                               nearPlane, farPlane);
 
   /*Create Window*/
   auto mainLoop = std::make_shared<sdl2cpp::MainLoop>();
@@ -127,59 +128,33 @@ int main() {
 
   auto drawIdsBuffer = createBuffer(cube.getIndices());
 
-  std::array<std::shared_ptr<Buffer>, 2> cellBuffers {
-    createBuffer(cells, GL_DYNAMIC_COPY),
-    createBuffer(cells, GL_DYNAMIC_COPY)
-  };
+  std::array<std::shared_ptr<Buffer>, 2> cellBuffers{
+      createBuffer(cells, GL_DYNAMIC_COPY),
+      createBuffer(cells, GL_DYNAMIC_COPY)};
 
   std::vector<glm::vec4> positions{glm::compMul(tankSize)};
   auto positionsBuffer = createBuffer(positions, GL_DYNAMIC_DRAW);
-
 
   std::array<uint32_t, 5> command{cube.indicesCount(), 2, 0, 0, 0};
   auto indirectBuffer = createBuffer(command);
 
   // vertex array object
-  //auto vao = std::make_shared<VertexArray>();
-  //vao->addAttrib(vao, 0, 3, GL_FLOAT, static_cast<GLsizei>(sizeof(Model::VertexData)), offsetof(Model::VertexData, pos));
-  GLuint vao;
-  glCreateVertexArrays(1, &vao);
-  // attrib 0. is vertex positions
-  glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE,
-                            offsetof(Model::VertexData, pos));
-  glVertexArrayVertexBuffer(vao, 0, vbo->getId(), 0,
-                            static_cast<GLsizei>(sizeof(Model::VertexData)));
-  glVertexArrayAttribBinding(vao, 0, 0);
-  glEnableVertexArrayAttrib(vao, 0);
+  auto vao = std::make_shared<VertexArray>();
+  vao->addAttrib(vbo, 0, 3, GL_FLOAT,
+                 static_cast<GLsizei>(sizeof(Model::VertexData)),
+                 offsetof(Model::VertexData, pos));
+  vao->addAttrib(vbo, 1, 3, GL_FLOAT,
+                 static_cast<GLsizei>(sizeof(Model::VertexData)),
+                 offsetof(Model::VertexData, color));
+  vao->addAttrib(vbo, 2, 2, GL_FLOAT,
+                 static_cast<GLsizei>(sizeof(Model::VertexData)),
+                 offsetof(Model::VertexData, texCoord));
+  vao->addAttrib(vbo, 3, 3, GL_FLOAT,
+                 static_cast<GLsizei>(sizeof(Model::VertexData)),
+                 offsetof(Model::VertexData, normal));
 
-  glVertexArrayAttribFormat(vao, 1, 3, GL_FLOAT, GL_FALSE,
-                            offsetof(Model::VertexData, color));
-  glVertexArrayVertexBuffer(vao, 0, vbo->getId(), offsetof(Model::VertexData, color),
-                            static_cast<GLsizei>(sizeof(Model::VertexData)));
-  glVertexArrayAttribBinding(vao, 1, 0);
-  glEnableVertexArrayAttrib(vao, 1);
-
-  glVertexArrayAttribFormat(vao, 2, 2, GL_FLOAT, GL_FALSE,
-                            offsetof(Model::VertexData, texCoord));
-  glVertexArrayVertexBuffer(vao, 0, vbo->getId(), 0,
-                            static_cast<GLsizei>(sizeof(Model::VertexData)));
-  glVertexArrayAttribBinding(vao, 2, 0);
-  glEnableVertexArrayAttrib(vao, 2);
-
-  glVertexArrayAttribFormat(vao, 3, 3, GL_FLOAT, GL_FALSE,
-                            offsetof(Model::VertexData, normal));
-  glVertexArrayVertexBuffer(vao, 0, vbo->getId(), 0,
-                            static_cast<GLsizei>(sizeof(Model::VertexData)));
-  glVertexArrayAttribBinding(vao, 3, 0);
-  glEnableVertexArrayAttrib(vao, 3);
-
-  GLuint vaoGrid;
-  glCreateVertexArrays(1, &vaoGrid);
-  glVertexArrayAttribFormat(vaoGrid, 0, 3, GL_FLOAT, GL_FALSE, 0);
-  glVertexArrayVertexBuffer(vaoGrid, 0, vboGrid->getId(), 0,
-                            static_cast<GLsizei>(sizeof(glm::vec3)));
-  glVertexArrayAttribBinding(vaoGrid, 0, 0);
-  glEnableVertexArrayAttrib(vaoGrid, 0);
+  auto vaoGrid = std::make_shared<VertexArray>();
+  vaoGrid->addAttrib(vboGrid, 0, 3, GL_FLOAT, static_cast<GLsizei>(sizeof(glm::vec3)));
 
   glClearColor(0, 0, 0, 1);
 
@@ -213,8 +188,8 @@ int main() {
     glUnmapNamedBuffer(cellBuffers[1]->getId());
 
     std::swap(cellBuffers[0], cellBuffers[1]);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, cellBuffers[0]->getId());
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, cellBuffers[1]->getId());
+    cellBuffers[0]->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
+    cellBuffers[1]->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
     computeVerticalProgram->use();
     glDispatchCompute(tankSize.x / 2, tankSize.y / 2, tankSize.z / 2);
 
@@ -230,28 +205,31 @@ int main() {
 
     cellProgram->use();
 
-    glBindVertexArray(vao);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, drawIdsBuffer->getId());
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, positionsBuffer->getId());
+    vao->bind();
+    drawIdsBuffer->bind(GL_ELEMENT_ARRAY_BUFFER);
+    positionsBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
     glm::mat4 view = camera.GetViewMatrix();
-    cellProgram->setMatrix4fv("Model", glm::value_ptr(glm::mat4(1.0)), 1, GL_FALSE);
+    cellProgram->setMatrix4fv("Model", glm::value_ptr(glm::mat4(1.0)), 1,
+                              GL_FALSE);
     cellProgram->setMatrix4fv("View", glm::value_ptr(view), 1, GL_FALSE);
     cellProgram->setMatrix4fv("Projection", glm::value_ptr(proj), 1, GL_FALSE);
     cellProgram->set3fv("cameraPosition", glm::value_ptr(camera.Position));
-    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuffer->getId());
+    indirectBuffer->bind(GL_DRAW_INDIRECT_BUFFER);
     glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr);
-    glBindVertexArray(0);
-    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    vao->unbind();
+    drawIdsBuffer->unbind(GL_ELEMENT_ARRAY_BUFFER);
+    positionsBuffer->unbind(GL_SHADER_STORAGE_BUFFER);
+    indirectBuffer->unbind(GL_DRAW_INDIRECT_BUFFER);
+
 
     gridProgram->use();
-    glBindVertexArray(vaoGrid);
-    gridProgram->setMatrix4fv("Model", glm::value_ptr(glm::mat4(1.0)), 1, GL_FALSE);
+    vaoGrid->bind();
+    gridProgram->setMatrix4fv("Model", glm::value_ptr(glm::mat4(1.0)), 1,
+                              GL_FALSE);
     gridProgram->setMatrix4fv("View", glm::value_ptr(view), 1, GL_FALSE);
     gridProgram->setMatrix4fv("Projection", glm::value_ptr(proj), 1, GL_FALSE);
     glDrawArrays(GL_LINES, 0, grid.size());
-    glBindVertexArray(0);
+    vaoGrid->unbind();
 
     window->swap();
     std::swap(cellBuffers[0], cellBuffers[1]);
