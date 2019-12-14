@@ -26,5 +26,5 @@ void main() {
     vec3 specular = specularStrength * spec * lightColor;
 
     vec3 result = (ambient + diffuse + specular) * fragColor;
-    gl_FragColor = vec4(result, 1.0);
+    gl_FragColor = vec4(result, 0.5);
 }
