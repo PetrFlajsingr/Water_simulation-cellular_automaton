@@ -33,9 +33,8 @@ std::vector<glm::vec3> GridRenderer::generateGrid(int xLength, int yLength, int 
     return result;
 }
 
-GridRenderer::GridRenderer(glm::vec3 gridSize, std::shared_ptr<Camera> camera, glm::mat4 projectionMat) :
+GridRenderer::GridRenderer(glm::vec3 gridSize, glm::mat4 projectionMat) :
         gridSize(glm::compMul(gridSize + glm::vec3(1))),
-        camera(std::move(camera)),
         projectionMat(projectionMat) {
 
     using namespace ShaderLiterals;
@@ -49,12 +48,12 @@ std::vector<glm::vec3> GridRenderer::generateGrid(glm::ivec3 length) {
     return generateGrid(length.x, length.y, length.z);
 }
 
-void GridRenderer::draw() {
+void GridRenderer::draw(const glm::mat4 &viewMat) {
     program->use();
     vao->bind();
     program->setMatrix4fv("Model", glm::value_ptr(glm::mat4(1.0)), 1,
                           GL_FALSE);
-    program->setMatrix4fv("View", glm::value_ptr(camera->GetViewMatrix()), 1, GL_FALSE);
+    program->setMatrix4fv("View", glm::value_ptr(viewMat), 1, GL_FALSE);
     program->setMatrix4fv("Projection", glm::value_ptr(projectionMat), 1, GL_FALSE);
     glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(gridSize*2));
     vao->unbind();

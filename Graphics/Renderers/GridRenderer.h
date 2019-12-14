@@ -23,17 +23,15 @@ private:
 
     std::shared_ptr<VertexArray> vao = std::make_shared<VertexArray>();
 
-    std::shared_ptr<Camera> camera{};
-
     glm::mat4 projectionMat{};
 
     int gridSize = 0;
 
 public:
 
-    GridRenderer(glm::vec3 gridSize, std::shared_ptr<Camera> camera, glm::mat4 projectionMat);
+    GridRenderer(glm::vec3 gridSize, glm::mat4 projectionMat);
 
-    void draw();
+    void draw(const glm::mat4 &viewMat);
 
 private:
 
