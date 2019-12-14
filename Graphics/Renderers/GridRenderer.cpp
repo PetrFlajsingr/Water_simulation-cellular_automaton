@@ -21,7 +21,6 @@ std::vector<glm::vec3> GridRenderer::generateGrid(int xLength, int yLength, int 
     for (auto[z, y] : range<int, 2>({zLength + 1, yLength + 1})) {
         result.emplace_back(glm::vec3{0.0, y, z});
         result.emplace_back(glm::vec3{xLength, y, z});
-        std::cout << "y: " << y << " z: " << z << std::endl;
     }
     for (auto[x, y] : range<int, 2>({xLength + 1, yLength + 1})) {
         result.emplace_back(glm::vec3{x, y, 0.0});
