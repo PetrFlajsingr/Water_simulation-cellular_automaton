@@ -77,3 +77,7 @@ Model::Model(const std::string &modelPath) { loadFromObj(modelPath); }
 uint32_t Model::verticesCount() { return vertices.size(); }
 
 uint32_t Model::indicesCount() { return indices.size(); }
+
+bool Model::VertexData::operator==(const Model::VertexData &other) const {
+  return pos == other.pos && color == other.color && texCoord == other.texCoord && other.normal == normal;
+}

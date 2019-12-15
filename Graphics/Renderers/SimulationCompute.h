@@ -12,19 +12,6 @@ class SimulationCompute {
   using ProgramPtr = std::shared_ptr<ge::gl::Program>;
   using BufferPtr = std::shared_ptr<ge::gl::Buffer>;
   using VertexArrayPtr = std::shared_ptr<ge::gl::VertexArray>;
-
-private:
-  ProgramPtr horizontalProgram;
-  ProgramPtr verticalProgram;
-
-  BufferPtr ibo;
-  BufferPtr positionsBuffer;
-
-  glm::uvec3 tankSize;
-
-private:
-  std::array<BufferPtr, 2> cellBuffers;
-
 public:
   SimulationCompute(glm::uvec3 tankSize, BufferPtr ibo, BufferPtr positionBuffer);
 
@@ -38,6 +25,14 @@ public:
 
 private:
   void initBuffers(int size);
+  ProgramPtr horizontalProgram;
+  ProgramPtr verticalProgram;
+
+  BufferPtr ibo;
+  BufferPtr positionsBuffer;
+
+  glm::uvec3 tankSize;
+  std::array<BufferPtr, 2> cellBuffers;
 };
 
 #endif // GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_SIMULATIONCOMPUTE_H

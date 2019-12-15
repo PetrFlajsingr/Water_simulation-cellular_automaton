@@ -12,9 +12,18 @@
 #include <vector>
 
 class CellRenderer {
-using ProgramPtr = std::shared_ptr<ge::gl::Program>;
-using BufferPtr = std::shared_ptr<ge::gl::Buffer>;
-using VertexArrayPtr = std::shared_ptr<ge::gl::VertexArray>;
+  using ProgramPtr = std::shared_ptr<ge::gl::Program>;
+  using BufferPtr = std::shared_ptr<ge::gl::Buffer>;
+  using VertexArrayPtr = std::shared_ptr<ge::gl::VertexArray>;
+
+public:
+  CellRenderer(const std::string &cellModelPath, const glm::mat4 &projectionMat, const glm::uvec3 &tankSize);
+
+  void draw(const glm::mat4 &viewMat, const glm::vec3 &cameraPos);
+
+  [[nodiscard]] const BufferPtr &getIbo() const;
+
+  [[nodiscard]] const BufferPtr &getPositionsBuffer() const;
 
 private:
   ProgramPtr program;
@@ -25,15 +34,6 @@ private:
   VertexArrayPtr vao = std::make_shared<ge::gl::VertexArray>();
 
   glm::mat4 projectionMat{};
-
-public:
-  CellRenderer(const std::string& cellModelPath, const glm::mat4 &projectionMat, const glm::uvec3 &tankSize);
-
-  void draw(const glm::mat4 &viewMat, const glm::vec3 &cameraPos);
-
-  [[nodiscard]] const BufferPtr &getIbo() const;
-
-  [[nodiscard]] const BufferPtr &getPositionsBuffer() const;
 };
 
 #endif // GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_CELLRENDERER_H
