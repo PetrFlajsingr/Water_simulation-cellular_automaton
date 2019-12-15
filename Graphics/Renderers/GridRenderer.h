@@ -11,19 +11,16 @@
 #include <memory>
 #include <vector>
 
-using namespace ge::gl;
-
 class GridRenderer {
-
+  using ProgramPtr = std::shared_ptr<ge::gl::Program>;
+  using BufferPtr = std::shared_ptr<ge::gl::Buffer>;
+  using VertexArrayPtr = std::shared_ptr<ge::gl::VertexArray>;
 private:
-  std::shared_ptr<Program> program;
-
-  std::shared_ptr<Buffer> vbo;
-
-  std::shared_ptr<VertexArray> vao = std::make_shared<VertexArray>();
+  ProgramPtr program;
+  BufferPtr vbo;
+  VertexArrayPtr vao = std::make_shared<ge::gl::VertexArray>();
 
   glm::mat4 projectionMat{};
-
   int gridSize = 0;
 
 public:

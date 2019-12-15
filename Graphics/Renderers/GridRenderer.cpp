@@ -38,7 +38,7 @@ GridRenderer::GridRenderer(glm::vec3 gridSize, glm::mat4 projectionMat)
 
   using namespace ShaderLiterals;
   setShaderLocation(SRC_DIR + "/Shaders"s);
-  program = std::make_shared<ge::gl::Program>("grid"_vert, "grid"_frag);
+  program = std::make_shared<Program>("grid"_vert, "grid"_frag);
   vbo = createBuffer(generateGrid(gridSize));
   vao->addAttrib(vbo, 0, 3, GL_FLOAT, static_cast<GLsizei>(sizeof(glm::vec3)));
 }
