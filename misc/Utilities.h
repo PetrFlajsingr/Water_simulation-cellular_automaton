@@ -6,6 +6,7 @@
 #define GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_UTILITIES_H
 
 #include <string>
+
 class Utilities {
 public:
   static std::string readFile(const std::string &filename);

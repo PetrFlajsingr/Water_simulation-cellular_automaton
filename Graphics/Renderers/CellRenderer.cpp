@@ -13,12 +13,13 @@
 #include <shader_literals.h>
 
 using namespace std::string_literals;
+using namespace ge::gl;
 
-CellRenderer::CellRenderer(const std::string cellModelPath, const glm::mat4 &projectionMat, const glm::uvec3 &tankSize)
+CellRenderer::CellRenderer(const std::string &cellModelPath, const glm::mat4 &projectionMat, const glm::uvec3 &tankSize)
     : projectionMat(projectionMat) {
   using namespace ShaderLiterals;
   setShaderLocation(SRC_DIR + "/Shaders"s);
-  program = std::make_shared<ge::gl::Program>("basic"_vert, "basic"_frag);
+  program = std::make_shared<Program>("basic"_vert, "basic"_frag);
   std::vector<glm::vec4> positions{glm::compMul(tankSize)};
   positionsBuffer = createBuffer(positions, GL_DYNAMIC_DRAW);
   auto cell = Model(SRC_DIR + "/Resources/Models/cube.obj"s);
