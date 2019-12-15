@@ -5,11 +5,9 @@
 #ifndef GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_UTILITIES_H
 #define GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_UTILITIES_H
 
-
 class Utilities {
 public:
-    static std::string readFile(const std::string &filename);
+  static std::string readFile(const std::string &filename);
 };
 
-
-#endif //GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_UTILITIES_H
+#endif // GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_UTILITIES_H

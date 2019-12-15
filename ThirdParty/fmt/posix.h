@@ -30,8 +30,7 @@
 #if FMT_HAS_INCLUDE("winapifamily.h")
 #include <winapifamily.h>
 #endif
-#if FMT_HAS_INCLUDE("fcntl.h") &&                                              \
-    (!defined(WINAPI_FAMILY) || (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP))
+#if FMT_HAS_INCLUDE("fcntl.h") && (!defined(WINAPI_FAMILY) || (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP))
 #include <fcntl.h> // for O_RDONLY
 #define FMT_USE_FCNTL 1
 #else
@@ -63,9 +62,9 @@
 // Retries the expression while it evaluates to error_result and errno
 // equals to EINTR.
 #ifndef _WIN32
-#define FMT_RETRY_VAL(result, expression, error_result)                        \
-  do {                                                                         \
-    (result) = (expression);                                                   \
+#define FMT_RETRY_VAL(result, expression, error_result)                                                                          \
+  do {                                                                                                                           \
+    (result) = (expression);                                                                                                     \
   } while ((result) == (error_result) && errno == EINTR)
 #else
 #define FMT_RETRY_VAL(result, expression, error_result) result = (expression)
@@ -153,9 +152,7 @@ public:
   FMT_API ~buffered_file() FMT_NOEXCEPT;
 
 public:
-  buffered_file(buffered_file &&other) FMT_NOEXCEPT : file_(other.file_) {
-    other.file_ = nullptr;
-  }
+  buffered_file(buffered_file &&other) FMT_NOEXCEPT : file_(other.file_) { other.file_ = nullptr; }
 
   buffered_file &operator=(buffered_file &&other) FMT_NOEXCEPT {
     close();
@@ -177,12 +174,9 @@ public:
   // of MinGW that define fileno as a macro.
   FMT_API int(fileno)() const;
 
-  void vprint(string_view format_str, format_args args) {
-    fmt::vprint(file_, format_str, args);
-  }
+  void vprint(string_view format_str, format_args args) { fmt::vprint(file_, format_str, args); }
 
-  template <typename... Args>
-  inline void print(string_view format_str, const Args &... args) {
+  template <typename... Args> inline void print(string_view format_str, const Args &... args) {
     vprint(format_str, make_format_args(args...));
   }
 };
@@ -281,15 +275,11 @@ private:
 
   enum { LC_NUMERIC_MASK = LC_NUMERIC };
 
-  static locale_t newlocale(int category_mask, const char *locale, locale_t) {
-    return _create_locale(category_mask, locale);
-  }
+  static locale_t newlocale(int category_mask, const char *locale, locale_t) { return _create_locale(category_mask, locale); }
 
   static void freelocale(locale_t locale) { _free_locale(locale); }
 
-  static double strtod_l(const char *nptr, char **endptr, _locale_t locale) {
-    return _strtod_l(nptr, endptr, locale);
-  }
+  static double strtod_l(const char *nptr, char **endptr, _locale_t locale) { return _strtod_l(nptr, endptr, locale); }
 #endif
 
   locale_t locale_;

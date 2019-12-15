@@ -22,8 +22,7 @@ namespace safe_duration_cast {
 
 template <typename To, typename From,
           FMT_ENABLE_IF(!std::is_same<From, To>::value &&
-                        std::numeric_limits<From>::is_signed ==
-                            std::numeric_limits<To>::is_signed)>
+                        std::numeric_limits<From>::is_signed == std::numeric_limits<To>::is_signed)>
 FMT_CONSTEXPR To lossless_integral_conversion(const From from, int &ec) {
   ec = 0;
   using F = std::numeric_limits<From>;
@@ -51,8 +50,7 @@ FMT_CONSTEXPR To lossless_integral_conversion(const From from, int &ec) {
  */
 template <typename To, typename From,
           FMT_ENABLE_IF(!std::is_same<From, To>::value &&
-                        std::numeric_limits<From>::is_signed !=
-                            std::numeric_limits<To>::is_signed)>
+                        std::numeric_limits<From>::is_signed != std::numeric_limits<To>::is_signed)>
 FMT_CONSTEXPR To lossless_integral_conversion(const From from, int &ec) {
   ec = 0;
   using F = std::numeric_limits<From>;
@@ -98,8 +96,7 @@ FMT_CONSTEXPR To lossless_integral_conversion(const From from, int &ec) {
 
 } // function
 
-template <typename To, typename From,
-          FMT_ENABLE_IF(std::is_same<From, To>::value)>
+template <typename To, typename From, FMT_ENABLE_IF(std::is_same<From, To>::value)>
 FMT_CONSTEXPR To lossless_integral_conversion(const From from, int &ec) {
   ec = 0;
   return from;
@@ -119,8 +116,7 @@ FMT_CONSTEXPR To lossless_integral_conversion(const From from, int &ec) {
  * -Inf                             | -Inf
  */
 // clang-format on
-template <typename To, typename From,
-          FMT_ENABLE_IF(!std::is_same<From, To>::value)>
+template <typename To, typename From, FMT_ENABLE_IF(!std::is_same<From, To>::value)>
 FMT_CONSTEXPR To safe_float_conversion(const From from, int &ec) {
   ec = 0;
   using T = std::numeric_limits<To>;
@@ -141,8 +137,7 @@ FMT_CONSTEXPR To safe_float_conversion(const From from, int &ec) {
   return static_cast<To>(from);
 } // function
 
-template <typename To, typename From,
-          FMT_ENABLE_IF(std::is_same<From, To>::value)>
+template <typename To, typename From, FMT_ENABLE_IF(std::is_same<From, To>::value)>
 FMT_CONSTEXPR To safe_float_conversion(const From from, int &ec) {
   ec = 0;
   static_assert(std::is_floating_point<From>::value, "From must be floating");
@@ -152,17 +147,14 @@ FMT_CONSTEXPR To safe_float_conversion(const From from, int &ec) {
 /**
  * safe duration cast between integral durations
  */
-template <typename To, typename FromRep, typename FromPeriod,
-          FMT_ENABLE_IF(std::is_integral<FromRep>::value),
+template <typename To, typename FromRep, typename FromPeriod, FMT_ENABLE_IF(std::is_integral<FromRep>::value),
           FMT_ENABLE_IF(std::is_integral<typename To::rep>::value)>
-To safe_duration_cast(std::chrono::duration<FromRep, FromPeriod> from,
-                      int &ec) {
+To safe_duration_cast(std::chrono::duration<FromRep, FromPeriod> from, int &ec) {
   using From = std::chrono::duration<FromRep, FromPeriod>;
   ec = 0;
   // the basic idea is that we need to convert from count() in the from type
   // to count() in the To type, by multiplying it with this:
-  struct Factor
-      : std::ratio_divide<typename From::period, typename To::period> {};
+  struct Factor : std::ratio_divide<typename From::period, typename To::period> {};
 
   static_assert(Factor::num > 0, "num must be positive");
   static_assert(Factor::den > 0, "den must be positive");
@@ -171,13 +163,10 @@ To safe_duration_cast(std::chrono::duration<FromRep, FromPeriod> from,
   // /Factor::den and convert it to To::rep, all this without
   // overflow/underflow. let's start by finding a suitable type that can hold
   // both To, From and Factor::num
-  using IntermediateRep =
-      typename std::common_type<typename From::rep, typename To::rep,
-                                decltype(Factor::num)>::type;
+  using IntermediateRep = typename std::common_type<typename From::rep, typename To::rep, decltype(Factor::num)>::type;
 
   // safe conversion to IntermediateRep
-  IntermediateRep count =
-      lossless_integral_conversion<IntermediateRep>(from.count(), ec);
+  IntermediateRep count = lossless_integral_conversion<IntermediateRep>(from.count(), ec);
   if (ec) {
     return {};
   }
@@ -212,11 +201,9 @@ To safe_duration_cast(std::chrono::duration<FromRep, FromPeriod> from,
 /**
  * safe duration_cast between floating point durations
  */
-template <typename To, typename FromRep, typename FromPeriod,
-          FMT_ENABLE_IF(std::is_floating_point<FromRep>::value),
+template <typename To, typename FromRep, typename FromPeriod, FMT_ENABLE_IF(std::is_floating_point<FromRep>::value),
           FMT_ENABLE_IF(std::is_floating_point<typename To::rep>::value)>
-To safe_duration_cast(std::chrono::duration<FromRep, FromPeriod> from,
-                      int &ec) {
+To safe_duration_cast(std::chrono::duration<FromRep, FromPeriod> from, int &ec) {
   using From = std::chrono::duration<FromRep, FromPeriod>;
   ec = 0;
   if (std::isnan(from.count())) {
@@ -233,8 +220,7 @@ To safe_duration_cast(std::chrono::duration<FromRep, FromPeriod> from,
 
   // the basic idea is that we need to convert from count() in the from type
   // to count() in the To type, by multiplying it with this:
-  struct Factor
-      : std::ratio_divide<typename From::period, typename To::period> {};
+  struct Factor : std::ratio_divide<typename From::period, typename To::period> {};
 
   static_assert(Factor::num > 0, "num must be positive");
   static_assert(Factor::den > 0, "den must be positive");
@@ -243,28 +229,23 @@ To safe_duration_cast(std::chrono::duration<FromRep, FromPeriod> from,
   // /Factor::den and convert it to To::rep, all this without
   // overflow/underflow. let's start by finding a suitable type that can hold
   // both To, From and Factor::num
-  using IntermediateRep =
-      typename std::common_type<typename From::rep, typename To::rep,
-                                decltype(Factor::num)>::type;
+  using IntermediateRep = typename std::common_type<typename From::rep, typename To::rep, decltype(Factor::num)>::type;
 
   // force conversion of From::rep -> IntermediateRep to be safe,
   // even if it will never happen be narrowing in this context.
-  IntermediateRep count =
-      safe_float_conversion<IntermediateRep>(from.count(), ec);
+  IntermediateRep count = safe_float_conversion<IntermediateRep>(from.count(), ec);
   if (ec) {
     return {};
   }
 
   // multiply with Factor::num without overflow or underflow
   if (Factor::num != 1) {
-    constexpr auto max1 = internal::max_value<IntermediateRep>() /
-                          static_cast<IntermediateRep>(Factor::num);
+    constexpr auto max1 = internal::max_value<IntermediateRep>() / static_cast<IntermediateRep>(Factor::num);
     if (count > max1) {
       ec = 1;
       return {};
     }
-    constexpr auto min1 = std::numeric_limits<IntermediateRep>::lowest() /
-                          static_cast<IntermediateRep>(Factor::num);
+    constexpr auto min1 = std::numeric_limits<IntermediateRep>::lowest() / static_cast<IntermediateRep>(Factor::num);
     if (count < min1) {
       ec = 1;
       return {};

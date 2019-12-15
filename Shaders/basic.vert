@@ -27,7 +27,7 @@ void main() {
     vec3 cellPosition = positions[gl_InstanceID].xyz;
     vec3 vertexPos = inPosition.xyz;
     vec3 color = inColor;
-    if(fluidVolume <= 1.0){
+    if (fluidVolume <= 1.0){
         vertexPos.y *= fluidVolume;
         color *= 0.5 * (1-fluidVolume) + 0.5;
     }

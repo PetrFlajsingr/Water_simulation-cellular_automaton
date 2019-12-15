@@ -50,9 +50,7 @@ private:
   void_t<> operator<<(null<>);
   void_t<> operator<<(const Char *);
 
-  template <typename T, FMT_ENABLE_IF(std::is_convertible<T, int>::value &&
-                                      !std::is_enum<T>::value)>
-  void_t<> operator<<(T);
+  template <typename T, FMT_ENABLE_IF(std::is_convertible<T, int>::value && !std::is_enum<T>::value)> void_t<> operator<<(T);
 };
 
 // Checks if T has a user-defined operator<< (e.g. not a member of
@@ -60,9 +58,7 @@ private:
 template <typename T, typename Char> class is_streamable {
 private:
   template <typename U>
-  static bool_constant<!std::is_same<
-      decltype(std::declval<test_stream<Char> &>() << std::declval<U>()),
-      void_t<>>::value>
+  static bool_constant<!std::is_same<decltype(std::declval<test_stream<Char> &>() << std::declval<U>()), void_t<>>::value>
   test(int);
 
   template <typename> static std::false_type test(...);
@@ -74,8 +70,7 @@ public:
 };
 
 // Write the content of buf to os.
-template <typename Char>
-void write(std::basic_ostream<Char> &os, buffer<Char> &buf) {
+template <typename Char> void write(std::basic_ostream<Char> &os, buffer<Char> &buf) {
   const Char *buf_data = buf.data();
   using unsigned_streamsize = std::make_unsigned<std::streamsize>::type;
   unsigned_streamsize size = buf.size();
@@ -88,9 +83,7 @@ void write(std::basic_ostream<Char> &os, buffer<Char> &buf) {
   } while (size != 0);
 }
 
-template <typename Char, typename T>
-void format_value(buffer<Char> &buf, const T &value,
-                  locale_ref loc = locale_ref()) {
+template <typename Char, typename T> void format_value(buffer<Char> &buf, const T &value, locale_ref loc = locale_ref()) {
   formatbuf<Char> format_buf(buf);
   std::basic_ostream<Char> output(&format_buf);
   if (loc)
@@ -101,11 +94,9 @@ void format_value(buffer<Char> &buf, const T &value,
 }
 
 // Formats an object of type T that has an overloaded ostream operator<<.
-template <typename T, typename Char>
-struct fallback_formatter<T, Char, enable_if_t<is_streamable<T, Char>::value>>
+template <typename T, typename Char> struct fallback_formatter<T, Char, enable_if_t<is_streamable<T, Char>::value>>
     : formatter<basic_string_view<Char>, Char> {
-  template <typename Context>
-  auto format(const T &value, Context &ctx) -> decltype(ctx.out()) {
+  template <typename Context> auto format(const T &value, Context &ctx) -> decltype(ctx.out()) {
     basic_memory_buffer<Char> buffer;
     format_value(buffer, value, ctx.locale());
     basic_string_view<Char> str(buffer.data(), buffer.size());
@@ -115,8 +106,7 @@ struct fallback_formatter<T, Char, enable_if_t<is_streamable<T, Char>::value>>
 } // namespace internal
 
 template <typename Char>
-void vprint(std::basic_ostream<Char> &os, basic_string_view<Char> format_str,
-            basic_format_args<buffer_context<Char>> args) {
+void vprint(std::basic_ostream<Char> &os, basic_string_view<Char> format_str, basic_format_args<buffer_context<Char>> args) {
   basic_memory_buffer<Char> buffer;
   internal::vformat_to(buffer, format_str, args);
   internal::write(os, buffer);
@@ -131,11 +121,9 @@ void vprint(std::basic_ostream<Char> &os, basic_string_view<Char> format_str,
     fmt::print(cerr, "Don't {}!", "panic");
   \endrst
  */
-template <typename S, typename... Args,
-          typename Char = enable_if_t<internal::is_string<S>::value, char_t<S>>>
+template <typename S, typename... Args, typename Char = enable_if_t<internal::is_string<S>::value, char_t<S>>>
 void print(std::basic_ostream<Char> &os, const S &format_str, Args &&... args) {
-  vprint(os, to_string_view(format_str),
-         {internal::make_args_checked<Args...>(format_str, args...)});
+  vprint(os, to_string_view(format_str), {internal::make_args_checked<Args...>(format_str, args...)});
 }
 FMT_END_NAMESPACE
 

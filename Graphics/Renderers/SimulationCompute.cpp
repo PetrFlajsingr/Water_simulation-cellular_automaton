@@ -7,15 +7,14 @@
 #include <geGL/StaticCalls.h>
 #include <geGL_utils.h>
 #include <glm/gtx/component_wise.hpp>
+#include <utility>
 #include <shader_literals.h>
 
-SimulationCompute::SimulationCompute(
-    const glm::uvec3 tankSize, const std::shared_ptr<Buffer> &ibo,
-    const std::shared_ptr<Buffer> &positionBuffer)
-    : ibo(ibo), positionsBuffer(positionBuffer), tankSize(tankSize) {
+SimulationCompute::SimulationCompute(const glm::uvec3 tankSize, std::shared_ptr<Buffer> ibo,
+                                     std::shared_ptr<Buffer> positionBuffer)
+    : ibo(std::move(ibo)), positionsBuffer(std::move(positionBuffer)), tankSize(tankSize) {
   using namespace ShaderLiterals;
-  horizontalProgram =
-      std::make_shared<ge::gl::Program>("basic-horizontal"_comp);
+  horizontalProgram = std::make_shared<ge::gl::Program>("basic-horizontal"_comp);
   verticalProgram = std::make_shared<ge::gl::Program>("basic-vertical"_comp);
 
   initBuffers(glm::compMul(tankSize));
@@ -61,8 +60,7 @@ void SimulationCompute::simulate() {
 
 void SimulationCompute::initBuffers(int size) {
   auto cells = std::vector<Cell>(size);
-  cellBuffers = {createBuffer(cells, GL_DYNAMIC_COPY),
-                 createBuffer(cells, GL_DYNAMIC_COPY)};
+  cellBuffers = {createBuffer(cells, GL_DYNAMIC_COPY), createBuffer(cells, GL_DYNAMIC_COPY)};
 }
 
 void SimulationCompute::setFluidVolume(int index, float volume) {
@@ -78,6 +76,4 @@ void SimulationCompute::setFluidVolume(int index, float volume) {
   cellBuffers[1]->unmap();
 }
 
-void SimulationCompute::swapBuffers() {
-  std::swap(cellBuffers[0], cellBuffers[1]);
-}
+void SimulationCompute::swapBuffers() { std::swap(cellBuffers[0], cellBuffers[1]); }

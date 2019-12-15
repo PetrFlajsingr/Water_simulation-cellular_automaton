@@ -81,8 +81,7 @@ using format_func = void (*)(internal::buffer<char> &, int, string_view);
 //   ERANGE - buffer is not large enough to store the error message
 //   other  - failure
 // Buffer should be at least of size 1.
-FMT_FUNC int safe_strerror(int error_code, char *&buffer,
-                           std::size_t buffer_size) FMT_NOEXCEPT {
+FMT_FUNC int safe_strerror(int error_code, char *&buffer, std::size_t buffer_size) FMT_NOEXCEPT {
   FMT_ASSERT(buffer != nullptr && buffer_size != 0, "invalid buffer");
 
   class dispatcher {
@@ -110,15 +109,12 @@ FMT_FUNC int safe_strerror(int error_code, char *&buffer,
     }
 
     // Handle the case when strerror_r is not available.
-    int handle(internal::null<>) {
-      return fallback(strerror_s(buffer_, buffer_size_, error_code_));
-    }
+    int handle(internal::null<>) { return fallback(strerror_s(buffer_, buffer_size_, error_code_)); }
 
     // Fallback to strerror_s when strerror_r is not available.
     int fallback(int result) {
       // If the buffer is full then the message is probably truncated.
-      return result == 0 && strlen(buffer_) == buffer_size_ - 1 ? ERANGE
-                                                                : result;
+      return result == 0 && strlen(buffer_) == buffer_size_ - 1 ? ERANGE : result;
     }
 
 #if !FMT_MSC_VER
@@ -131,16 +127,14 @@ FMT_FUNC int safe_strerror(int error_code, char *&buffer,
 #endif
 
   public:
-    dispatcher(int err_code, char *&buf, std::size_t buf_size)
-        : error_code_(err_code), buffer_(buf), buffer_size_(buf_size) {}
+    dispatcher(int err_code, char *&buf, std::size_t buf_size) : error_code_(err_code), buffer_(buf), buffer_size_(buf_size) {}
 
     int run() { return handle(strerror_r(error_code_, buffer_, buffer_size_)); }
   };
   return dispatcher(error_code, buffer, buffer_size).run();
 }
 
-FMT_FUNC void format_error_code(internal::buffer<char> &out, int error_code,
-                                string_view message) FMT_NOEXCEPT {
+FMT_FUNC void format_error_code(internal::buffer<char> &out, int error_code, string_view message) FMT_NOEXCEPT {
   // Report error code making sure that the output fits into
   // inline_buffer_size to avoid dynamic memory allocation and potential
   // bad_alloc.
@@ -166,16 +160,14 @@ FMT_FUNC void format_error_code(internal::buffer<char> &out, int error_code,
 }
 
 // A wrapper around fwrite that throws on error.
-FMT_FUNC void fwrite_fully(const void *ptr, size_t size, size_t count,
-                           FILE *stream) {
+FMT_FUNC void fwrite_fully(const void *ptr, size_t size, size_t count, FILE *stream) {
   size_t written = std::fwrite(ptr, size, count, stream);
   if (written < count) {
     FMT_THROW(system_error(errno, "cannot write to file"));
   }
 }
 
-FMT_FUNC void report_error(format_func func, int error_code,
-                           string_view message) FMT_NOEXCEPT {
+FMT_FUNC void report_error(format_func func, int error_code, string_view message) FMT_NOEXCEPT {
   memory_buffer full_message;
   func(full_message, error_code, message);
   // Don't use fwrite_fully because the latter may throw.
@@ -187,8 +179,7 @@ FMT_FUNC void report_error(format_func func, int error_code,
 #if !defined(FMT_STATIC_THOUSANDS_SEPARATOR)
 namespace internal {
 
-template <typename Locale>
-locale_ref::locale_ref(const Locale &loc) : locale_(&loc) {
+template <typename Locale> locale_ref::locale_ref(const Locale &loc) : locale_(&loc) {
   static_assert(std::is_same<Locale, std::locale>::value, "");
 }
 
@@ -201,34 +192,22 @@ template <typename Char> FMT_FUNC std::string grouping_impl(locale_ref loc) {
   return std::use_facet<std::numpunct<Char>>(loc.get<std::locale>()).grouping();
 }
 template <typename Char> FMT_FUNC Char thousands_sep_impl(locale_ref loc) {
-  return std::use_facet<std::numpunct<Char>>(loc.get<std::locale>())
-      .thousands_sep();
+  return std::use_facet<std::numpunct<Char>>(loc.get<std::locale>()).thousands_sep();
 }
 template <typename Char> FMT_FUNC Char decimal_point_impl(locale_ref loc) {
-  return std::use_facet<std::numpunct<Char>>(loc.get<std::locale>())
-      .decimal_point();
+  return std::use_facet<std::numpunct<Char>>(loc.get<std::locale>()).decimal_point();
 }
 } // namespace internal
 #else
-template <typename Char>
-FMT_FUNC std::string internal::grouping_impl(locale_ref) {
-  return "\03";
-}
-template <typename Char>
-FMT_FUNC Char internal::thousands_sep_impl(locale_ref) {
-  return FMT_STATIC_THOUSANDS_SEPARATOR;
-}
-template <typename Char>
-FMT_FUNC Char internal::decimal_point_impl(locale_ref) {
-  return '.';
-}
+template <typename Char> FMT_FUNC std::string internal::grouping_impl(locale_ref) { return "\03"; }
+template <typename Char> FMT_FUNC Char internal::thousands_sep_impl(locale_ref) { return FMT_STATIC_THOUSANDS_SEPARATOR; }
+template <typename Char> FMT_FUNC Char internal::decimal_point_impl(locale_ref) { return '.'; }
 #endif
 
 FMT_API FMT_FUNC format_error::~format_error() FMT_NOEXCEPT = default;
 FMT_API FMT_FUNC system_error::~system_error() FMT_NOEXCEPT = default;
 
-FMT_FUNC void system_error::init(int err_code, string_view format_str,
-                                 format_args args) {
+FMT_FUNC void system_error::init(int err_code, string_view format_str, format_args args) {
   error_code_ = err_code;
   memory_buffer buffer;
   format_system_error(buffer, err_code, vformat(format_str, args));
@@ -247,108 +226,73 @@ template <> FMT_FUNC int count_digits<4>(internal::fallback_uintptr n) {
   return i >= 0 ? i * char_digits + count_digits<4, unsigned>(n.value[i]) : 1;
 }
 
-template <typename T>
-int format_float(char *buf, std::size_t size, const char *format, int precision,
-                 T value) {
+template <typename T> int format_float(char *buf, std::size_t size, const char *format, int precision, T value) {
 #ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
   if (precision > 100000)
-    throw std::runtime_error(
-        "fuzz mode - avoid large allocation inside snprintf");
+    throw std::runtime_error("fuzz mode - avoid large allocation inside snprintf");
 #endif
   // Suppress the warning about nonliteral format string.
   auto snprintf_ptr = FMT_SNPRINTF;
-  return precision < 0 ? snprintf_ptr(buf, size, format, value)
-                       : snprintf_ptr(buf, size, format, precision, value);
+  return precision < 0 ? snprintf_ptr(buf, size, format, value) : snprintf_ptr(buf, size, format, precision, value);
 }
 
-template <typename T>
-const char basic_data<T>::digits[] = "0001020304050607080910111213141516171819"
-                                     "2021222324252627282930313233343536373839"
-                                     "4041424344454647484950515253545556575859"
-                                     "6061626364656667686970717273747576777879"
-                                     "8081828384858687888990919293949596979899";
+template <typename T> const char basic_data<T>::digits[] = "0001020304050607080910111213141516171819"
+                                                           "2021222324252627282930313233343536373839"
+                                                           "4041424344454647484950515253545556575859"
+                                                           "6061626364656667686970717273747576777879"
+                                                           "8081828384858687888990919293949596979899";
 
-template <typename T>
-const char basic_data<T>::hex_digits[] = "0123456789abcdef";
+template <typename T> const char basic_data<T>::hex_digits[] = "0123456789abcdef";
 
-#define FMT_POWERS_OF_10(factor)                                               \
-  factor * 10, (factor)*100, (factor)*1000, (factor)*10000, (factor)*100000,   \
-      (factor)*1000000, (factor)*10000000, (factor)*100000000,                 \
-      (factor)*1000000000
+#define FMT_POWERS_OF_10(factor)                                                                                                 \
+  factor * 10, (factor)*100, (factor)*1000, (factor)*10000, (factor)*100000, (factor)*1000000, (factor)*10000000,                \
+      (factor)*100000000, (factor)*1000000000
 
-template <typename T>
-const uint64_t basic_data<T>::powers_of_10_64[] = {
-    1, FMT_POWERS_OF_10(1), FMT_POWERS_OF_10(1000000000ULL),
-    10000000000000000000ULL};
+template <typename T> const uint64_t basic_data<T>::powers_of_10_64[] = {1, FMT_POWERS_OF_10(1), FMT_POWERS_OF_10(1000000000ULL),
+                                                                         10000000000000000000ULL};
 
-template <typename T>
-const uint32_t basic_data<T>::zero_or_powers_of_10_32[] = {0,
-                                                           FMT_POWERS_OF_10(1)};
+template <typename T> const uint32_t basic_data<T>::zero_or_powers_of_10_32[] = {0, FMT_POWERS_OF_10(1)};
 
-template <typename T>
-const uint64_t basic_data<T>::zero_or_powers_of_10_64[] = {
-    0, FMT_POWERS_OF_10(1), FMT_POWERS_OF_10(1000000000ULL),
-    10000000000000000000ULL};
+template <typename T> const uint64_t basic_data<T>::zero_or_powers_of_10_64[] = {
+    0, FMT_POWERS_OF_10(1), FMT_POWERS_OF_10(1000000000ULL), 10000000000000000000ULL};
 
 // Normalized 64-bit significands of pow(10, k), for k = -348, -340, ..., 340.
 // These are generated by support/compute-powers.py.
-template <typename T>
-const uint64_t basic_data<T>::pow10_significands[] = {
-    0xfa8fd5a0081c0288, 0xbaaee17fa23ebf76, 0x8b16fb203055ac76,
-    0xcf42894a5dce35ea, 0x9a6bb0aa55653b2d, 0xe61acf033d1a45df,
-    0xab70fe17c79ac6ca, 0xff77b1fcbebcdc4f, 0xbe5691ef416bd60c,
-    0x8dd01fad907ffc3c, 0xd3515c2831559a83, 0x9d71ac8fada6c9b5,
-    0xea9c227723ee8bcb, 0xaecc49914078536d, 0x823c12795db6ce57,
-    0xc21094364dfb5637, 0x9096ea6f3848984f, 0xd77485cb25823ac7,
-    0xa086cfcd97bf97f4, 0xef340a98172aace5, 0xb23867fb2a35b28e,
-    0x84c8d4dfd2c63f3b, 0xc5dd44271ad3cdba, 0x936b9fcebb25c996,
-    0xdbac6c247d62a584, 0xa3ab66580d5fdaf6, 0xf3e2f893dec3f126,
-    0xb5b5ada8aaff80b8, 0x87625f056c7c4a8b, 0xc9bcff6034c13053,
-    0x964e858c91ba2655, 0xdff9772470297ebd, 0xa6dfbd9fb8e5b88f,
-    0xf8a95fcf88747d94, 0xb94470938fa89bcf, 0x8a08f0f8bf0f156b,
-    0xcdb02555653131b6, 0x993fe2c6d07b7fac, 0xe45c10c42a2b3b06,
-    0xaa242499697392d3, 0xfd87b5f28300ca0e, 0xbce5086492111aeb,
-    0x8cbccc096f5088cc, 0xd1b71758e219652c, 0x9c40000000000000,
-    0xe8d4a51000000000, 0xad78ebc5ac620000, 0x813f3978f8940984,
-    0xc097ce7bc90715b3, 0x8f7e32ce7bea5c70, 0xd5d238a4abe98068,
-    0x9f4f2726179a2245, 0xed63a231d4c4fb27, 0xb0de65388cc8ada8,
-    0x83c7088e1aab65db, 0xc45d1df942711d9a, 0x924d692ca61be758,
-    0xda01ee641a708dea, 0xa26da3999aef774a, 0xf209787bb47d6b85,
-    0xb454e4a179dd1877, 0x865b86925b9bc5c2, 0xc83553c5c8965d3d,
-    0x952ab45cfa97a0b3, 0xde469fbd99a05fe3, 0xa59bc234db398c25,
-    0xf6c69a72a3989f5c, 0xb7dcbf5354e9bece, 0x88fcf317f22241e2,
-    0xcc20ce9bd35c78a5, 0x98165af37b2153df, 0xe2a0b5dc971f303a,
-    0xa8d9d1535ce3b396, 0xfb9b7cd9a4a7443c, 0xbb764c4ca7a44410,
-    0x8bab8eefb6409c1a, 0xd01fef10a657842c, 0x9b10a4e5e9913129,
-    0xe7109bfba19c0c9d, 0xac2820d9623bf429, 0x80444b5e7aa7cf85,
-    0xbf21e44003acdd2d, 0x8e679c2f5e44ff8f, 0xd433179d9c8cb841,
+template <typename T> const uint64_t basic_data<T>::pow10_significands[] = {
+    0xfa8fd5a0081c0288, 0xbaaee17fa23ebf76, 0x8b16fb203055ac76, 0xcf42894a5dce35ea, 0x9a6bb0aa55653b2d, 0xe61acf033d1a45df,
+    0xab70fe17c79ac6ca, 0xff77b1fcbebcdc4f, 0xbe5691ef416bd60c, 0x8dd01fad907ffc3c, 0xd3515c2831559a83, 0x9d71ac8fada6c9b5,
+    0xea9c227723ee8bcb, 0xaecc49914078536d, 0x823c12795db6ce57, 0xc21094364dfb5637, 0x9096ea6f3848984f, 0xd77485cb25823ac7,
+    0xa086cfcd97bf97f4, 0xef340a98172aace5, 0xb23867fb2a35b28e, 0x84c8d4dfd2c63f3b, 0xc5dd44271ad3cdba, 0x936b9fcebb25c996,
+    0xdbac6c247d62a584, 0xa3ab66580d5fdaf6, 0xf3e2f893dec3f126, 0xb5b5ada8aaff80b8, 0x87625f056c7c4a8b, 0xc9bcff6034c13053,
+    0x964e858c91ba2655, 0xdff9772470297ebd, 0xa6dfbd9fb8e5b88f, 0xf8a95fcf88747d94, 0xb94470938fa89bcf, 0x8a08f0f8bf0f156b,
+    0xcdb02555653131b6, 0x993fe2c6d07b7fac, 0xe45c10c42a2b3b06, 0xaa242499697392d3, 0xfd87b5f28300ca0e, 0xbce5086492111aeb,
+    0x8cbccc096f5088cc, 0xd1b71758e219652c, 0x9c40000000000000, 0xe8d4a51000000000, 0xad78ebc5ac620000, 0x813f3978f8940984,
+    0xc097ce7bc90715b3, 0x8f7e32ce7bea5c70, 0xd5d238a4abe98068, 0x9f4f2726179a2245, 0xed63a231d4c4fb27, 0xb0de65388cc8ada8,
+    0x83c7088e1aab65db, 0xc45d1df942711d9a, 0x924d692ca61be758, 0xda01ee641a708dea, 0xa26da3999aef774a, 0xf209787bb47d6b85,
+    0xb454e4a179dd1877, 0x865b86925b9bc5c2, 0xc83553c5c8965d3d, 0x952ab45cfa97a0b3, 0xde469fbd99a05fe3, 0xa59bc234db398c25,
+    0xf6c69a72a3989f5c, 0xb7dcbf5354e9bece, 0x88fcf317f22241e2, 0xcc20ce9bd35c78a5, 0x98165af37b2153df, 0xe2a0b5dc971f303a,
+    0xa8d9d1535ce3b396, 0xfb9b7cd9a4a7443c, 0xbb764c4ca7a44410, 0x8bab8eefb6409c1a, 0xd01fef10a657842c, 0x9b10a4e5e9913129,
+    0xe7109bfba19c0c9d, 0xac2820d9623bf429, 0x80444b5e7aa7cf85, 0xbf21e44003acdd2d, 0x8e679c2f5e44ff8f, 0xd433179d9c8cb841,
     0x9e19db92b4e31ba9, 0xeb96bf6ebadf77d9, 0xaf87023b9bf0ee6b,
 };
 
 // Binary exponents of pow(10, k), for k = -348, -340, ..., 340, corresponding
 // to significands above.
-template <typename T>
-const int16_t basic_data<T>::pow10_exponents[] = {
-    -1220, -1193, -1166, -1140, -1113, -1087, -1060, -1034, -1007, -980, -954,
-    -927,  -901,  -874,  -847,  -821,  -794,  -768,  -741,  -715,  -688, -661,
-    -635,  -608,  -582,  -555,  -529,  -502,  -475,  -449,  -422,  -396, -369,
-    -343,  -316,  -289,  -263,  -236,  -210,  -183,  -157,  -130,  -103, -77,
-    -50,   -24,   3,     30,    56,    83,    109,   136,   162,   189,  216,
-    242,   269,   295,   322,   348,   375,   402,   428,   455,   481,  508,
-    534,   561,   588,   614,   641,   667,   694,   720,   747,   774,  800,
-    827,   853,   880,   907,   933,   960,   986,   1013,  1039,  1066};
+template <typename T> const int16_t basic_data<T>::pow10_exponents[] = {
+    -1220, -1193, -1166, -1140, -1113, -1087, -1060, -1034, -1007, -980, -954, -927, -901, -874, -847, -821, -794, -768,
+    -741,  -715,  -688,  -661,  -635,  -608,  -582,  -555,  -529,  -502, -475, -449, -422, -396, -369, -343, -316, -289,
+    -263,  -236,  -210,  -183,  -157,  -130,  -103,  -77,   -50,   -24,  3,    30,   56,   83,   109,  136,  162,  189,
+    216,   242,   269,   295,   322,   348,   375,   402,   428,   455,  481,  508,  534,  561,  588,  614,  641,  667,
+    694,   720,   747,   774,   800,   827,   853,   880,   907,   933,  960,  986,  1013, 1039, 1066};
 
-template <typename T>
-const char basic_data<T>::foreground_color[] = "\x1b[38;2;";
-template <typename T>
-const char basic_data<T>::background_color[] = "\x1b[48;2;";
+template <typename T> const char basic_data<T>::foreground_color[] = "\x1b[38;2;";
+template <typename T> const char basic_data<T>::background_color[] = "\x1b[48;2;";
 template <typename T> const char basic_data<T>::reset_color[] = "\x1b[0m";
 template <typename T> const wchar_t basic_data<T>::wreset_color[] = L"\x1b[0m";
 template <typename T> const char basic_data<T>::signs[] = {0, '-', '+', ' '};
 
 template <typename T> struct bits {
-  static FMT_CONSTEXPR_DECL const int value =
-      static_cast<int>(sizeof(T) * std::numeric_limits<unsigned char>::digits);
+  static FMT_CONSTEXPR_DECL const int value = static_cast<int>(sizeof(T) * std::numeric_limits<unsigned char>::digits);
 };
 
 class fp;
@@ -362,17 +306,14 @@ private:
   // All sizes are in bits.
   // Subtract 1 to account for an implicit most significant bit in the
   // normalized form.
-  static FMT_CONSTEXPR_DECL const int double_significand_size =
-      std::numeric_limits<double>::digits - 1;
-  static FMT_CONSTEXPR_DECL const uint64_t implicit_bit =
-      1ULL << double_significand_size;
+  static FMT_CONSTEXPR_DECL const int double_significand_size = std::numeric_limits<double>::digits - 1;
+  static FMT_CONSTEXPR_DECL const uint64_t implicit_bit = 1ULL << double_significand_size;
 
 public:
   significand_type f;
   int e;
 
-  static FMT_CONSTEXPR_DECL const int significand_size =
-      bits<significand_type>::value;
+  static FMT_CONSTEXPR_DECL const int significand_size = bits<significand_type>::value;
 
   fp() : f(0), e(0) {}
   fp(uint64_t f_val, int e_val) : f(f_val), e(e_val) {}
@@ -390,8 +331,7 @@ public:
       --value.e;
     }
     // Subtract 1 to account for hidden bit.
-    const auto offset =
-        fp::significand_size - fp::double_significand_size - SHIFT - 1;
+    const auto offset = fp::significand_size - fp::double_significand_size - SHIFT - 1;
     value.f <<= offset;
     value.e -= offset;
     return value;
@@ -401,8 +341,7 @@ public:
   template <typename Double> bool assign(Double d) {
     // Assume double is in the format [sign][exponent][significand].
     using limits = std::numeric_limits<Double>;
-    const int exponent_size =
-        bits<Double>::value - double_significand_size - 1; // -1 for sign
+    const int exponent_size = bits<Double>::value - double_significand_size - 1; // -1 for sign
     const uint64_t significand_mask = implicit_bit - 1;
     const uint64_t exponent_mask = (~0ULL >> 1) & ~significand_mask;
     const int exponent_bias = (1 << exponent_size) - limits::max_exponent - 1;
@@ -424,8 +363,7 @@ public:
   // where a boundary is a value half way between the number and its predecessor
   // (lower) or successor (upper). The upper boundary is normalized and lower
   // has the same exponent but may be not normalized.
-  template <typename Double>
-  void assign_with_boundaries(Double d, fp &lower, fp &upper) {
+  template <typename Double> void assign_with_boundaries(Double d, fp &lower, fp &upper) {
     bool is_lower_closer = assign(d);
     lower = is_lower_closer ? fp((f << 2) - 1, e - 2) : fp((f << 1) - 1, e - 1);
     // 1 in normalize accounts for the exponent shift above.
@@ -434,18 +372,14 @@ public:
     lower.e = upper.e;
   }
 
-  template <typename Double>
-  void assign_float_with_boundaries(Double d, fp &lower, fp &upper) {
+  template <typename Double> void assign_float_with_boundaries(Double d, fp &lower, fp &upper) {
     assign(d);
-    constexpr int min_normal_e = std::numeric_limits<float>::min_exponent -
-                                 std::numeric_limits<double>::digits;
-    significand_type half_ulp = 1 << (std::numeric_limits<double>::digits -
-                                      std::numeric_limits<float>::digits - 1);
+    constexpr int min_normal_e = std::numeric_limits<float>::min_exponent - std::numeric_limits<double>::digits;
+    significand_type half_ulp = 1 << (std::numeric_limits<double>::digits - std::numeric_limits<float>::digits - 1);
     if (min_normal_e > e)
       half_ulp <<= min_normal_e - e;
     upper = normalize<0>(fp(f + half_ulp, e));
-    lower = fp(
-        f - (half_ulp >> ((f == implicit_bit && e > min_normal_e) ? 1 : 0)), e);
+    lower = fp(f - (half_ulp >> ((f == implicit_bit && e > min_normal_e) ? 1 : 0)), e);
     lower.f <<= lower.e - upper.e;
     lower.e = upper.e;
   }
@@ -487,10 +421,8 @@ FMT_FUNC fp operator*(fp x, fp y) {
 FMT_FUNC fp get_cached_power(int min_exponent, int &pow10_exponent) {
   const uint64_t one_over_log2_10 = 0x4d104d42; // round(pow(2, 32) / log2(10))
   int index = static_cast<int>(
-      static_cast<int64_t>(
-          (min_exponent + fp::significand_size - 1) * one_over_log2_10 +
-          ((uint64_t(1) << 32) - 1) // ceil
-          ) >>
+      static_cast<int64_t>((min_exponent + fp::significand_size - 1) * one_over_log2_10 + ((uint64_t(1) << 32) - 1) // ceil
+                           ) >>
       32 // arithmetic shift
   );
   // Decimal exponent of the first (smallest) cached power of 10.
@@ -557,8 +489,7 @@ private:
     FMT_ASSERT(compare(*this, other) >= 0, "");
     bigit borrow = 0;
     int i = other.exp_ - exp_;
-    for (int j = 0, n = static_cast<int>(other.bigits_.size()); j != n;
-         ++i, ++j) {
+    for (int j = 0, n = static_cast<int>(other.bigits_.size()); j != n; ++i, ++j) {
       subtract_bigits(i, other.bigits_[j], borrow);
     }
     while (borrow > 0)
@@ -585,8 +516,7 @@ private:
     double_bigit carry = 0;
     for (size_t i = 0, n = bigits_.size(); i < n; ++i) {
       double_bigit result = bigits_[i] * lower + (carry & mask);
-      carry =
-          bigits_[i] * upper + (result >> bigit_bits) + (carry >> bigit_bits);
+      carry = bigits_[i] * upper + (result >> bigit_bits) + (carry >> bigit_bits);
       bigits_[i] = static_cast<bigit>(result);
     }
     while (carry != 0) {
@@ -665,8 +595,7 @@ public:
   }
 
   // Returns compare(lhs1 + lhs2, rhs).
-  friend int add_compare(const bigint &lhs1, const bigint &lhs2,
-                         const bigint &rhs) {
+  friend int add_compare(const bigint &lhs1, const bigint &lhs2, const bigint &rhs) {
     int max_lhs_bigits = (std::max)(lhs1.num_bigits(), lhs2.num_bigits());
     int num_rhs_bigits = rhs.num_bigits();
     if (max_lhs_bigits + 1 < num_rhs_bigits)
@@ -679,8 +608,7 @@ public:
     double_bigit borrow = 0;
     int min_exp = (std::min)((std::min)(lhs1.exp_, lhs2.exp_), rhs.exp_);
     for (int i = num_rhs_bigits - 1; i >= min_exp; --i) {
-      double_bigit sum =
-          static_cast<double_bigit>(get_bigit(lhs1, i)) + get_bigit(lhs2, i);
+      double_bigit sum = static_cast<double_bigit>(get_bigit(lhs1, i)) + get_bigit(lhs2, i);
       bigit rhs_bigit = get_bigit(rhs, i);
       if (sum > rhs_bigit + borrow)
         return 1;
@@ -733,8 +661,7 @@ public:
       sum >>= bits<bigit>::value; // Compute the carry.
     }
     // Do the same for the top half.
-    for (int bigit_index = num_bigits; bigit_index < num_result_bigits;
-         ++bigit_index) {
+    for (int bigit_index = num_bigits; bigit_index < num_result_bigits; ++bigit_index) {
       for (int j = num_bigits - 1, i = bigit_index - j; i < num_bigits;)
         sum += static_cast<double_bigit>(n[i++]) * n[j--];
       bigits_[bigit_index] = static_cast<bigit>(sum);
@@ -777,17 +704,15 @@ enum round_direction { unknown, up, down };
 // some number v and the error, returns whether v should be rounded up, down, or
 // whether the rounding direction can't be determined due to error.
 // error should be less than divisor / 2.
-inline round_direction get_round_direction(uint64_t divisor, uint64_t remainder,
-                                           uint64_t error) {
-  FMT_ASSERT(remainder < divisor, ""); // divisor - remainder won't overflow.
-  FMT_ASSERT(error < divisor, "");     // divisor - error won't overflow.
+inline round_direction get_round_direction(uint64_t divisor, uint64_t remainder, uint64_t error) {
+  FMT_ASSERT(remainder < divisor, "");     // divisor - remainder won't overflow.
+  FMT_ASSERT(error < divisor, "");         // divisor - error won't overflow.
   FMT_ASSERT(error < divisor - error, ""); // error * 2 won't overflow.
   // Round down if (remainder + error) * 2 <= divisor.
   if (remainder <= divisor - remainder && error * 2 <= divisor - remainder * 2)
     return down;
   // Round up if (remainder - error) * 2 >= divisor.
-  if (remainder >= error &&
-      remainder - error >= divisor - (remainder - error)) {
+  if (remainder >= error && remainder - error >= divisor - (remainder - error)) {
     return up;
   }
   return unknown;
@@ -805,8 +730,7 @@ enum result {
 // error: the size of the region (lower, upper) outside of which numbers
 // definitely do not round to value (Delta in Grisu3).
 template <typename Handler>
-FMT_ALWAYS_INLINE digits::result grisu_gen_digits(fp value, uint64_t error,
-                                                  int &exp, Handler &handler) {
+FMT_ALWAYS_INLINE digits::result grisu_gen_digits(fp value, uint64_t error, int &exp, Handler &handler) {
   const fp one(1ULL << -value.e, value.e);
   // The integral part of scaled value (p1 in Grisu) = value / one. It cannot be
   // zero because it contains a product of two 64-bit numbers with MSB set (due
@@ -818,8 +742,7 @@ FMT_ALWAYS_INLINE digits::result grisu_gen_digits(fp value, uint64_t error,
   uint64_t fractional = value.f & (one.f - 1);
   exp = count_digits(integral); // kappa in Grisu.
   // Divide by 10 to prevent overflow.
-  auto result = handler.on_start(data::powers_of_10_64[exp - 1] << -one.e,
-                                 value.f / 10, error * 10, exp);
+  auto result = handler.on_start(data::powers_of_10_64[exp - 1] << -one.e, value.f / 10, error * 10, exp);
   if (result != digits::more)
     return result;
   // Generate digits for the integral part. This can produce up to 10 digits.
@@ -867,11 +790,8 @@ FMT_ALWAYS_INLINE digits::result grisu_gen_digits(fp value, uint64_t error,
       FMT_ASSERT(false, "invalid number of digits");
     }
     --exp;
-    uint64_t remainder =
-        (static_cast<uint64_t>(integral) << -one.e) + fractional;
-    result = handler.on_digit(static_cast<char>('0' + digit),
-                              data::powers_of_10_64[exp] << -one.e, remainder,
-                              error, exp, true);
+    uint64_t remainder = (static_cast<uint64_t>(integral) << -one.e) + fractional;
+    result = handler.on_digit(static_cast<char>('0' + digit), data::powers_of_10_64[exp] << -one.e, remainder, error, exp, true);
     if (result != digits::more)
       return result;
   } while (exp > 0);
@@ -879,8 +799,7 @@ FMT_ALWAYS_INLINE digits::result grisu_gen_digits(fp value, uint64_t error,
   for (;;) {
     fractional *= 10;
     error *= 10;
-    char digit =
-        static_cast<char>('0' + static_cast<char>(fractional >> -one.e));
+    char digit = static_cast<char>('0' + static_cast<char>(fractional >> -one.e));
     fractional &= one.f - 1;
     --exp;
     result = handler.on_digit(digit, one.f, fractional, error, exp, false);
@@ -897,8 +816,7 @@ struct fixed_handler {
   int exp10;
   bool fixed;
 
-  digits::result on_start(uint64_t divisor, uint64_t remainder, uint64_t error,
-                          int &exp) {
+  digits::result on_start(uint64_t divisor, uint64_t remainder, uint64_t error, int &exp) {
     // Non-fixed formats require at least one digit and no precision adjustment.
     if (!fixed)
       return digits::more;
@@ -918,8 +836,7 @@ struct fixed_handler {
     return digits::done;
   }
 
-  digits::result on_digit(char digit, uint64_t divisor, uint64_t remainder,
-                          uint64_t error, int, bool integral) {
+  digits::result on_digit(char digit, uint64_t divisor, uint64_t remainder, uint64_t error, int, bool integral) {
     FMT_ASSERT(remainder < divisor, "");
     buf[size++] = digit;
     if (size < precision)
@@ -956,24 +873,19 @@ struct grisu_shortest_handler {
   // Distance between scaled value and upper bound (wp_W in Grisu3).
   uint64_t diff;
 
-  digits::result on_start(uint64_t, uint64_t, uint64_t, int &) {
-    return digits::more;
-  }
+  digits::result on_start(uint64_t, uint64_t, uint64_t, int &) { return digits::more; }
 
   // Decrement the generated number approaching value from above.
-  void round(uint64_t d, uint64_t divisor, uint64_t &remainder,
-             uint64_t error) {
-    while (
-        remainder < d && error - remainder >= divisor &&
-        (remainder + divisor < d || d - remainder >= remainder + divisor - d)) {
+  void round(uint64_t d, uint64_t divisor, uint64_t &remainder, uint64_t error) {
+    while (remainder < d && error - remainder >= divisor &&
+           (remainder + divisor < d || d - remainder >= remainder + divisor - d)) {
       --buf[size - 1];
       remainder += divisor;
     }
   }
 
   // Implements Grisu's round_weed.
-  digits::result on_digit(char digit, uint64_t divisor, uint64_t remainder,
-                          uint64_t error, int exp, bool integral) {
+  digits::result on_digit(char digit, uint64_t divisor, uint64_t remainder, uint64_t error, int exp, bool integral) {
     buf[size++] = digit;
     if (remainder >= error)
       return digits::more;
@@ -982,21 +894,17 @@ struct grisu_shortest_handler {
     round(up, divisor, remainder, error);
     uint64_t down = (diff + 1) * unit; // wp_Wdown
     if (remainder < down && error - remainder >= divisor &&
-        (remainder + divisor < down ||
-         down - remainder > remainder + divisor - down)) {
+        (remainder + divisor < down || down - remainder > remainder + divisor - down)) {
       return digits::error;
     }
-    return 2 * unit <= remainder && remainder <= error - 4 * unit
-               ? digits::done
-               : digits::error;
+    return 2 * unit <= remainder && remainder <= error - 4 * unit ? digits::done : digits::error;
   }
 };
 
 // Formats value using a variation of the Fixed-Precision Positive
 // Floating-Point Printout ((FPP)^2) algorithm by Steele & White:
 // https://fmt.dev/p372-steele.pdf.
-template <typename Double>
-void fallback_format(Double d, buffer<char> &buf, int &exp10) {
+template <typename Double> void fallback_format(Double d, buffer<char> &buf, int &exp10) {
   bigint numerator;   // 2 * R in (FPP)^2.
   bigint denominator; // 2 * S in (FPP)^2.
   // lower and upper are differences between value and corresponding boundaries.
@@ -1075,10 +983,8 @@ void fallback_format(Double d, buffer<char> &buf, int &exp10) {
   }
 }
 
-template <typename Double,
-          enable_if_t<(sizeof(Double) == sizeof(uint64_t)), int>>
-bool grisu_format(Double value, buffer<char> &buf, int precision,
-                  unsigned options, int &exp) {
+template <typename Double, enable_if_t<(sizeof(Double) == sizeof(uint64_t)), int>>
+bool grisu_format(Double value, buffer<char> &buf, int precision, unsigned options, int &exp) {
   FMT_ASSERT(value >= 0, "value is negative");
   const bool fixed = (options & grisu_options::fixed) != 0;
   if (value <= 0) { // <= instead of == to silence a warning.
@@ -1100,8 +1006,7 @@ bool grisu_format(Double value, buffer<char> &buf, int precision,
       return false;
     fp fp_value(value);
     fp normalized = normalize(fp_value);
-    const auto cached_pow = get_cached_power(
-        min_exp - (normalized.e + fp::significand_size), cached_exp10);
+    const auto cached_pow = get_cached_power(min_exp - (normalized.e + fp::significand_size), cached_exp10);
     normalized = normalized * cached_pow;
     fixed_handler handler{buf.data(), 0, precision, -cached_exp10, fixed};
     if (grisu_gen_digits(normalized, 1, exp, handler) == digits::error)
@@ -1150,9 +1055,7 @@ bool grisu_format(Double value, buffer<char> &buf, int precision,
   return true;
 }
 
-template <typename Double>
-char *sprintf_format(Double value, internal::buffer<char> &buf,
-                     sprintf_specs specs) {
+template <typename Double> char *sprintf_format(Double value, internal::buffer<char> &buf, sprintf_specs specs) {
   // Buffer capacity must be non-zero, otherwise MSVC's vsnprintf_s will fail.
   FMT_ASSERT(buf.capacity() != 0, "empty buffer");
 
@@ -1187,8 +1090,7 @@ char *sprintf_format(Double value, internal::buffer<char> &buf,
   for (;;) {
     std::size_t buffer_size = buf.capacity();
     start = &buf[0];
-    int result =
-        format_float(start, buffer_size, format, specs.precision, value);
+    int result = format_float(start, buffer_size, format, specs.precision, value);
     if (result >= 0) {
       unsigned n = internal::to_unsigned(result);
       if (n < buf.capacity()) {
@@ -1234,12 +1136,9 @@ char *sprintf_format(Double value, internal::buffer<char> &buf,
 } // namespace internal
 
 template <> struct formatter<internal::bigint> {
-  format_parse_context::iterator parse(format_parse_context &ctx) {
-    return ctx.begin();
-  }
+  format_parse_context::iterator parse(format_parse_context &ctx) { return ctx.begin(); }
 
-  format_context::iterator format(const internal::bigint &n,
-                                  format_context &ctx) {
+  format_context::iterator format(const internal::bigint &n, format_context &ctx) {
     auto out = ctx.out();
     bool first = true;
     for (auto i = n.bigits_.size(); i > 0; --i) {
@@ -1271,13 +1170,11 @@ FMT_FUNC internal::utf8_to_utf16::utf8_to_utf16(string_view s) {
     return;
   }
 
-  int length = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, s.data(),
-                                   s_size, nullptr, 0);
+  int length = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, s.data(), s_size, nullptr, 0);
   if (length == 0)
     FMT_THROW(windows_error(GetLastError(), ERROR_MSG));
   buffer_.resize(length + 1);
-  length = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, s.data(), s_size,
-                               &buffer_[0], length);
+  length = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, s.data(), s_size, &buffer_[0], length);
   if (length == 0)
     FMT_THROW(windows_error(GetLastError(), ERROR_MSG));
   buffer_[length] = 0;
@@ -1285,8 +1182,7 @@ FMT_FUNC internal::utf8_to_utf16::utf8_to_utf16(string_view s) {
 
 FMT_FUNC internal::utf16_to_utf8::utf16_to_utf8(wstring_view s) {
   if (int error_code = convert(s)) {
-    FMT_THROW(windows_error(error_code,
-                            "cannot convert string from UTF-16 to UTF-8"));
+    FMT_THROW(windows_error(error_code, "cannot convert string from UTF-16 to UTF-8"));
   }
 }
 
@@ -1301,21 +1197,18 @@ FMT_FUNC int internal::utf16_to_utf8::convert(wstring_view s) {
     return 0;
   }
 
-  int length = WideCharToMultiByte(CP_UTF8, 0, s.data(), s_size, nullptr, 0,
-                                   nullptr, nullptr);
+  int length = WideCharToMultiByte(CP_UTF8, 0, s.data(), s_size, nullptr, 0, nullptr, nullptr);
   if (length == 0)
     return GetLastError();
   buffer_.resize(length + 1);
-  length = WideCharToMultiByte(CP_UTF8, 0, s.data(), s_size, &buffer_[0],
-                               length, nullptr, nullptr);
+  length = WideCharToMultiByte(CP_UTF8, 0, s.data(), s_size, &buffer_[0], length, nullptr, nullptr);
   if (length == 0)
     return GetLastError();
   buffer_[length] = 0;
   return 0;
 }
 
-FMT_FUNC void windows_error::init(int err_code, string_view format_str,
-                                  format_args args) {
+FMT_FUNC void windows_error::init(int err_code, string_view format_str, format_args args) {
   error_code_ = err_code;
   memory_buffer buffer;
   internal::format_windows_error(buffer, err_code, vformat(format_str, args));
@@ -1323,18 +1216,15 @@ FMT_FUNC void windows_error::init(int err_code, string_view format_str,
   base = std::runtime_error(to_string(buffer));
 }
 
-FMT_FUNC void internal::format_windows_error(internal::buffer<char> &out,
-                                             int error_code,
-                                             string_view message) FMT_NOEXCEPT {
+FMT_FUNC void internal::format_windows_error(internal::buffer<char> &out, int error_code, string_view message) FMT_NOEXCEPT {
   FMT_TRY {
     wmemory_buffer buf;
     buf.resize(inline_buffer_size);
     for (;;) {
       wchar_t *system_message = &buf[0];
-      int result = FormatMessageW(
-          FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr,
-          error_code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), system_message,
-          static_cast<uint32_t>(buf.size()), nullptr);
+      int result =
+          FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, error_code,
+                         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), system_message, static_cast<uint32_t>(buf.size()), nullptr);
       if (result != 0) {
         utf16_to_utf8 utf8_message;
         if (utf8_message.convert(system_message) == ERROR_SUCCESS) {
@@ -1357,15 +1247,13 @@ FMT_FUNC void internal::format_windows_error(internal::buffer<char> &out,
 
 #endif // FMT_USE_WINDOWS_H
 
-FMT_FUNC void format_system_error(internal::buffer<char> &out, int error_code,
-                                  string_view message) FMT_NOEXCEPT {
+FMT_FUNC void format_system_error(internal::buffer<char> &out, int error_code, string_view message) FMT_NOEXCEPT {
   FMT_TRY {
     memory_buffer buf;
     buf.resize(inline_buffer_size);
     for (;;) {
       char *system_message = &buf[0];
-      int result =
-          internal::safe_strerror(error_code, system_message, buf.size());
+      int result = internal::safe_strerror(error_code, system_message, buf.size());
       if (result == 0) {
         internal::writer w(out);
         w.write(message);
@@ -1382,26 +1270,21 @@ FMT_FUNC void format_system_error(internal::buffer<char> &out, int error_code,
   format_error_code(out, error_code, message);
 }
 
-FMT_FUNC void internal::error_handler::on_error(const char *message) {
-  FMT_THROW(format_error(message));
-}
+FMT_FUNC void internal::error_handler::on_error(const char *message) { FMT_THROW(format_error(message)); }
 
-FMT_FUNC void report_system_error(int error_code,
-                                  fmt::string_view message) FMT_NOEXCEPT {
+FMT_FUNC void report_system_error(int error_code, fmt::string_view message) FMT_NOEXCEPT {
   report_error(format_system_error, error_code, message);
 }
 
 #if FMT_USE_WINDOWS_H
-FMT_FUNC void report_windows_error(int error_code,
-                                   fmt::string_view message) FMT_NOEXCEPT {
+FMT_FUNC void report_windows_error(int error_code, fmt::string_view message) FMT_NOEXCEPT {
   report_error(internal::format_windows_error, error_code, message);
 }
 #endif
 
 FMT_FUNC void vprint(std::FILE *f, string_view format_str, format_args args) {
   memory_buffer buffer;
-  internal::vformat_to(buffer, format_str,
-                       basic_format_args<buffer_context<char>>(args));
+  internal::vformat_to(buffer, format_str, basic_format_args<buffer_context<char>>(args));
   internal::fwrite_fully(buffer.data(), 1, buffer.size(), f);
 }
 
@@ -1414,13 +1297,9 @@ FMT_FUNC void vprint(std::FILE *f, wstring_view format_str, wformat_args args) {
   }
 }
 
-FMT_FUNC void vprint(string_view format_str, format_args args) {
-  vprint(stdout, format_str, args);
-}
+FMT_FUNC void vprint(string_view format_str, format_args args) { vprint(stdout, format_str, args); }
 
-FMT_FUNC void vprint(wstring_view format_str, wformat_args args) {
-  vprint(stdout, format_str, args);
-}
+FMT_FUNC void vprint(wstring_view format_str, wformat_args args) { vprint(stdout, format_str, args); }
 
 FMT_END_NAMESPACE
 

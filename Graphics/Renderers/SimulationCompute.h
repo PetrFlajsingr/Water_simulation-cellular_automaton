@@ -12,32 +12,30 @@ using namespace ge::gl;
 
 class SimulationCompute {
 private:
-    std::shared_ptr<Program> horizontalProgram;
+  std::shared_ptr<Program> horizontalProgram;
 
-    std::shared_ptr<Program> verticalProgram;
+  std::shared_ptr<Program> verticalProgram;
 
-    std::shared_ptr<Buffer> ibo;
+  std::shared_ptr<Buffer> ibo;
 
-    std::shared_ptr<Buffer> positionsBuffer;
+  std::shared_ptr<Buffer> positionsBuffer;
 
-    glm::uvec3 tankSize;
+  glm::uvec3 tankSize;
 
 private:
+  std::array<std::shared_ptr<Buffer>, 2> cellBuffers;
 
-    std::array<std::shared_ptr<Buffer>, 2> cellBuffers;
 public:
+  SimulationCompute(glm::uvec3 tankSize, std::shared_ptr<Buffer> ibo, std::shared_ptr<Buffer> positionBuffer);
 
-    SimulationCompute(glm::uvec3 tankSize, const std::shared_ptr<Buffer> &ibo, const std::shared_ptr<Buffer> &positionBuffer);
+  void simulate();
 
-    void simulate();
+  void setFluidVolume(int index, float volume);
 
-    void setFluidVolume(int index, float volume);
-
-    void swapBuffers();
+  void swapBuffers();
 
 private:
-    void initBuffers(int size);
+  void initBuffers(int size);
 };
 
-
-#endif //GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_SIMULATIONCOMPUTE_H
+#endif // GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_SIMULATIONCOMPUTE_H

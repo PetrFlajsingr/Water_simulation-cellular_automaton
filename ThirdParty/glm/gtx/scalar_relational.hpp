@@ -16,17 +16,14 @@
 #include "../glm.hpp"
 
 #if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_EXT_INCLUDED)
-#	pragma message("GLM: GLM_GTX_extend extension included")
+#pragma message("GLM: GLM_GTX_extend extension included")
 #endif
 
-namespace glm
-{
-	/// @addtogroup gtx_scalar_relational
-	/// @{
+namespace glm {
+/// @addtogroup gtx_scalar_relational
+/// @{
 
-
-
-	/// @}
-}//namespace glm
+/// @}
+} // namespace glm
 
 #include "scalar_relational.inl"

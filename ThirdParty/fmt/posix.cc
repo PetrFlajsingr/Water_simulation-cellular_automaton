@@ -55,9 +55,7 @@ using RWResult = int;
 
 // On Windows the count argument to read and write is unsigned, so convert
 // it from size_t preventing integer overflow.
-inline unsigned convert_rwcount(std::size_t count) {
-  return count <= UINT_MAX ? static_cast<unsigned>(count) : UINT_MAX;
-}
+inline unsigned convert_rwcount(std::size_t count) { return count <= UINT_MAX ? static_cast<unsigned>(count) : UINT_MAX; }
 #else
 // Return type of read and write functions.
 using RWResult = ssize_t;
@@ -74,8 +72,7 @@ buffered_file::~buffered_file() FMT_NOEXCEPT {
 }
 
 buffered_file::buffered_file(cstring_view filename, cstring_view mode) {
-  FMT_RETRY_VAL(file_, FMT_SYSTEM(fopen(filename.c_str(), mode.c_str())),
-                nullptr);
+  FMT_RETRY_VAL(file_, FMT_SYSTEM(fopen(filename.c_str(), mode.c_str())), nullptr);
   if (!file_)
     FMT_THROW(system_error(errno, "cannot open file {}", filename.c_str()));
 }
@@ -150,8 +147,7 @@ long long file::size() const {
   Stat file_stat = Stat();
   if (FMT_POSIX_CALL(fstat(fd_, &file_stat)) == -1)
     FMT_THROW(system_error(errno, "cannot get file attributes"));
-  static_assert(sizeof(long long) >= sizeof(file_stat.st_size),
-                "return type of file::size is not large enough");
+  static_assert(sizeof(long long) >= sizeof(file_stat.st_size), "return type of file::size is not large enough");
   return file_stat.st_size;
 #endif
 }
@@ -185,8 +181,7 @@ void file::dup2(int fd) {
   int result = 0;
   FMT_RETRY(result, FMT_POSIX_CALL(dup2(fd_, fd)));
   if (result == -1) {
-    FMT_THROW(system_error(errno, "cannot duplicate file descriptor {} to {}",
-                           fd_, fd));
+    FMT_THROW(system_error(errno, "cannot duplicate file descriptor {} to {}", fd_, fd));
   }
 }
 
@@ -224,8 +219,7 @@ buffered_file file::fdopen(const char *mode) {
   // Don't retry as fdopen doesn't return EINTR.
   FILE *f = FMT_POSIX_CALL(fdopen(fd_, mode));
   if (!f)
-    FMT_THROW(
-        system_error(errno, "cannot associate stream with file descriptor"));
+    FMT_THROW(system_error(errno, "cannot associate stream with file descriptor"));
   buffered_file bf(f);
   fd_ = -1;
   return bf;
