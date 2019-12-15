@@ -8,25 +8,25 @@
 #include <geGL/geGL.h>
 #include <glm/glm.hpp>
 
-using namespace ge::gl;
-
 class SimulationCompute {
+  using ProgramPtr = std::shared_ptr<ge::gl::Program>;
+  using BufferPtr = std::shared_ptr<ge::gl::Buffer>;
+  using VertexArrayPtr = std::shared_ptr<ge::gl::VertexArray>;
+
 private:
-  std::shared_ptr<Program> horizontalProgram;
+  ProgramPtr horizontalProgram;
+  ProgramPtr verticalProgram;
 
-  std::shared_ptr<Program> verticalProgram;
-
-  std::shared_ptr<Buffer> ibo;
-
-  std::shared_ptr<Buffer> positionsBuffer;
+  BufferPtr ibo;
+  BufferPtr positionsBuffer;
 
   glm::uvec3 tankSize;
 
 private:
-  std::array<std::shared_ptr<Buffer>, 2> cellBuffers;
+  std::array<BufferPtr, 2> cellBuffers;
 
 public:
-  SimulationCompute(glm::uvec3 tankSize, std::shared_ptr<Buffer> ibo, std::shared_ptr<Buffer> positionBuffer);
+  SimulationCompute(glm::uvec3 tankSize, BufferPtr ibo, BufferPtr positionBuffer);
 
   void simulate();
 

@@ -10,8 +10,10 @@
 #include <utility>
 #include <shader_literals.h>
 
-SimulationCompute::SimulationCompute(const glm::uvec3 tankSize, std::shared_ptr<Buffer> ibo,
-                                     std::shared_ptr<Buffer> positionBuffer)
+using namespace ge::gl;
+
+SimulationCompute::SimulationCompute(const glm::uvec3 tankSize, BufferPtr ibo,
+                                     BufferPtr positionBuffer)
     : ibo(std::move(ibo)), positionsBuffer(std::move(positionBuffer)), tankSize(tankSize) {
   using namespace ShaderLiterals;
   horizontalProgram = std::make_shared<ge::gl::Program>("basic-horizontal"_comp);
