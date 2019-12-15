@@ -31,6 +31,7 @@ endif ()
 
 include_directories(misc)
 include_directories(Graphics)
+include_directories(Graphics/Renderers)
 include_directories(ThirdParty)
 include_directories(Simulation)
 

@@ -11,6 +11,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/component_wise.hpp>
 #include <shader_literals.h>
+#include <IboBuffer.h>
 
 using namespace std::string_literals;
 using namespace ge::gl;
@@ -20,13 +21,13 @@ CellRenderer::CellRenderer(const std::string &cellModelPath, const glm::mat4 &pr
   using namespace ShaderLiterals;
   setShaderLocation(SRC_DIR + "/Shaders"s);
   program = std::make_shared<Program>("basic"_vert, "basic"_frag);
-  std::vector<glm::vec4> positions{glm::compMul(tankSize)};
+  std::vector<glm::vec4> positions{glm::compMul(tankSize), glm::vec4(-1)};
   positionsBuffer = createBuffer(positions, GL_DYNAMIC_DRAW);
   auto cell = Model(SRC_DIR + "/Resources/Models/cube.obj"s);
   vbo = createBuffer(cell.getVertices());
   ebo = createBuffer(cell.getIndices());
-  std::array<uint32_t, 5> command{cell.indicesCount(), 0, 0, 0, 0};
-  ibo = createBuffer(command);
+  DrawElementsIndirectCommand command{cell.indicesCount(), 0, 0, 0, 0};
+  ibo = createBuffer(sizeof(DrawElementsIndirectCommand), GL_STATIC_DRAW, &command);
 
   vao->addAttrib(vbo, 0, 3, GL_FLOAT, static_cast<GLsizei>(sizeof(Model::VertexData)), offsetof(Model::VertexData, pos));
   vao->addAttrib(vbo, 1, 3, GL_FLOAT, static_cast<GLsizei>(sizeof(Model::VertexData)), offsetof(Model::VertexData, color));

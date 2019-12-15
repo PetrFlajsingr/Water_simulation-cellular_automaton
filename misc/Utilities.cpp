@@ -22,3 +22,7 @@ std::string Utilities::readFile(const std::string &filename) {
 
   return buffer;
 }
+
+glm::uvec3 Utilities::from1Dto3Dindex(unsigned int index, glm::uvec3 size) {
+    return glm::vec3(index % size.x, (index / size.x) % size.y, index / ( size.x * size.y));
+}

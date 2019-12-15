@@ -70,7 +70,7 @@ void main() {
 
         if (writeCells[myCellID].fluidVolume > 0.0){
             uint positionID = atomicAdd(drawArray.instanceCount, 1u);
-            positions[positionID] = vec4(gl_GlobalInvocationID + vec3(0.5, 0.0, 0.5), writeCells[myCellID].fluidVolume);
+            positions[positionID] = vec4(gl_GlobalInvocationID, writeCells[myCellID].fluidVolume);
         }
     }
 

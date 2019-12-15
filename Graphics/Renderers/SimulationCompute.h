@@ -34,6 +34,8 @@ public:
 
   void swapBuffers();
 
+  void reset();
+
 private:
   void initBuffers(int size);
 };

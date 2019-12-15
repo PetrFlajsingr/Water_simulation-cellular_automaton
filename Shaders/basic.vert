@@ -24,7 +24,7 @@ layout(location = 5) out mat4 fragView;
 
 void main() {
     float fluidVolume = positions[gl_InstanceID].w;
-    vec3 cellPosition = positions[gl_InstanceID].xyz;
+    vec3 cellPosition = positions[gl_InstanceID].xyz + vec3(0.5, 0.0, 0.5);
     vec3 vertexPos = inPosition.xyz;
     vec3 color = inColor;
     if (fluidVolume <= 1.0){
