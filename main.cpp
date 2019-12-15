@@ -11,16 +11,21 @@
 #include <Renderers/GridRenderer.h>
 #include <Renderers/CellRenderer.h>
 #include <Renderers/SimulationCompute.h>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_opengl3.h>
+#include <imgui/imgui_impl_sdl.h>
 
-
-using namespace ge::gl;
 using namespace std::string_literals;
 using namespace std::chrono_literals;
+using namespace ge::gl;
 
 auto camera = Camera(glm::vec3(1.0, 1.0, 5.0));
 
 bool SDLHandler(const SDL_Event &event) {
     static bool mousePressed = false;
+        if(ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantCaptureKeyboard){
+        return false;
+    }
     if (event.type == SDL_KEYDOWN) {
         switch (event.key.keysym.sym) {
             case SDLK_UP:
@@ -96,6 +101,14 @@ int main() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    auto io = ImGui::GetIO();
+    ImGui_ImplSDL2_InitForOpenGL(window->getWindow(), window->getContext("rendering"));
+    ImGui_ImplOpenGL3_Init("#version 450");
+    ImGui::StyleColorsDark();
+
+
 
     FPSCounter fpsCounter;
     auto start = std::chrono::system_clock::now();
@@ -114,9 +127,20 @@ int main() {
 
         cellRenderer.draw(camera.GetViewMatrix(), camera.Position);
 
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplSDL2_NewFrame(window->getWindow());
+        ImGui::NewFrame();
+
+        ImGui::Begin("Demo window");
+        ImGui::Text("FPS (avg): %s", std::to_string(fpsCounter.average()).c_str());
+        ImGui::SetWindowPos(ImVec2(window->getWidth() - ImGui::GetWindowWidth(), 0));
+        ImGui::End();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         window->swap();
         simulation.swapBuffers();
-        //std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         fpsCounter.frame();
         print(fpsCounter);
     });
