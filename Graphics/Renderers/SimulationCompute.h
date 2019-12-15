@@ -27,7 +27,7 @@ private:
     std::array<std::shared_ptr<Buffer>, 2> cellBuffers;
 public:
 
-    SimulationCompute(const glm::uvec3 tankSize, const std::shared_ptr<Buffer> &ibo, const std::shared_ptr<Buffer> &positionBuffer);
+    SimulationCompute(glm::uvec3 tankSize, const std::shared_ptr<Buffer> &ibo, const std::shared_ptr<Buffer> &positionBuffer);
 
     void simulate();
 

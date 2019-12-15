@@ -34,8 +34,7 @@ std::vector<glm::vec3> GridRenderer::generateGrid(int xLength, int yLength, int 
 }
 
 GridRenderer::GridRenderer(glm::vec3 gridSize, glm::mat4 projectionMat) :
-        gridSize(glm::compMul(gridSize + glm::vec3(1))),
-        projectionMat(projectionMat) {
+        projectionMat(projectionMat), gridSize(glm::compMul(gridSize + glm::vec3(1))) {
 
     using namespace ShaderLiterals;
     setShaderLocation(SRC_DIR + "/Shaders"s);
