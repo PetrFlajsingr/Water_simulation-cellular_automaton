@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 project(GMU_fluid_simulation_cellular_automata)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fconcepts")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -fconcepts")
 include(FetchContent)
 
 add_compile_definitions(SRC_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\")

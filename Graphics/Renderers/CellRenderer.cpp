@@ -16,7 +16,7 @@
 using namespace std::string_literals;
 using namespace ge::gl;
 
-CellRenderer::CellRenderer(const std::string &cellModelPath, const glm::mat4 &projectionMat, const glm::uvec3 &tankSize)
+CellRenderer::CellRenderer([[maybe_unused]] const std::string &cellModelPath, const glm::mat4 &projectionMat, const glm::uvec3 &tankSize)
     : projectionMat(projectionMat) {
   using namespace ShaderLiterals;
   setShaderLocation(SRC_DIR + "/Shaders"s);
