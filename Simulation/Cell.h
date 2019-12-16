@@ -20,8 +20,6 @@ public:
 private:
   float fluidVolume;
   float solidVolume;
-
-private:
   float fluidHorizontalLefover;
   uint32_t stable;
 };
