@@ -2,6 +2,7 @@
 
 struct Cell{
     float fluidVolume;
+    float solidVolume;
     float fluidHorizontalLefover;
     uint stable;
 };
