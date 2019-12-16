@@ -60,13 +60,13 @@ void main() {
         float inFlow = 0.0;
         if (gl_GlobalInvocationID.y + 1 < globalSize.y){
             uint upperCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + (gl_GlobalInvocationID.y + 1) * globalSize.x + gl_GlobalInvocationID.x;
-            inFlow = verticalFlowVolume(readCells[upperCellID].fluidVolume, readCells[myCellID].fluidVolume) - readCells[myCellID].fluidVolume;
+            inFlow = verticalFlowVolume(readCells[upperCellID].fluidVolume, readCells[myCellID].fluidVolume) - (readCells[myCellID].fluidVolume + readCells[myCellID].solidVolume);
             inFlow = clamp(inFlow, 0, min(maximumFlow, readCells[upperCellID].fluidVolume));
         }
         float outFlow = 0.0;
         if (int(gl_GlobalInvocationID.y) - 1 >= 0){
             uint bottomCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + (gl_GlobalInvocationID.y - 1) * globalSize.x + gl_GlobalInvocationID.x;
-            outFlow = verticalFlowVolume(readCells[myCellID].fluidVolume, readCells[bottomCellID].fluidVolume) - readCells[bottomCellID].fluidVolume;
+            outFlow = verticalFlowVolume(readCells[myCellID].fluidVolume, readCells[bottomCellID].fluidVolume) - (readCells[bottomCellID].fluidVolume + readCells[bottomCellID].solidVolume);
             outFlow = clamp(outFlow, 0, min(maximumFlow, readCells[myCellID].fluidVolume));
         }
         writeCells[myCellID].fluidVolume = readCells[myCellID].fluidVolume + (inFlow - outFlow);

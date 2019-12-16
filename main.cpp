@@ -88,7 +88,7 @@ int main() {
   auto simulation = SimulationCompute(tankSize, cellRenderer.getIbo(), cellRenderer.getPositionsBuffer());
 
   simulation.setFluidVolume(15, 1.0);
-  simulation.setFluidVolume(0, 1.0);
+  simulation.setFluidVolume(14, 1.0);
 
   glClearColor(0, 0, 0, 1);
 
@@ -153,7 +153,7 @@ int main() {
       simulate = false;
       simulation.reset();
       simulation.setFluidVolume(15, 1.0);
-      simulation.setFluidVolume(0, 1.0);
+      simulation.setFluidVolume(14, 1.0);
     }
 
     ImGui::SetWindowPos(ImVec2(window->getWidth() - ImGui::GetWindowWidth(), previousSize.y));

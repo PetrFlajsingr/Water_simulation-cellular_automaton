@@ -59,8 +59,8 @@ void main() {
         for (int offsetIndex = 0; offsetIndex < verticalNeighbourSize; ++offsetIndex){
             ivec3 currentNeighbour = ivec3(gl_GlobalInvocationID) + neighbourOffsets[offsetIndex];
             if (all(greaterThanEqual(currentNeighbour, ivec3(0))) && all(lessThan(currentNeighbour, globalSize))){
-                inFlow += horizontalFlowVolume(readCells[to1DCoord(currentNeighbour)].fluidHorizontalLefover, readCells[myCellID].fluidVolume);
-                outFlow += horizontalFlowVolume(readCells[myCellID].fluidHorizontalLefover, readCells[to1DCoord(currentNeighbour)].fluidVolume);
+                inFlow += horizontalFlowVolume(readCells[to1DCoord(currentNeighbour)].fluidHorizontalLefover, readCells[myCellID].fluidVolume + readCells[myCellID].solidVolume);
+                outFlow += horizontalFlowVolume(readCells[myCellID].fluidHorizontalLefover, readCells[to1DCoord(currentNeighbour)].fluidVolume + readCells[to1DCoord(currentNeighbour)].solidVolume);
 
             }
         }
