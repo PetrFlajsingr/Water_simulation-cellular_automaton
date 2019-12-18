@@ -107,6 +107,7 @@ int main() {
 
   FPSCounter fpsCounter;
   auto start = std::chrono::system_clock::now();
+  float simSpeed = 0.01f;
   mainLoop->setIdleCallback([&]() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -155,6 +156,7 @@ int main() {
       simulation.setFluidVolume(15, 1.0);
       simulation.setFluidVolume(14, 1.0);
     }
+    ImGui::SliderFloat("Simulation speed", &simSpeed, 0.0f, 1.0f);
 
     ImGui::SetWindowPos(ImVec2(window->getWidth() - ImGui::GetWindowWidth(), previousSize.y));
     previousSize.y += ImGui::GetWindowSize().y;
@@ -165,14 +167,14 @@ int main() {
     ImGui::Text("Show:");
     ImGui::SameLine();
     std::array<std::string, 3> items{"None", "Box", "Grid"};
-    static int selected = 2;
+    static std::size_t selected = 2;
     float w = ImGui::CalcItemWidth();
     float spacing = 24.f;
     float button_sz = ImGui::GetFrameHeight();
     ImGui::PushItemWidth(w - spacing * 2.0f - button_sz * 2.0f);
     if (ImGui::BeginCombo("", items[selected].c_str())) // The second parameter is the label previewed before opening the combo.
     {
-      for (int n = 0; n < items.size(); n++) {
+      for (std::size_t n = 0; n < items.size(); n++) {
         bool is_selected = (n == selected); // You can store your selection however you want, outside or inside your objects
         if (ImGui::Selectable(items[n].c_str(), is_selected))
           selected = n;
@@ -191,7 +193,7 @@ int main() {
 
     if (simulate) {
       auto now = std::chrono::system_clock::now();
-      if (now - start >= 1000ms) {
+      if (simSpeed != 0.f && now - start >= 1000ms * (1 - simSpeed)) {
         start = now;
         simulation.simulate();
         simulation.swapBuffers();
