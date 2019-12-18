@@ -8,6 +8,7 @@
 #include <SDL2CPP/MainLoop.h>
 #include <SDL2CPP/Window.h>
 #include <chrono>
+#include <error_handling/exceptions.h>
 #include <geGL/StaticCalls.h>
 #include <geGL/geGL.h>
 #include <imgui/imgui.h>
@@ -61,17 +62,27 @@ bool SDLHandler(const SDL_Event &event) {
   return false;
 }
 
+std::pair<unsigned int, unsigned int> getWindowSize() {
+  SDL_DisplayMode DM;
+  if (SDL_GetDesktopDisplayMode(0, &DM) != 0)
+  {
+    throw exc::Error("SDL_GetDesktopDisplayMode failed");
+  }
+  unsigned int w = DM.w * 0.8;
+  unsigned int h = DM.h * 0.8;
+  return {w, h};
+}
+
 int main() {
+  /*Create Window*/
+  auto mainLoop = std::make_shared<sdl2cpp::MainLoop>();
   auto tankSize = glm::uvec3(4, 4, 4);
   const auto fieldOfView = 45.f;
-  const auto windowWidth = 840;
-  const auto windowHeight = 480;
+  const auto [windowWidth, windowHeight] = getWindowSize();
   const auto nearPlane = 0.1f;
   const auto farPlane = 100.f;
   auto proj = glm::perspective(glm::radians(fieldOfView), static_cast<float>(windowWidth) / windowHeight, nearPlane, farPlane);
 
-  /*Create Window*/
-  auto mainLoop = std::make_shared<sdl2cpp::MainLoop>();
   auto window = std::make_shared<sdl2cpp::Window>(windowWidth, windowHeight);
   window->createContext("rendering");
   mainLoop->addWindow("mainWindow", window);
