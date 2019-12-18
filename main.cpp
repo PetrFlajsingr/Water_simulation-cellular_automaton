@@ -8,6 +8,7 @@
 #include <SDL2CPP/MainLoop.h>
 #include <SDL2CPP/Window.h>
 #include <chrono>
+#include <error_handling/exceptions.h>
 #include <geGL/StaticCalls.h>
 #include <geGL/geGL.h>
 #include <imgui/imgui.h>
@@ -61,17 +62,27 @@ bool SDLHandler(const SDL_Event &event) {
   return false;
 }
 
+std::pair<unsigned int, unsigned int> getWindowSize() {
+  SDL_DisplayMode DM;
+  if (SDL_GetDesktopDisplayMode(0, &DM) != 0)
+  {
+    throw exc::Error("SDL_GetDesktopDisplayMode failed");
+  }
+  unsigned int w = DM.w * 0.8;
+  unsigned int h = DM.h * 0.8;
+  return {w, h};
+}
+
 int main() {
+  /*Create Window*/
+  auto mainLoop = std::make_shared<sdl2cpp::MainLoop>();
   auto tankSize = glm::uvec3(4, 4, 4);
   const auto fieldOfView = 45.f;
-  const auto windowWidth = 840;
-  const auto windowHeight = 480;
+  const auto [windowWidth, windowHeight] = getWindowSize();
   const auto nearPlane = 0.1f;
   const auto farPlane = 100.f;
   auto proj = glm::perspective(glm::radians(fieldOfView), static_cast<float>(windowWidth) / windowHeight, nearPlane, farPlane);
 
-  /*Create Window*/
-  auto mainLoop = std::make_shared<sdl2cpp::MainLoop>();
   auto window = std::make_shared<sdl2cpp::Window>(windowWidth, windowHeight);
   window->createContext("rendering");
   mainLoop->addWindow("mainWindow", window);
@@ -107,6 +118,7 @@ int main() {
 
   FPSCounter fpsCounter;
   auto start = std::chrono::system_clock::now();
+  float simSpeed = 0.01f;
   mainLoop->setIdleCallback([&]() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -155,6 +167,7 @@ int main() {
       simulation.setFluidVolume(15, 1.0);
       simulation.setFluidVolume(14, 1.0);
     }
+    ImGui::SliderFloat("Simulation speed", &simSpeed, 0.0f, 1.0f);
 
     ImGui::SetWindowPos(ImVec2(window->getWidth() - ImGui::GetWindowWidth(), previousSize.y));
     previousSize.y += ImGui::GetWindowSize().y;
@@ -165,14 +178,14 @@ int main() {
     ImGui::Text("Show:");
     ImGui::SameLine();
     std::array<std::string, 3> items{"None", "Box", "Grid"};
-    static int selected = 2;
+    static std::size_t selected = 2;
     float w = ImGui::CalcItemWidth();
     float spacing = 24.f;
     float button_sz = ImGui::GetFrameHeight();
     ImGui::PushItemWidth(w - spacing * 2.0f - button_sz * 2.0f);
     if (ImGui::BeginCombo("", items[selected].c_str())) // The second parameter is the label previewed before opening the combo.
     {
-      for (int n = 0; n < items.size(); n++) {
+      for (std::size_t n = 0; n < items.size(); n++) {
         bool is_selected = (n == selected); // You can store your selection however you want, outside or inside your objects
         if (ImGui::Selectable(items[n].c_str(), is_selected))
           selected = n;
@@ -191,7 +204,7 @@ int main() {
 
     if (simulate) {
       auto now = std::chrono::system_clock::now();
-      if (now - start >= 1000ms) {
+      if (simSpeed != 0.f && now - start >= 1000ms * (1 - simSpeed)) {
         start = now;
         simulation.simulate();
         simulation.swapBuffers();
