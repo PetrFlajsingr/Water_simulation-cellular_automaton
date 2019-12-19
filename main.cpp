@@ -193,7 +193,7 @@ int main() {
     ImGui::Text("Show:");
     ImGui::SameLine();
     std::array<std::string, 3> items{"None", "Box", "Grid"};
-    static std::size_t selected = 2;
+    static std::size_t selected = 1;
     float w = ImGui::CalcItemWidth();
     float spacing = 24.f;
     float button_sz = ImGui::GetFrameHeight();
