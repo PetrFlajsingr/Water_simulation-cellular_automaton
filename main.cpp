@@ -76,7 +76,7 @@ std::pair<unsigned int, unsigned int> getWindowSize() {
 int main() {
   /*Create Window*/
   auto mainLoop = std::make_shared<sdl2cpp::MainLoop>();
-  auto tankSize = glm::uvec3(40, 40, 40);
+  auto tankSize = glm::uvec3(50, 50, 50);
   const auto fieldOfView = 45.f;
   const auto [windowWidth, windowHeight] = getWindowSize();
   const auto nearPlane = 0.1f;
@@ -111,7 +111,7 @@ int main() {
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
-  glEnable(GL_BLEND);
+  //glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   IMGUI_CHECKVERSION();
@@ -216,7 +216,7 @@ int main() {
 
     if (simulate) {
       auto now = std::chrono::system_clock::now();
-      if (simSpeed != 0.f && now - start >= 1000ms * (1 - simSpeed)) {
+      if (simSpeed == 1.f || simSpeed != 0.f && now - start >= 1000ms * (1 - simSpeed)) {
         start = now;
         simulation.simulate();
         simulation.swapBuffers();

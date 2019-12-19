@@ -25,6 +25,7 @@ SimulationCompute::SimulationCompute(const glm::uvec3 tankSize, BufferPtr ibo, B
 }
 
 void SimulationCompute::simulate() {
+  const glm::uvec3 localSizes{2, 2, 2};
   [[maybe_unused]] Cell *ptrRD;
   [[maybe_unused]] Cell *ptrWR;
   /*
@@ -41,7 +42,7 @@ void SimulationCompute::simulate() {
   positionsBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
   ibo->bindBase(GL_SHADER_STORAGE_BUFFER, 3);
 
-  glDispatchCompute(tankSize.x / 2, tankSize.y / 2, tankSize.z / 2);
+  glDispatchCompute(tankSize.x / localSizes.x, tankSize.y / localSizes.y, tankSize.z / localSizes.z);
 
   glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 
@@ -55,7 +56,7 @@ void SimulationCompute::simulate() {
   swapBuffers();
   cellBuffers[0]->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
   cellBuffers[1]->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
-  glDispatchCompute(tankSize.x / 2, tankSize.y / 2, tankSize.z / 2);
+  glDispatchCompute(tankSize.x / localSizes.x, tankSize.y / localSizes.y, tankSize.z / localSizes.z);
 
   glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 
@@ -122,7 +123,6 @@ void SimulationCompute::setFluidVolume(glm::uvec3 index, float volume) {
   positionsBuffer->unmap();
   ibo->unmap();
 }
-
 
 void SimulationCompute::swapBuffers() { std::swap(cellBuffers[0], cellBuffers[1]); }
 
