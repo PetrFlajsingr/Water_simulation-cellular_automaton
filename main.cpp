@@ -124,6 +124,7 @@ int main() {
   FPSCounter fpsCounter;
   auto start = std::chrono::system_clock::now();
   float simSpeed = 0.01f;
+  bool waterfallEnabled = false;
   mainLoop->setIdleCallback([&]() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -171,6 +172,15 @@ int main() {
       simulation.reset();
       simulation.setFluidVolume(15, 1.0);
       simulation.setFluidVolume(14, 1.0);
+    }
+    auto waterfallButtonLabel = waterfallEnabled ? "Disable waterfall" : "Enable waterfall";
+    if (ImGui::Button(waterfallButtonLabel)) {
+      waterfallEnabled = !waterfallEnabled;
+    }
+    if (waterfallEnabled) {
+      for (auto x : range(25, 30, 1)) {
+        simulation.setFluidVolume({x, x, x}, 1.0f);
+      }
     }
     ImGui::SliderFloat("Simulation speed", &simSpeed, 0.0f, 1.0f);
 
