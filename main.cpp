@@ -98,9 +98,6 @@ int main() {
   auto gridRenderer = GridRenderer(tankSize, proj);
   auto simulation = SimulationCompute(tankSize, cellRenderer.getIbo(), cellRenderer.getPositionsBuffer());
 
-  simulation.setFluidVolume(15, 1.0);
-  simulation.setFluidVolume(14, 1.0);
-
   using namespace MakeRange;
   for (auto [x, y, z] : range<unsigned int, 3>({5, 5, 5}, {40, 40, 40}, {1, 1, 1})) {
     simulation.setFluidVolume({x, y, z}, 1.0f);
@@ -138,7 +135,7 @@ int main() {
                  ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
                      ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav);
 
-    ImGui::Text("FPS (avg): %s", std::to_string(static_cast<int>(fpsCounter.average())).c_str());
+    ImGui::Text("FPS (avg): %d\nFPS (cur): %d", static_cast<int>(fpsCounter.average()), static_cast<int>(fpsCounter.current()));
     if (simulate) {
       ImGui::Text("Status: ");
       ImGui::SameLine();
@@ -216,7 +213,7 @@ int main() {
 
     if (simulate) {
       auto now = std::chrono::system_clock::now();
-      if (simSpeed == 1.f || simSpeed != 0.f && now - start >= 1000ms * (1 - simSpeed)) {
+      if (simSpeed == 1.f || (simSpeed != 0.f && now - start >= 1000ms * (1 - simSpeed))) {
         start = now;
         simulation.simulate();
         simulation.swapBuffers();
