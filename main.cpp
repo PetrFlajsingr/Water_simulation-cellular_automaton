@@ -204,9 +204,6 @@ int main() {
     ImGui::SetWindowPos(ImVec2(window->getWidth() - ImGui::GetWindowWidth(), previousSize.y));
     ImGui::End();
 
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
     if (simulate) {
       auto now = std::chrono::system_clock::now();
       if (simSpeed != 0.f && now - start >= 1000ms * (1 - simSpeed)) {
@@ -219,6 +216,9 @@ int main() {
     gridRenderer.draw(camera.GetViewMatrix(), DrawType(selected));
 
     cellRenderer.draw(camera.GetViewMatrix(), camera.Position);
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     window->swap();
     fpsCounter.frame();
