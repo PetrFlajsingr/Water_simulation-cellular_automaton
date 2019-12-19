@@ -76,7 +76,7 @@ std::pair<unsigned int, unsigned int> getWindowSize() {
 int main() {
   /*Create Window*/
   auto mainLoop = std::make_shared<sdl2cpp::MainLoop>();
-  auto tankSize = glm::uvec3(4, 4, 4);
+  auto tankSize = glm::uvec3(40, 40, 40);
   const auto fieldOfView = 45.f;
   const auto [windowWidth, windowHeight] = getWindowSize();
   const auto nearPlane = 0.1f;
@@ -100,6 +100,11 @@ int main() {
 
   simulation.setFluidVolume(15, 1.0);
   simulation.setFluidVolume(14, 1.0);
+
+  using namespace MakeRange;
+  for (auto [x, y, z] : range<unsigned int, 3>({5, 5, 5}, {40, 40, 40}, {1, 1, 1})) {
+    simulation.setFluidVolume({x, y, z}, 1.0f);
+  }
 
   glClearColor(0, 0, 0, 1);
 

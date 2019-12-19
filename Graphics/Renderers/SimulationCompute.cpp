@@ -76,34 +76,38 @@ void SimulationCompute::initBuffers(int size) {
 }
 
 void SimulationCompute::setFluidVolume(int index, float volume) {
-  using namespace MakeRange;
-
   auto index3D = Utilities::from1Dto3Dindex(index, tankSize);
+  setFluidVolume(index3D, volume);
+}
+
+void SimulationCompute::setFluidVolume(glm::uvec3 index, float volume) {
+  using namespace MakeRange;
 
   auto ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
   auto ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_READ_WRITE));
   auto ptrPos = reinterpret_cast<glm::vec4 *>(positionsBuffer->map(GL_READ_WRITE));
   auto ptrIbo = reinterpret_cast<DrawElementsIndirectCommand *>(ibo->map(GL_READ_WRITE));
 
-  ptrRD[index].setFluidVolume(volume);
-  ptrWR[index].setFluidVolume(volume);
+  auto linearIndex = index.x + index.y * tankSize.x + index.z * tankSize.y * tankSize.z;
+  ptrRD[linearIndex].setFluidVolume(volume);
+  ptrWR[linearIndex].setFluidVolume(volume);
   auto count = ptrIbo->instanceCount;
 
   if (volume > 0.0) {
     for (auto i : range<unsigned int>(0, count)) {
-      if (ptrPos[i].x == index3D.x && ptrPos[i].y == index3D.y && ptrPos[i].z == index3D.z) {
+      if (ptrPos[i].x == index.x && ptrPos[i].y == index.y && ptrPos[i].z == index.z) {
         ptrPos[i].w = volume;
         break;
       }
       if (count == i) {
-        ptrPos[count] = glm::vec4(index3D, volume);
+        ptrPos[count] = glm::vec4(index, volume);
         ptrIbo->instanceCount += 1;
       }
     }
   } else {
     std::vector<glm::vec4> newPos{glm::compMul(tankSize)};
     for (auto i : range(count)) {
-      if (ptrPos[i].x == index3D.x && ptrPos[i].y == index3D.y && ptrPos[i].z == index3D.z) {
+      if (ptrPos[i].x == index.x && ptrPos[i].y == index.y && ptrPos[i].z == index.z) {
         ptrIbo->instanceCount -= 1;
         continue;
       } else {
@@ -118,6 +122,7 @@ void SimulationCompute::setFluidVolume(int index, float volume) {
   positionsBuffer->unmap();
   ibo->unmap();
 }
+
 
 void SimulationCompute::swapBuffers() { std::swap(cellBuffers[0], cellBuffers[1]); }
 

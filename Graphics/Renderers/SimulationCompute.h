@@ -18,6 +18,7 @@ public:
   void simulate();
 
   void setFluidVolume(int index, float volume);
+  void setFluidVolume(glm::uvec3 index, float volume);
 
   void swapBuffers();
 
