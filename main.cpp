@@ -1,6 +1,5 @@
 #include "GlslShaderLoader.h"
 #include "io/print.h"
-#include "time/FPSCounter.h"
 #include "ui.h"
 #include <Camera.h>
 #include <Renderers/CellRenderer.h>
@@ -13,7 +12,6 @@
 #include <geGL/StaticCalls.h>
 #include <geGL/geGL.h>
 #include <imgui/imgui.h>
-#include <imgui/imgui_impl_opengl3.h>
 #include <imgui/imgui_impl_sdl.h>
 #include <thread>
 
@@ -112,12 +110,11 @@ int main() {
 
   UI ui{*window};
 
-  FPSCounter fpsCounter;
+
   auto start = std::chrono::system_clock::now();
   mainLoop->setIdleCallback([&]() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    ui.setFps(fpsCounter.current(), fpsCounter.average());
     const auto simSpeed = ui.simulationSpeed();
     if (ui.isSimulationRunning()) {
       auto now = std::chrono::system_clock::now();
@@ -145,7 +142,6 @@ int main() {
     ui.render();
 
     window->swap();
-    fpsCounter.frame();
   });
 
   (*mainLoop)();

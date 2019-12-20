@@ -15,6 +15,8 @@ UI::UI(sdl2cpp::Window &window) : window(window) {
 }
 
 void UI::loop() {
+  fpsCounter.frame();
+  setFps(fpsCounter.current(), fpsCounter.average());
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplSDL2_NewFrame(window.getWindow());
   ImGui::NewFrame();
@@ -105,4 +107,4 @@ bool UI::isSimulationRunning() { return isSimRunning; }
 float UI::simulationSpeed() { return simSpeed; }
 bool UI::isWaterfallEnabled() { return waterfallEnabled; }
 bool UI::isResetPressed() { return resetPressed; }
-int UI::selectedVisualisation() { return selected; }
+unsigned int UI::selectedVisualisation() { return selected; }

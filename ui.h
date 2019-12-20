@@ -10,6 +10,7 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_opengl3.h>
 #include <imgui/imgui_impl_sdl.h>
+#include "time/FPSCounter.h"
 
 class UI {
 public:
@@ -27,7 +28,7 @@ public:
   [[nodiscard]] float simulationSpeed();
   [[nodiscard]] bool isWaterfallEnabled();
   [[nodiscard]] bool isResetPressed();
-  [[nodiscard]] int selectedVisualisation();
+  [[nodiscard]] unsigned int selectedVisualisation();
 
 private:
   sdl2cpp::Window &window;
@@ -36,7 +37,9 @@ private:
   bool waterfallEnabled = false;
   float simSpeed = 0.f;
   bool resetPressed = false;
-  int selected = 1;
+  unsigned int selected = 1;
+
+  FPSCounter fpsCounter;
 };
 
 #endif // GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_UI_H
