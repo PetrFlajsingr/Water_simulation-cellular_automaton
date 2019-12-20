@@ -1,6 +1,7 @@
 #include "GlslShaderLoader.h"
 #include "io/print.h"
 #include "time/FPSCounter.h"
+#include "ui.h"
 #include <Camera.h>
 #include <Renderers/CellRenderer.h>
 #include <Renderers/GridRenderer.h>
@@ -111,12 +112,7 @@ int main() {
   //glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  IMGUI_CHECKVERSION();
-  ImGui::CreateContext();
-  auto io = ImGui::GetIO();
-  ImGui_ImplSDL2_InitForOpenGL(window->getWindow(), window->getContext("rendering"));
-  ImGui_ImplOpenGL3_Init("#version 450");
-  ImGui::StyleColorsDark();
+  UI ui{*window};
 
   FPSCounter fpsCounter;
   auto start = std::chrono::system_clock::now();
