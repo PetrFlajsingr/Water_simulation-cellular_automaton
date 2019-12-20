@@ -19,46 +19,7 @@ using namespace std::string_literals;
 using namespace std::chrono_literals;
 using namespace ge::gl;
 
-auto camera = Camera(glm::vec3(1.0, 1.0, 5.0));
 
-bool SDLHandler(const SDL_Event &event) {
-  static bool mousePressed = false;
-  if (ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantCaptureKeyboard) {
-    return false;
-  }
-  if (event.type == SDL_KEYDOWN) {
-    switch (event.key.keysym.sym) {
-    case SDLK_UP:
-    case SDLK_w:
-      camera.ProcessKeyboard(Camera_Movement::FORWARD, 0.1);
-      return true;
-    case SDLK_DOWN:
-    case SDLK_s:
-      camera.ProcessKeyboard(Camera_Movement::BACKWARD, 0.1);
-      return true;
-    case SDLK_LEFT:
-    case SDLK_a:
-      camera.ProcessKeyboard(Camera_Movement::LEFT, 0.1);
-      return true;
-    case SDLK_RIGHT:
-    case SDLK_d:
-      camera.ProcessKeyboard(Camera_Movement::RIGHT, 0.1);
-      return true;
-    default:
-      return false;
-    }
-  } else if (event.type == SDL_MOUSEBUTTONDOWN and event.button.button == SDL_BUTTON_LEFT) {
-    mousePressed = true;
-    return true;
-  } else if (event.type == SDL_MOUSEMOTION and mousePressed) {
-    camera.ProcessMouseMovement(-event.motion.xrel, event.motion.yrel);
-    return true;
-  } else if (event.type == SDL_MOUSEBUTTONUP and event.button.button == SDL_BUTTON_LEFT) {
-    mousePressed = false;
-    return true;
-  }
-  return false;
-}
 
 std::pair<unsigned int, unsigned int> getWindowSize() {
   SDL_DisplayMode DM;
@@ -83,7 +44,6 @@ int main() {
   auto window = std::make_shared<sdl2cpp::Window>(windowWidth, windowHeight);
   window->createContext("rendering");
   mainLoop->addWindow("mainWindow", window);
-  mainLoop->setEventHandler(SDLHandler);
 
   /*init OpenGL*/
   ge::gl::init(SDL_GL_GetProcAddress);
@@ -108,7 +68,7 @@ int main() {
   // glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  UI ui{*window};
+  UI ui{*window, *mainLoop};
 
 
   auto start = std::chrono::system_clock::now();
@@ -134,9 +94,9 @@ int main() {
       simulation.reset();
     }
 
-    gridRenderer.draw(camera.GetViewMatrix(), DrawType(ui.selectedVisualisation()));
+    gridRenderer.draw(ui.camera.GetViewMatrix(), DrawType(ui.selectedVisualisation()));
 
-    cellRenderer.draw(camera.GetViewMatrix(), camera.Position);
+    cellRenderer.draw(ui.camera.GetViewMatrix(), ui.camera.Position);
 
     ui.loop();
     ui.render();

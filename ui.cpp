@@ -6,12 +6,13 @@
 #include "misc/types/Range.h"
 
 using namespace MakeRange;
-UI::UI(sdl2cpp::Window &window) : window(window) {
+UI::UI(sdl2cpp::Window &window, sdl2cpp::MainLoop &mainLoop) : window(window) {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGui_ImplSDL2_InitForOpenGL(window.getWindow(), window.getContext("rendering"));
   ImGui_ImplOpenGL3_Init("#version 450");
   ImGui::StyleColorsDark();
+  mainLoop.setEventHandler([this](const auto &event) {return SDLHandler(event);});
 }
 
 void UI::loop() {
@@ -108,3 +109,41 @@ float UI::simulationSpeed() { return simSpeed; }
 bool UI::isWaterfallEnabled() { return waterfallEnabled; }
 bool UI::isResetPressed() { return resetPressed; }
 unsigned int UI::selectedVisualisation() { return selected; }
+bool UI::SDLHandler(const SDL_Event &event) {
+  static bool mousePressed = false;
+  if (ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantCaptureKeyboard) {
+    return false;
+  }
+  if (event.type == SDL_KEYDOWN) {
+    switch (event.key.keysym.sym) {
+      case SDLK_UP:
+      case SDLK_w:
+        camera.ProcessKeyboard(Camera_Movement::FORWARD, 0.1);
+        return true;
+      case SDLK_DOWN:
+      case SDLK_s:
+        camera.ProcessKeyboard(Camera_Movement::BACKWARD, 0.1);
+        return true;
+      case SDLK_LEFT:
+      case SDLK_a:
+        camera.ProcessKeyboard(Camera_Movement::LEFT, 0.1);
+        return true;
+      case SDLK_RIGHT:
+      case SDLK_d:
+        camera.ProcessKeyboard(Camera_Movement::RIGHT, 0.1);
+        return true;
+      default:
+        return false;
+    }
+  } else if (event.type == SDL_MOUSEBUTTONDOWN and event.button.button == SDL_BUTTON_LEFT) {
+    mousePressed = true;
+    return true;
+  } else if (event.type == SDL_MOUSEMOTION and mousePressed) {
+    camera.ProcessMouseMovement(-event.motion.xrel, event.motion.yrel);
+    return true;
+  } else if (event.type == SDL_MOUSEBUTTONUP and event.button.button == SDL_BUTTON_LEFT) {
+    mousePressed = false;
+    return true;
+  }
+  return false;
+}
