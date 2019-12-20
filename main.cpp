@@ -22,7 +22,6 @@ using namespace std::chrono_literals;
 using namespace ge::gl;
 
 auto camera = Camera(glm::vec3(1.0, 1.0, 5.0));
-auto simulate = false;
 
 bool SDLHandler(const SDL_Event &event) {
   static bool mousePressed = false;
@@ -65,8 +64,7 @@ bool SDLHandler(const SDL_Event &event) {
 
 std::pair<unsigned int, unsigned int> getWindowSize() {
   SDL_DisplayMode DM;
-  if (SDL_GetDesktopDisplayMode(0, &DM) != 0)
-  {
+  if (SDL_GetDesktopDisplayMode(0, &DM) != 0) {
     throw exc::Error("SDL_GetDesktopDisplayMode failed");
   }
   unsigned int w = DM.w * 0.8;
@@ -109,105 +107,19 @@ int main() {
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
-  //glEnable(GL_BLEND);
+  // glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   UI ui{*window};
 
   FPSCounter fpsCounter;
   auto start = std::chrono::system_clock::now();
-  float simSpeed = 0.01f;
-  bool waterfallEnabled = false;
   mainLoop->setIdleCallback([&]() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame(window->getWindow());
-    ImGui::NewFrame();
-
-    bool *showStatus = nullptr;
-    ImGui::SetNextWindowBgAlpha(0.35f);
-    ImGui::Begin("Simulation status", showStatus,
-                 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
-                     ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav);
-
-    ImGui::Text("FPS (avg): %d\nFPS (cur): %d", static_cast<int>(fpsCounter.average()), static_cast<int>(fpsCounter.current()));
-    if (simulate) {
-      ImGui::Text("Status: ");
-      ImGui::SameLine();
-      ImGui::PushStyleColor(0, ImVec4(0.0, 1.0, 0.0, 1.0));
-      ImGui::Text("Running");
-      ImGui::PopStyleColor(1);
-    } else {
-      ImGui::Text("Status: ");
-      ImGui::SameLine();
-      ImGui::PushStyleColor(0, ImVec4(1.0, 0.0, 0.0, 1.0));
-      ImGui::Text("Stopped");
-      ImGui::PopStyleColor(1);
-    }
-    ImGui::SetWindowPos(ImVec2(window->getWidth() - ImGui::GetWindowWidth(), 0));
-    auto previousSize = ImGui::GetWindowSize();
-    ImGui::End();
-
-    ImGui::Begin("Simulation", showStatus, ImGuiWindowFlags_AlwaysAutoResize);
-    if (!simulate) {
-      if (ImGui::Button("Stat Simulation")) {
-        simulate = true;
-      }
-    } else {
-      if (ImGui::Button("Pause Simulation")) {
-        simulate = false;
-      }
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Reset")) {
-      simulate = false;
-      simulation.reset();
-      simulation.setFluidVolume(15, 1.0);
-      simulation.setFluidVolume(14, 1.0);
-    }
-    auto waterfallButtonLabel = waterfallEnabled ? "Disable waterfall" : "Enable waterfall";
-    if (ImGui::Button(waterfallButtonLabel)) {
-      waterfallEnabled = !waterfallEnabled;
-    }
-    if (waterfallEnabled) {
-      for (auto x : range(25, 30, 1)) {
-        simulation.setFluidVolume({x, x, x}, 1.0f);
-      }
-    }
-    ImGui::SliderFloat("Simulation speed", &simSpeed, 0.0f, 1.0f);
-
-    ImGui::SetWindowPos(ImVec2(window->getWidth() - ImGui::GetWindowWidth(), previousSize.y));
-    previousSize.y += ImGui::GetWindowSize().y;
-    ImGui::End();
-
-    ImGui::Begin("Visual", showStatus, ImGuiWindowFlags_AlwaysAutoResize);
-    ImGui::SetWindowSize(ImVec2(previousSize.x, ImGui::GetWindowHeight()));
-    ImGui::Text("Show:");
-    ImGui::SameLine();
-    std::array<std::string, 3> items{"None", "Box", "Grid"};
-    static std::size_t selected = 1;
-    float w = ImGui::CalcItemWidth();
-    float spacing = 24.f;
-    float button_sz = ImGui::GetFrameHeight();
-    ImGui::PushItemWidth(w - spacing * 2.0f - button_sz * 2.0f);
-    if (ImGui::BeginCombo("", items[selected].c_str())) // The second parameter is the label previewed before opening the combo.
-    {
-      for (std::size_t n = 0; n < items.size(); n++) {
-        bool is_selected = (n == selected); // You can store your selection however you want, outside or inside your objects
-        if (ImGui::Selectable(items[n].c_str(), is_selected))
-          selected = n;
-        if (is_selected)
-          ImGui::SetItemDefaultFocus(); // You may set the initial focus when opening the combo (scrolling + for keyboard
-                                        // navigation support)
-      }
-      ImGui::EndCombo();
-    }
-    ImGui::PopItemWidth();
-    ImGui::SetWindowPos(ImVec2(window->getWidth() - ImGui::GetWindowWidth(), previousSize.y));
-    ImGui::End();
-
-    if (simulate) {
+    ui.setFps(fpsCounter.current(), fpsCounter.average());
+    const auto simSpeed = ui.simulationSpeed();
+    if (ui.isSimulationRunning()) {
       auto now = std::chrono::system_clock::now();
       if (simSpeed == 1.f || (simSpeed != 0.f && now - start >= 1000ms * (1 - simSpeed))) {
         start = now;
@@ -215,13 +127,22 @@ int main() {
         simulation.swapBuffers();
       }
     }
+    if (ui.isWaterfallEnabled()) {
+      simulation.setFluidVolume({20, 20, 20}, 1.0);
+      simulation.setFluidVolume({21, 20, 20}, 1.0);
+      simulation.setFluidVolume({20, 20, 21}, 1.0);
+      simulation.setFluidVolume({21, 20, 21}, 1.0);
+    }
+    if (ui.isResetPressed()) {
+      simulation.reset();
+    }
 
-    gridRenderer.draw(camera.GetViewMatrix(), DrawType(selected));
+    gridRenderer.draw(camera.GetViewMatrix(), DrawType(ui.selectedVisualisation()));
 
     cellRenderer.draw(camera.GetViewMatrix(), camera.Position);
 
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    ui.loop();
+    ui.render();
 
     window->swap();
     fpsCounter.frame();

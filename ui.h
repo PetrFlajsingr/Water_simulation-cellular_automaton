@@ -13,15 +13,30 @@
 
 class UI {
 public:
-UI(sdl2cpp::Window &window) {
-  IMGUI_CHECKVERSION();
-  ImGui::CreateContext();
-  ImGui_ImplSDL2_InitForOpenGL(window.getWindow(), window.getContext("rendering"));
-  ImGui_ImplOpenGL3_Init("#version 450");
-  ImGui::StyleColorsDark();
-}
-private:
+  explicit UI(sdl2cpp::Window &window);
 
+  void loop();
+
+  void render();
+
+  void setFps(int current, int average);
+
+  void setSimulationRunning(bool running);
+
+  [[nodiscard]] bool isSimulationRunning();
+  [[nodiscard]] float simulationSpeed();
+  [[nodiscard]] bool isWaterfallEnabled();
+  [[nodiscard]] bool isResetPressed();
+  [[nodiscard]] int selectedVisualisation();
+
+private:
+  sdl2cpp::Window &window;
+  std::pair<int, int> fps = {0, 0};
+  bool isSimRunning = false;
+  bool waterfallEnabled = false;
+  float simSpeed = 0.f;
+  bool resetPressed = false;
+  int selected = 1;
 };
 
 #endif // GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_UI_H
