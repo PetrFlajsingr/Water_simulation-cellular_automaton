@@ -47,7 +47,7 @@ add_compile_definitions(
 
 add_executable(GMU_fluid_simulation_cellular_automata ${misc_src} ${Graphics_src}
         ${imgui_src}
-        ${Simulation_src} main.cpp)
+        ${Simulation_src} main.cpp ui.cpp ui.h)
 
 target_link_libraries(GMU_fluid_simulation_cellular_automata SDL2_image geGL::geGL SDL2CPP::SDL2CPP
         )
