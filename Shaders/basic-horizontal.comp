@@ -72,10 +72,10 @@ void main() {
             outFlow = clamp(outFlow, 0, maximumCellVolume - readCells[bottomCellID].solidVolume);
         }
         writeCells[myCellID].fluidVolume = readCells[myCellID].fluidVolume + (inFlow - outFlow);
-        if (writeCells[myCellID].fluidVolume < minimumCellVolume){
-            writeCells[myCellID].fluidVolume = 0.0;
-            writeCells[myCellID].fluidHorizontalLefover = 0.0;
-        }
+
+        writeCells[myCellID].fluidVolume = writeCells[myCellID].fluidVolume * float(writeCells[myCellID].fluidVolume >= minimumCellVolume);
+        writeCells[myCellID].fluidHorizontalLefover = writeCells[myCellID].fluidHorizontalLefover * float(writeCells[myCellID].fluidVolume >= minimumCellVolume);
+
         writeCells[myCellID].fluidHorizontalLefover = readCells[myCellID].fluidVolume - outFlow;
 
     }

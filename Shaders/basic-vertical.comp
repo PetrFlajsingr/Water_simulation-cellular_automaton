@@ -66,9 +66,8 @@ void main() {
             }
         }
         writeCells[myCellID].fluidVolume = readCells[myCellID].fluidVolume + (inFlow - outFlow);
-        if (writeCells[myCellID].fluidVolume < minimumCellVolume){
-            writeCells[myCellID].fluidVolume = 0.0;
-        }
+
+        writeCells[myCellID].fluidVolume = writeCells[myCellID].fluidVolume * float(writeCells[myCellID].fluidVolume >= minimumCellVolume);
 
         if (writeCells[myCellID].fluidVolume > 0.0){
             uint positionID = atomicAdd(drawArray.instanceCount, 1u);
