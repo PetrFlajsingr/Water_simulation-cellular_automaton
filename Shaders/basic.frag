@@ -1,7 +1,7 @@
 #version 450
 
 layout(location = 0) in vec3 fragPosition;
-layout(location = 1) in vec3 fragColor;
+layout(location = 1) in vec4 fragColor;
 layout(location = 2) in vec2 fragTexCoord;
 layout(location = 3) in vec3 fragNormal;
 layout(location = 4) in vec3 fragCameraPosition;
@@ -25,6 +25,6 @@ void main() {
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
     vec3 specular = specularStrength * spec * lightColor;
 
-    vec3 result = (ambient + diffuse + specular) * fragColor;
-    gl_FragColor = vec4(result, 0.5);
+    vec3 result = (ambient + diffuse + specular) * fragColor.rgb;
+    gl_FragColor = vec4(result, fragColor.a);
 }

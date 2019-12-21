@@ -39,6 +39,11 @@ private:
   bool isSimRunning = false;
   bool waterfallEnabled = false;
   float simSpeed = 0.f;
+  float cellSize = 0.5f;
+
+public:
+  float getCellSize() const;
+private:
   bool resetPressed = false;
   unsigned int selected = 1;
 

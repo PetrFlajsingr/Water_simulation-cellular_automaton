@@ -35,7 +35,7 @@ private:
 public:
   GridRenderer(glm::vec3 gridSize, glm::mat4 projectionMat);
 
-  void draw(const glm::mat4 &viewMat, DrawType type = DrawType::Grid);
+  void draw(const glm::mat4 &viewMat, DrawType type = DrawType::Grid, float cellSize = 0.5);
 
 private:
   std::vector<glm::vec3> generateGrid(glm::ivec3 size);

@@ -68,7 +68,7 @@ GridRenderer::GridRenderer(glm::vec3 gridSize, glm::mat4 projectionMat) : projec
   vaoBox->addAttrib(vboBox, 0, 3, GL_FLOAT, static_cast<GLsizei>(sizeof(glm::vec3)));
 }
 
-void GridRenderer::draw(const glm::mat4 &viewMat, DrawType type) {
+void GridRenderer::draw(const glm::mat4 &viewMat, DrawType type, float cellSize) {
   if (type != DrawType::None) {
     program->use();
     int size = 0;
@@ -82,6 +82,7 @@ void GridRenderer::draw(const glm::mat4 &viewMat, DrawType type) {
     program->setMatrix4fv("Model", glm::value_ptr(glm::mat4(1.0)), 1, GL_FALSE);
     program->setMatrix4fv("View", glm::value_ptr(viewMat), 1, GL_FALSE);
     program->setMatrix4fv("Projection", glm::value_ptr(projectionMat), 1, GL_FALSE);
+    program->set("cellSize", cellSize);
     glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(size));
     if (type == DrawType::Grid) {
       vaoGrid->unbind();

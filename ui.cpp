@@ -12,7 +12,7 @@ UI::UI(sdl2cpp::Window &window, sdl2cpp::MainLoop &mainLoop) : window(window) {
   ImGui_ImplSDL2_InitForOpenGL(window.getWindow(), window.getContext("rendering"));
   ImGui_ImplOpenGL3_Init("#version 450");
   ImGui::StyleColorsDark();
-  mainLoop.setEventHandler([this](const auto &event) {return SDLHandler(event);});
+  mainLoop.setEventHandler([this](const auto &event) { return SDLHandler(event); });
 }
 
 void UI::loop() {
@@ -73,7 +73,7 @@ void UI::loop() {
   ImGui::End();
 
   ImGui::Begin("Visual", showStatus, ImGuiWindowFlags_AlwaysAutoResize);
-  ImGui::SetWindowSize(ImVec2(previousSize.x, ImGui::GetWindowHeight()));
+  //ImGui::SetWindowSize(ImVec2(previousSize.x, ImGui::GetWindowHeight()));
   ImGui::Text("Show:");
   ImGui::SameLine();
   std::array<std::string, 3> items{"None", "Box", "Grid"};
@@ -94,6 +94,11 @@ void UI::loop() {
     ImGui::EndCombo();
   }
   ImGui::PopItemWidth();
+  ImGui::Text("Cell size");
+  ImGui::SameLine();
+  ImGui::InputFloat("Cell Size", &cellSize, 0.01, 0.1, "%.2f");
+  if(cellSize < 0.0)
+    cellSize = 0.0;
   ImGui::SetWindowPos(ImVec2(window.getWidth() - ImGui::GetWindowWidth(), previousSize.y));
   ImGui::End();
 }
@@ -116,24 +121,24 @@ bool UI::SDLHandler(const SDL_Event &event) {
   }
   if (event.type == SDL_KEYDOWN) {
     switch (event.key.keysym.sym) {
-      case SDLK_UP:
-      case SDLK_w:
-        camera.ProcessKeyboard(Camera_Movement::FORWARD, 0.1);
-        return true;
-      case SDLK_DOWN:
-      case SDLK_s:
-        camera.ProcessKeyboard(Camera_Movement::BACKWARD, 0.1);
-        return true;
-      case SDLK_LEFT:
-      case SDLK_a:
-        camera.ProcessKeyboard(Camera_Movement::LEFT, 0.1);
-        return true;
-      case SDLK_RIGHT:
-      case SDLK_d:
-        camera.ProcessKeyboard(Camera_Movement::RIGHT, 0.1);
-        return true;
-      default:
-        return false;
+    case SDLK_UP:
+    case SDLK_w:
+      camera.ProcessKeyboard(Camera_Movement::FORWARD, 0.1);
+      return true;
+    case SDLK_DOWN:
+    case SDLK_s:
+      camera.ProcessKeyboard(Camera_Movement::BACKWARD, 0.1);
+      return true;
+    case SDLK_LEFT:
+    case SDLK_a:
+      camera.ProcessKeyboard(Camera_Movement::LEFT, 0.1);
+      return true;
+    case SDLK_RIGHT:
+    case SDLK_d:
+      camera.ProcessKeyboard(Camera_Movement::RIGHT, 0.1);
+      return true;
+    default:
+      return false;
     }
   } else if (event.type == SDL_MOUSEBUTTONDOWN and event.button.button == SDL_BUTTON_LEFT) {
     mousePressed = true;
@@ -147,3 +152,4 @@ bool UI::SDLHandler(const SDL_Event &event) {
   }
   return false;
 }
+float UI::getCellSize() const { return cellSize; }

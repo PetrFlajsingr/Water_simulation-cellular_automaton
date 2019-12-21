@@ -35,7 +35,7 @@ CellRenderer::CellRenderer([[maybe_unused]] const std::string &cellModelPath, co
   vao->addAttrib(vbo, 3, 3, GL_FLOAT, static_cast<GLsizei>(sizeof(Model::VertexData)), offsetof(Model::VertexData, normal));
 }
 
-void CellRenderer::draw(const glm::mat4 &viewMat, const glm::vec3 &cameraPos) {
+void CellRenderer::draw(const glm::mat4 &viewMat, const glm::vec3 &cameraPos, float cellSize) {
   program->use();
 
   vao->bind();
@@ -44,6 +44,7 @@ void CellRenderer::draw(const glm::mat4 &viewMat, const glm::vec3 &cameraPos) {
   program->setMatrix4fv("Model", glm::value_ptr(glm::mat4(1.0)), 1, GL_FALSE);
   program->setMatrix4fv("View", glm::value_ptr(viewMat), 1, GL_FALSE);
   program->setMatrix4fv("Projection", glm::value_ptr(projectionMat), 1, GL_FALSE);
+  program->set("cellSize", cellSize);
   program->set3fv("cameraPosition", glm::value_ptr(cameraPos));
   ibo->bind(GL_DRAW_INDIRECT_BUFFER);
   glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr);

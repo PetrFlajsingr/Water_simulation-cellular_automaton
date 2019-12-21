@@ -94,9 +94,9 @@ int main() {
       simulation.reset();
     }
 
-    gridRenderer.draw(ui.camera.GetViewMatrix(), DrawType(ui.selectedVisualisation()));
+    gridRenderer.draw(ui.camera.GetViewMatrix(), DrawType(ui.selectedVisualisation()), ui.getCellSize());
 
-    cellRenderer.draw(ui.camera.GetViewMatrix(), ui.camera.Position);
+    cellRenderer.draw(ui.camera.GetViewMatrix(), ui.camera.Position, ui.getCellSize());
 
     ui.loop();
     ui.render();
