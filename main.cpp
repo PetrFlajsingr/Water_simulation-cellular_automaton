@@ -19,8 +19,6 @@ using namespace std::string_literals;
 using namespace std::chrono_literals;
 using namespace ge::gl;
 
-
-
 std::pair<unsigned int, unsigned int> getWindowSize() {
   SDL_DisplayMode DM;
   if (SDL_GetDesktopDisplayMode(0, &DM) != 0) {
@@ -55,9 +53,15 @@ int main() {
   auto gridRenderer = GridRenderer(tankSize, proj);
   auto simulation = SimulationCompute(tankSize, cellRenderer.getIbo(), cellRenderer.getPositionsBuffer());
 
-  using namespace MakeRange;
-  for (auto [x, y, z] : range<unsigned int, 3>({5, 5, 5}, {40, 40, 40}, {1, 1, 1})) {
-    simulation.setFluidVolume({x, y, z}, 1.0f);
+  {
+    using namespace MakeRange;
+    std::vector<glm::uvec3> positions;
+    std::vector<float> volumes;
+    for (auto [x, y, z] : range<unsigned int, 3>({5, 5, 5}, {40, 40, 40}, {1, 1, 1})) {
+      positions.emplace_back(glm::vec3{x, y, z});
+      volumes.emplace_back(1.0);
+    }
+    simulation.setFluidVolume(positions, volumes);
   }
 
   glClearColor(0, 0, 0, 1);
@@ -69,7 +73,6 @@ int main() {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   UI ui{*window, *mainLoop};
-
 
   auto start = std::chrono::system_clock::now();
   mainLoop->setIdleCallback([&]() {
@@ -85,10 +88,7 @@ int main() {
       }
     }
     if (ui.isWaterfallEnabled()) {
-      simulation.setFluidVolume({20, 20, 20}, 1.0);
-      simulation.setFluidVolume({21, 20, 20}, 1.0);
-      simulation.setFluidVolume({20, 20, 21}, 1.0);
-      simulation.setFluidVolume({21, 20, 21}, 1.0);
+      simulation.setFluidVolume({{20, 20, 20}, {21, 20, 20}, {20, 20, 21}, {21, 20, 21}}, std::vector<float>{1.0, 1.0, 1.0, 1.0});
     }
     if (ui.isResetPressed()) {
       simulation.reset();

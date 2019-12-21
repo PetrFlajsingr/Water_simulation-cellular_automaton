@@ -18,7 +18,8 @@ public:
   void simulate();
 
   void setFluidVolume(int index, float volume);
-  void setFluidVolume(glm::uvec3 index, float volume);
+  void setFluidVolume(glm::vec3 index, float volume);
+  void setFluidVolume(std::vector<glm::uvec3> indices, std::vector<float> volumes);
 
   void swapBuffers();
 
