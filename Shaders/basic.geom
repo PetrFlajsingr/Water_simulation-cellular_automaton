@@ -78,15 +78,30 @@ float[8] avgVolume() {
     result[5] = readCells[instanceID[0]].fluidVolume + readCells[instanceID[0] + 1u].fluidVolume
     + readCells[instanceID[0] + 1u + zOffset].fluidVolume
     + readCells[instanceID[0] + zOffset].fluidVolume;
+    result[5] *= float(readCells[instanceID[0]].fluidVolume > 0) * float(readCells[instanceID[0] + 1u].fluidVolume > 0)
+    + float(readCells[instanceID[0] + 1u + zOffset].fluidVolume > 0)
+    + float(readCells[instanceID[0] + zOffset].fluidVolume > 0);
+
     result[4] = readCells[instanceID[0]].fluidVolume + readCells[instanceID[0] + 1u].fluidVolume
     + readCells[instanceID[0] + 1u - zOffset].fluidVolume
     + readCells[instanceID[0] - zOffset].fluidVolume;
-    result[7] = readCells[instanceID[0]].fluidVolume + readCells[instanceID[0] - 1u].fluidVolume
+    result[4] *= float(readCells[instanceID[0]].fluidVolume > 0) * float(readCells[instanceID[0] + 1u].fluidVolume > 0)
+    + float(readCells[instanceID[0] + 1u - zOffset].fluidVolume > 0)
+    + float(readCells[instanceID[0] - zOffset].fluidVolume > 0);
+
+    result[6] = readCells[instanceID[0]].fluidVolume + readCells[instanceID[0] - 1u].fluidVolume
     + readCells[instanceID[0] - 1u + zOffset].fluidVolume
     + readCells[instanceID[0] + zOffset].fluidVolume;
-    result[6] = readCells[instanceID[0]].fluidVolume + readCells[instanceID[0] - 1u].fluidVolume
+    result[6] *= float(readCells[instanceID[0]].fluidVolume > 0) * float(readCells[instanceID[0] - 1u].fluidVolume > 0)
+    + float(readCells[instanceID[0] - 1u + zOffset].fluidVolume > 0)
+    + float(readCells[instanceID[0] + zOffset].fluidVolume > 0);
+
+    result[7] = readCells[instanceID[0]].fluidVolume + readCells[instanceID[0] - 1u].fluidVolume
     + readCells[instanceID[0] - 1u - zOffset].fluidVolume
     + readCells[instanceID[0] - zOffset].fluidVolume;
+    result[7] *= float(readCells[instanceID[0]].fluidVolume > 0) * float(readCells[instanceID[0] - 1u].fluidVolume > 0)
+    + float(readCells[instanceID[0] - 1u - zOffset].fluidVolume > 0)
+    + float(readCells[instanceID[0] - zOffset].fluidVolume > 0);
     for (uint i = 4; i < 8; ++i) {
         result[i] =  result[i] / 4.f;
     }
