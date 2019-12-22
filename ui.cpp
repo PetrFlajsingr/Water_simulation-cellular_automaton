@@ -107,7 +107,7 @@ void UI::render() {
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
-void UI::setFps(int current, int average) { fps = {current, average}; }
+void UI::setFps(int current, int average) { fps = {average, current}; }
 void UI::setSimulationRunning(bool running) { isSimRunning = running; }
 bool UI::isSimulationRunning() { return isSimRunning; }
 float UI::simulationSpeed() { return simSpeed; }
