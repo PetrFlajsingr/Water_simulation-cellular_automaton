@@ -14,7 +14,7 @@ layout(std430, binding=1) buffer ReadBuffer{
     Cell readCells[];
 };
 
-const float maximumCellVolume = 1.0;
+const float maximumCellVolume = 4/3;
 const float minimumCellVolume = 0.005;
 const float maximumCompression = 0.25;
 const float maximumFlow = 4.0f;
