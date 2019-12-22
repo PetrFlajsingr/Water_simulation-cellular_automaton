@@ -51,7 +51,7 @@ int main() {
 
   auto cellRenderer = CellRenderer(SRC_DIR + "/Resources/Models/cube.obj"s, proj, tankSize);
   auto gridRenderer = GridRenderer(tankSize, proj);
-  auto simulation = SimulationCompute(tankSize, cellRenderer.getIbo(), cellRenderer.getPositionsBuffer());
+  auto simulation = SimulationCompute(tankSize);
 
   {
     using namespace MakeRange;
@@ -71,6 +71,7 @@ int main() {
   glCullFace(GL_BACK);
   // glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glPointSize(5);
 
   UI ui{*window, *mainLoop};
 
@@ -84,7 +85,6 @@ int main() {
       if (simSpeed == 1.f || (simSpeed != 0.f && now - start >= 1000ms * (1 - simSpeed))) {
         start = now;
         simulation.simulate();
-        simulation.swapBuffers();
       }
     }
     if (ui.isWaterfallEnabled()) {
@@ -96,7 +96,7 @@ int main() {
 
     gridRenderer.draw(ui.camera.GetViewMatrix(), DrawType(ui.selectedVisualisation()), ui.getCellSize());
 
-    cellRenderer.draw(ui.camera.GetViewMatrix(), ui.camera.Position, ui.getCellSize());
+    cellRenderer.draw(ui.camera.GetViewMatrix(), ui.camera.Position, simulation.getCellBuffer(), ui.getCellSize());
 
     ui.loop();
     ui.render();

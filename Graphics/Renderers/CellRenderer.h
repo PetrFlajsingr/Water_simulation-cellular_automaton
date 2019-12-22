@@ -19,21 +19,18 @@ class CellRenderer {
 public:
   CellRenderer(const std::string &cellModelPath, const glm::mat4 &projectionMat, const glm::uvec3 &tankSize);
 
-  void draw(const glm::mat4 &viewMat, const glm::vec3 &cameraPos, float cellSize = 0.5);
-
-  [[nodiscard]] const BufferPtr &getIbo() const;
-
-  [[nodiscard]] const BufferPtr &getPositionsBuffer() const;
+  void draw(const glm::mat4 &viewMat, const glm::vec3 &cameraPos, const BufferPtr& cellBuffer, float cellSize = 0.5);
 
 private:
   ProgramPtr program;
   BufferPtr vbo;
   BufferPtr ebo;
-  BufferPtr ibo;
-  BufferPtr positionsBuffer;
   VertexArrayPtr vao = std::make_shared<ge::gl::VertexArray>();
 
   glm::mat4 projectionMat{};
+
+  glm::uvec3 tankSize;
+  unsigned int vertexBufferSize = 0;
 };
 
 #endif // GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_CELLRENDERER_H

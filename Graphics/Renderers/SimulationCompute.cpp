@@ -15,8 +15,7 @@
 
 using namespace ge::gl;
 
-SimulationCompute::SimulationCompute(const glm::uvec3 tankSize, BufferPtr ibo, BufferPtr positionBuffer)
-    : ibo(std::move(ibo)), positionsBuffer(std::move(positionBuffer)), tankSize(tankSize) {
+SimulationCompute::SimulationCompute(const glm::uvec3 tankSize) : tankSize(tankSize) {
   using namespace ShaderLiterals;
   horizontalProgram = std::make_shared<ge::gl::Program>("basic-horizontal"_comp);
   verticalProgram = std::make_shared<ge::gl::Program>("basic-vertical"_comp);
@@ -37,8 +36,6 @@ void SimulationCompute::simulate() {
   horizontalProgram->use();
   cellBuffers[0]->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
   cellBuffers[1]->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
-  positionsBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
-  ibo->bindBase(GL_SHADER_STORAGE_BUFFER, 3);
 
   glDispatchCompute(tankSize.x / localSizes.x, tankSize.y / localSizes.y, tankSize.z / localSizes.z);
 
@@ -64,6 +61,7 @@ void SimulationCompute::simulate() {
     cellBuffers[0]->unmap();
     cellBuffers[1]->unmap();*/
 
+  swapBuffers();
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
@@ -86,55 +84,22 @@ void SimulationCompute::setFluidVolume(std::vector<glm::uvec3> indices, std::vec
 
   auto ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
   auto ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_READ_WRITE));
-  auto ptrPos = reinterpret_cast<glm::vec4 *>(positionsBuffer->map(GL_READ_WRITE));
-  auto ptrIbo = reinterpret_cast<DrawElementsIndirectCommand *>(ibo->map(GL_READ_WRITE));
 
-  auto count = ptrIbo->instanceCount;
   for (auto i : range(indices.size())) {
     auto linearIndex = indices[i].x + indices[i].y * tankSize.x + indices[i].z * tankSize.y * tankSize.z;
     ptrRD[linearIndex].setFluidVolume(volumes[i]);
     ptrWR[linearIndex].setFluidVolume(volumes[i]);
-    if (volumes[i] > 0.0) {
-      for (auto j : range<unsigned int>(0, count)) {
-        if (ptrPos[j].x == indices[i].x && ptrPos[j].y == indices[i].y && ptrPos[j].z == indices[i].z) {
-          ptrPos[j].w = volumes[i];
-          break;
-        }
-        if (count == j) {
-          ptrPos[count + i] = glm::vec4(indices[i], volumes[i]);
-          ptrIbo->instanceCount += 1;
-        }
-      }
-    } else {
-      std::vector<glm::vec4> newPos{glm::compMul(tankSize)};
-      for (auto i : range(count)) {
-        if (ptrPos[i].x == indices[i].x && ptrPos[i].y == indices[i].y && ptrPos[i].z == indices[i].z) {
-          ptrIbo->instanceCount -= 1;
-          continue;
-        } else {
-          newPos.emplace_back(ptrPos[i]);
-        }
-      }
-      ptrPos = newPos.data();
-    }
   }
 
   cellBuffers[0]->unmap();
   cellBuffers[1]->unmap();
-  positionsBuffer->unmap();
-  ibo->unmap();
 }
 
-void SimulationCompute::swapBuffers() { std::swap(cellBuffers[0], cellBuffers[1]); }
-
-void SimulationCompute::reset() {
-  initBuffers(glm::compMul(tankSize));
-  [[maybe_unused]] auto ptrPos = reinterpret_cast<glm::vec4 *>(positionsBuffer->map(GL_READ_WRITE));
-  [[maybe_unused]] auto ptrIbo = reinterpret_cast<DrawElementsIndirectCommand *>(ibo->map(GL_READ_WRITE));
-
-  ptrPos = std::vector<glm::vec4>{glm::compMul(tankSize), glm::vec4(-1)}.data();
-  ptrIbo->instanceCount = 0;
-
-  positionsBuffer->unmap();
-  ibo->unmap();
+void SimulationCompute::swapBuffers() {
+  std::swap(cellBuffers[0], cellBuffers[1]);
+  currentBuffer = (currentBuffer + 1) % 2;
 }
+
+void SimulationCompute::reset() { initBuffers(glm::compMul(tankSize)); }
+
+SimulationCompute::BufferPtr SimulationCompute::getCellBuffer() { return cellBuffers[currentBuffer]; }
