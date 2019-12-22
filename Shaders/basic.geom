@@ -8,13 +8,15 @@ struct Cell{
 };
 
 layout(points) in;
-layout(points, max_vertices = 24) out;
-//layout(triangle_strip, max_vertices = 24) out;
+//layout(points, max_vertices = 24) out;
+layout(triangle_strip, max_vertices = 24) out;
 
 layout(location = 0) in vec3 Position[];
 layout(location = 1) in vec4 Color[];
 layout(location = 4) in vec3 CameraPosition[];
 layout(location = 5) in mat4 View[];
+uniform mat4 Projection;
+layout(location = 8) uniform float cellSize;
 layout(location = 9) in uint instanceID[];
 
 uniform mat4 Model;
@@ -80,10 +82,11 @@ void main() {
                 fragNormal = normals[0];
                 fragCameraPosition = CameraPosition[0];
                 fragView = View[0];
-                gl_Position = vec4(gl_in[0].gl_Position.xyz + cube_vec_table[cube_index_table[i][j]], gl_in[0].gl_Position.w);
-                fragPosition = Position[0] + cube_vec_table[cube_index_table[i][j]];
+                const float sizeModifier = cellSize / 3.f;
+                const vec3 cubeVertex = sizeModifier * cube_vec_table[cube_index_table[i][j]];
+                gl_Position = Projection * View[0] * Model * vec4(gl_in[0].gl_Position.xyz + cubeVertex, gl_in[0].gl_Position.w);
+                fragPosition = Position[0] + cubeVertex;
                 EmitVertex();
-                EndPrimitive();
             }
         }
         EndPrimitive();

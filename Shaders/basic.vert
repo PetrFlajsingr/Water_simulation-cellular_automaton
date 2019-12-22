@@ -46,7 +46,7 @@ void main() {
     vec4 pos = vec4(vertexPos + cellPosition, 1.0);
     pos.xyz *= cellSize;
     fragPosition = (Model * pos).xyz;
-    pos = Projection * View * Model * pos;
+  //  pos = Projection * View * Model * pos;
     gl_Position = pos;
     fragColor = color;
     fragView = View;
