@@ -20,6 +20,7 @@ layout(location = 8) uniform float cellSize;
 layout(location = 9) in uint instanceID[];
 
 uniform mat4 Model;
+uniform uvec3 tankSize;
 
 layout(location = 0) out vec3 fragPosition;
 layout(location = 1) out vec4 fragColor;
@@ -47,14 +48,14 @@ vec2 texCoords[1] = {
 };
 
 const vec3 cube_vec_table[8] = {
-vec3(1.00000, 0.000000, -1.00000),
+vec3(1.00000, 0.000000, 0),
 vec3(1.00000, 0.000000, 1.00000),
-vec3(-1.00000, 0.000000, 1.00000),
-vec3(-1.00000, 0.000000, -1.00000),
-vec3(1.00000, 1.000000, -1.00000),
+vec3(0, 0.000000, 1.00000),
+vec3(0, 0.000000, 0),
+vec3(1.00000, 1.000000, 0),
 vec3(1.00000, 1.000000, 1.00000),
-vec3(-1.00000, 1.000000, 1.00000),
-vec3(-1.00000, 1.000000, -1.00000)
+vec3(0, 1.000000, 1.00000),
+vec3(0, 1.000000, 0)
 };
 const uvec3 cube_index_table[12] = {
 uvec3(3, 1, 0),
@@ -71,10 +72,32 @@ uvec3(6, 2, 7),
 uvec3(3, 0, 7)
 };
 
+float[8] avgVolume() {
+    float result[8] = { 1, 1, 1, 1, 0.f, 0.f, 0.f, 0.f};
+    uint zOffset = tankSize.x * tankSize.y;
+    result[5] = readCells[instanceID[0]].fluidVolume + readCells[instanceID[0] + 1u].fluidVolume
+    + readCells[instanceID[0] + 1u + zOffset].fluidVolume
+    + readCells[instanceID[0] + zOffset].fluidVolume;
+    result[4] = readCells[instanceID[0]].fluidVolume + readCells[instanceID[0] + 1u].fluidVolume
+    + readCells[instanceID[0] + 1u - zOffset].fluidVolume
+    + readCells[instanceID[0] - zOffset].fluidVolume;
+    result[7] = readCells[instanceID[0]].fluidVolume + readCells[instanceID[0] - 1u].fluidVolume
+    + readCells[instanceID[0] - 1u + zOffset].fluidVolume
+    + readCells[instanceID[0] + zOffset].fluidVolume;
+    result[6] = readCells[instanceID[0]].fluidVolume + readCells[instanceID[0] - 1u].fluidVolume
+    + readCells[instanceID[0] - 1u - zOffset].fluidVolume
+    + readCells[instanceID[0] - zOffset].fluidVolume;
+    for (uint i = 4; i < 8; ++i) {
+        result[i] =  result[i] / 4.f;
+    }
+
+    return result;
+}
 
 
 void main() {
     if (readCells[instanceID[0]].fluidVolume > 0.0){
+        float vols[8] = avgVolume();
         for (uint i = 0; i < 12; ++i) {
             for (uint j = 0; j < 3; ++j) {
                 fragColor = Color[0];
@@ -83,7 +106,9 @@ void main() {
                 fragCameraPosition = CameraPosition[0];
                 fragView = View[0];
                 const float sizeModifier = cellSize;
-                const vec3 cubeVertex = sizeModifier * cube_vec_table[cube_index_table[i][j]];
+                vec3 cubeVertex = sizeModifier * cube_vec_table[cube_index_table[i][j]];
+
+                cubeVertex.y = cubeVertex.y * vols[cube_index_table[i][j]];
                 gl_Position = Projection * View[0] * Model * vec4(gl_in[0].gl_Position.xyz + cubeVertex, gl_in[0].gl_Position.w);
                 fragPosition = Position[0] + cubeVertex;
                 EmitVertex();
@@ -92,15 +117,4 @@ void main() {
         EndPrimitive();
     }
 
-    /*if (readCells[instanceID[0]].fluidVolume > 0.0){
-        fragColor = Color[0];
-        gl_Position = gl_in[0].gl_Position;
-        fragPosition = Position[0];
-        fragTexCoord = texCoords[0];
-        fragNormal = normals[0];
-        fragCameraPosition = CameraPosition[0];
-        fragView = View[0];
-        EmitVertex();
-        EndPrimitive();
-    }*/
 }
