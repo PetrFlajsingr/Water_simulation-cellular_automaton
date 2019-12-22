@@ -82,7 +82,7 @@ void main() {
                 fragNormal = normals[0];
                 fragCameraPosition = CameraPosition[0];
                 fragView = View[0];
-                const float sizeModifier = cellSize / 3.f;
+                const float sizeModifier = cellSize;
                 const vec3 cubeVertex = sizeModifier * cube_vec_table[cube_index_table[i][j]];
                 gl_Position = Projection * View[0] * Model * vec4(gl_in[0].gl_Position.xyz + cubeVertex, gl_in[0].gl_Position.w);
                 fragPosition = Position[0] + cubeVertex;
