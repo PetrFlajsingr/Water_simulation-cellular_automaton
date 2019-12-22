@@ -84,14 +84,27 @@ int main() {
       auto now = std::chrono::system_clock::now();
       if (simSpeed == 1.f || (simSpeed != 0.f && now - start >= 1000ms * (1 - simSpeed))) {
         start = now;
-        simulation.simulate();
+        for([[maybe_unused]]auto n : MakeRange::range(1))
+        {
+          simulation.simulate();
+          if (ui.isWaterfallEnabled()) {
+            simulation.setFluidVolume({{20, 20, 20}, {21, 20, 20}, {20, 20, 21}, {21, 20, 21}}, std::vector<float>{1.0, 1.0, 1.0, 1.0});
+          }
+        }
       }
-    }
-    if (ui.isWaterfallEnabled()) {
-      simulation.setFluidVolume({{20, 20, 20}, {21, 20, 20}, {20, 20, 21}, {21, 20, 21}}, std::vector<float>{1.0, 1.0, 1.0, 1.0});
     }
     if (ui.isResetPressed()) {
       simulation.reset();
+      {
+        using namespace MakeRange;
+        std::vector<glm::uvec3> positions;
+        std::vector<float> volumes;
+        for (auto [x, y, z] : range<unsigned int, 3>({5, 5, 5}, {40, 40, 40}, {1, 1, 1})) {
+          positions.emplace_back(glm::vec3{x, y, z});
+          volumes.emplace_back(1.0);
+        }
+        simulation.setFluidVolume(positions, volumes);
+      }
     }
 
     gridRenderer.draw(ui.camera.GetViewMatrix(), DrawType(ui.selectedVisualisation()), ui.getCellSize());

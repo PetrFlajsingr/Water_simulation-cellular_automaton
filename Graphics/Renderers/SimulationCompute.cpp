@@ -82,8 +82,8 @@ void SimulationCompute::setFluidVolume(glm::vec3 index, float volume) {
 void SimulationCompute::setFluidVolume(std::vector<glm::uvec3> indices, std::vector<float> volumes) {
   using namespace MakeRange;
 
-  auto ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
-  auto ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_READ_WRITE));
+  auto ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_WRITE_ONLY));
+  auto ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_WRITE_ONLY));
 
   for (auto i : range(indices.size())) {
     auto linearIndex = indices[i].x + indices[i].y * tankSize.x + indices[i].z * tankSize.y * tankSize.z;
