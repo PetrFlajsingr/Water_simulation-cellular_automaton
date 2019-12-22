@@ -84,7 +84,7 @@ int main() {
       auto now = std::chrono::system_clock::now();
       if (simSpeed == 1.f || (simSpeed != 0.f && now - start >= 1000ms * (1 - simSpeed))) {
         start = now;
-        for([[maybe_unused]]auto n : MakeRange::range(1))
+        for([[maybe_unused]]auto n : MakeRange::range(ui.getSimulationSteps()))
         {
           simulation.simulate();
           if (ui.isWaterfallEnabled()) {

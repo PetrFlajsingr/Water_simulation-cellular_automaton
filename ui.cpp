@@ -70,6 +70,10 @@ void UI::loop() {
 
   ImGui::SetWindowPos(ImVec2(window.getWidth() - ImGui::GetWindowWidth(), previousSize.y));
   previousSize.y += ImGui::GetWindowSize().y;
+  ImGui::InputInt("Simulation cycles", &simulationCycles, 1, 1);
+  if(simulationCycles < 1)
+    simulationCycles = 1;
+
   ImGui::End();
 
   ImGui::Begin("Visual", showStatus, ImGuiWindowFlags_AlwaysAutoResize);
@@ -153,3 +157,4 @@ bool UI::SDLHandler(const SDL_Event &event) {
   return false;
 }
 float UI::getCellSize() const { return cellSize; }
+int UI::getSimulationSteps() const { return simulationCycles; }
