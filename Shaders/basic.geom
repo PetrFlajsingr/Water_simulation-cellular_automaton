@@ -9,7 +9,7 @@ struct Cell{
 
 layout(points) in;
 //layout(points, max_vertices = 24) out;
-layout(triangle_strip, max_vertices = 24) out;
+layout(triangle_strip, max_vertices = 26) out;
 
 layout(location = 0) in vec3 Position[];
 layout(location = 1) in vec4 Color[];
@@ -114,18 +114,24 @@ void main() {
     if (readCells[instanceID[0]].fluidVolume > 0.0){
         float vols[8] = avgVolume();
         for (uint i = 0; i < 12; ++i) {
+            vec4 poly[3];
+            vec3 fragy[3];
             for (uint j = 0; j < 3; ++j) {
-                fragColor = Color[0];
-                fragTexCoord = texCoords[0];
-                fragNormal = normals[0];
-                fragCameraPosition = CameraPosition[0];
-                fragView = View[0];
                 const float sizeModifier = cellSize;
                 vec3 cubeVertex = sizeModifier * cube_vec_table[cube_index_table[i][j]];
 
                 cubeVertex.y = cubeVertex.y * vols[cube_index_table[i][j]];
-                gl_Position = Projection * View[0] * Model * vec4(gl_in[0].gl_Position.xyz + cubeVertex, gl_in[0].gl_Position.w);
-                fragPosition = Position[0] + cubeVertex;
+                poly[j] = Projection * View[0] * Model * vec4(gl_in[0].gl_Position.xyz + cubeVertex, gl_in[0].gl_Position.w);
+                fragy[j] = Position[0] + cubeVertex;
+            }
+            fragColor = Color[0];
+            fragTexCoord = texCoords[0];
+            fragCameraPosition = CameraPosition[0];
+            fragView = View[0];
+            fragNormal = cross(fragy[2] - fragy[0], fragy[1] - fragy[0]);
+            for (uint j = 0; j < 3; ++j) {
+                gl_Position = poly[j];
+                fragPosition = fragy[j];
                 EmitVertex();
             }
         }
