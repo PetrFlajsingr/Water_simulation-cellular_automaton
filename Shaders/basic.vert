@@ -33,16 +33,16 @@ uvec3 to3D(uint index){
 
 void main() {
     float fluidVolume = readCells[gl_InstanceID].fluidVolume;
-    vec3 cellPosition = to3D(gl_InstanceID) + vec3(0.5, 0.0, 0.5);
+    vec3 cellPosition = to3D(gl_InstanceID);
     vec3 vertexPos = inPosition.xyz;
     vec4 color = vec4(inColor, 1.0);
-    if (fluidVolume <= 1.0){
-        vertexPos.y *= fluidVolume;
-        color.rgb *= 0.5 * (1-fluidVolume) + 0.5;
+/*    if (fluidVolume <= 1.0){
+        //vertexPos.y *= fluidVolume;
+        //color.rgb *= 0.5 * (1-fluidVolume) + 0.5;
     }
     else if (fluidVolume > 1.0){
-        color *= 0.5 * (fluidVolume/(1.0/3.0));
-    }
+        //color *= 0.5 * (fluidVolume/(1.0/3.0));
+    }*/
     vec4 pos = vec4(vertexPos + cellPosition, 1.0);
     pos.xyz *= cellSize;
     fragPosition = (Model * pos).xyz;
