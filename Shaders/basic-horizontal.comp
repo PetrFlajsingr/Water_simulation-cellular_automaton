@@ -19,7 +19,7 @@ const float minimumCellVolume = 0.005;
 const float maximumCompression = 0.25;
 const float maximumFlow = 4.0f;
 
-float verticalFlowVolume(float sourceFluidVolume, float destinationFluidVolume){
+float verticalFlowVolume(float sourceFluidVolume, float destinationFluidVolume, uint neighborCount){
     float volumeSum = sourceFluidVolume + destinationFluidVolume;
     if (volumeSum <= maximumCellVolume){
         return volumeSum;
