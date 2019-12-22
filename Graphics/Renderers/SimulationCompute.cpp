@@ -33,7 +33,7 @@ void SimulationCompute::simulate() {
     cellBuffers[0]->unmap();
     cellBuffers[1]->unmap();*/
 
-  horizontalProgram->use();
+  verticalProgram->use();
   cellBuffers[0]->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
   cellBuffers[1]->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
 
@@ -47,7 +47,7 @@ void SimulationCompute::simulate() {
     cellBuffers[0]->unmap();
     cellBuffers[1]->unmap();*/
 
-  verticalProgram->use();
+  horizontalProgram->use();
   swapBuffers();
   cellBuffers[0]->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
   cellBuffers[1]->bindBase(GL_SHADER_STORAGE_BUFFER, 1);

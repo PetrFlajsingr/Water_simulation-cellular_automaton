@@ -1,10 +1,12 @@
 #version 450
+
 struct Cell{
     float fluidVolume;
     float solidVolume;
-    float fluidHorizontalLefover;
+    float fluidVerticalLefover;
     uint stable;
 };
+
 
 layout(local_size_x = 2, local_size_y = 2, local_size_z = 2) in;
 layout(std430, binding=0) buffer WriteBuffer{
@@ -14,52 +16,63 @@ layout(std430, binding=1) buffer ReadBuffer{
     Cell readCells[];
 };
 
+uvec3 globalSize = uvec3(gl_NumWorkGroups.x * gl_WorkGroupSize.x, gl_NumWorkGroups.y * gl_WorkGroupSize.y, gl_NumWorkGroups.z * gl_WorkGroupSize.z);
+
 const float maximumCellVolume = 1.0;
 const float minimumCellVolume = 0.005;
 const float maximumCompression = 0.25;
 const float maximumFlow = 4.0f;
+const uint verticalNeighbourSize = 4;
+const ivec3 neighbourOffsets[4] = { ivec3(-1, 0, 0), ivec3(1, 0, 0), ivec3(0, 0, -1), ivec3(0, 0, 1) };
 
-float verticalFlowVolume(float sourceFluidVolume, float destinationFluidVolume, uint neighborCount){
-    float volumeSum = sourceFluidVolume + destinationFluidVolume;
-    if (volumeSum <= maximumCellVolume){
-        return volumeSum;
+int to1DCoord(uvec3 coord){
+    return int(coord.z * globalSize.x * globalSize.y + coord.y * globalSize.x + coord.x);
+}
+
+float horizontalFlowVolume(float sourceFluidVolume, float destinationFluidVolume, float destinationSolidVolume, uint neighborCount){
+    if (sourceFluidVolume > destinationFluidVolume + destinationSolidVolume){
+        float result = clamp((sourceFluidVolume - destinationFluidVolume)/ float(neighborCount),
+        0,
+        sourceFluidVolume / float(verticalNeighbourSize + 1));
+        return clamp (result, 0, maximumCellVolume - destinationSolidVolume);
     }
-    else if (volumeSum < 2*maximumCellVolume + maximumCompression){
-        return (pow(maximumCellVolume, 2) + volumeSum * maximumCompression) / (maximumCellVolume + maximumCompression);
-    }
-    else {
-        return (volumeSum + maximumCompression) / 2.0;
-    }
+    return 0.0;
 }
 
 void main() {
-    uvec3 globalSize = uvec3(gl_NumWorkGroups.x * gl_WorkGroupSize.x, gl_NumWorkGroups.y * gl_WorkGroupSize.y, gl_NumWorkGroups.z * gl_WorkGroupSize.z);
     uint myCellID = (gl_GlobalInvocationID.z * globalSize.x * globalSize.y)+ (gl_GlobalInvocationID.y * globalSize.x) + gl_GlobalInvocationID.x;
     uint invocationCount = globalSize.x * globalSize.y * globalSize.z;
-
-
     if (myCellID < invocationCount){
-        writeCells[myCellID].fluidVolume = 0.0;
         float inFlow = 0.0;
-        if (gl_GlobalInvocationID.y + 1 < globalSize.y){
-            uint upperCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + (gl_GlobalInvocationID.y + 1) * globalSize.x + gl_GlobalInvocationID.x;
-            inFlow = verticalFlowVolume(readCells[upperCellID].fluidVolume, readCells[myCellID].fluidVolume) - (readCells[myCellID].fluidVolume + readCells[myCellID].solidVolume);
-            inFlow = clamp(inFlow, 0, min(maximumFlow, readCells[upperCellID].fluidVolume));
-            inFlow = clamp(inFlow, 0, maximumCellVolume - readCells[myCellID].solidVolume);
-        }
         float outFlow = 0.0;
-        if (int(gl_GlobalInvocationID.y) - 1 >= 0){
-            uint bottomCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + (gl_GlobalInvocationID.y - 1) * globalSize.x + gl_GlobalInvocationID.x;
-            outFlow = verticalFlowVolume(readCells[myCellID].fluidVolume, readCells[bottomCellID].fluidVolume) - (readCells[bottomCellID].fluidVolume + readCells[bottomCellID].solidVolume);
-            outFlow = clamp(outFlow, 0, min(maximumFlow, readCells[myCellID].fluidVolume));
-            outFlow = clamp(outFlow, 0, maximumCellVolume - readCells[bottomCellID].solidVolume);
+
+        uint lowerVolumeNeighborCount = 0;
+        bool neighborChecks[4];
+        for (int offsetIndex = 0; offsetIndex < verticalNeighbourSize; ++offsetIndex){
+            ivec3 currentNeighbour = ivec3(gl_GlobalInvocationID) + neighbourOffsets[offsetIndex];
+            neighborChecks[offsetIndex] = all(greaterThanEqual(currentNeighbour, ivec3(0))) && all(lessThan(currentNeighbour, globalSize));
+            lowerVolumeNeighborCount += uint(neighborChecks[offsetIndex]);
+        }
+        if (lowerVolumeNeighborCount != 0) {
+            for (int offsetIndex = 0; offsetIndex < verticalNeighbourSize; ++offsetIndex){
+                ivec3 currentNeighbour = ivec3(gl_GlobalInvocationID) + neighbourOffsets[offsetIndex];
+                if ( neighborChecks[offsetIndex]) {
+                    inFlow += horizontalFlowVolume(readCells[to1DCoord(currentNeighbour)].fluidVerticalLefover,
+                    readCells[myCellID].fluidVolume,
+                    readCells[myCellID].solidVolume,
+                    lowerVolumeNeighborCount);
+
+                    outFlow += horizontalFlowVolume(readCells[myCellID].fluidVerticalLefover,
+                    readCells[to1DCoord(currentNeighbour)].fluidVolume,
+                    readCells[to1DCoord(currentNeighbour)].solidVolume,
+                    lowerVolumeNeighborCount);
+
+                }
+            }
         }
         writeCells[myCellID].fluidVolume = readCells[myCellID].fluidVolume + (inFlow - outFlow);
 
         writeCells[myCellID].fluidVolume = writeCells[myCellID].fluidVolume * float(writeCells[myCellID].fluidVolume >= minimumCellVolume);
-        writeCells[myCellID].fluidHorizontalLefover = writeCells[myCellID].fluidHorizontalLefover * float(writeCells[myCellID].fluidVolume >= minimumCellVolume);
-
-        writeCells[myCellID].fluidHorizontalLefover = readCells[myCellID].fluidVolume - outFlow;
-
     }
+
 }
