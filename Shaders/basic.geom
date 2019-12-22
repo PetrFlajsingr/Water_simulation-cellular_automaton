@@ -67,7 +67,7 @@ vec2 texCoords[1] = {
 void main() {
     if (readCells[instanceID[0]].fluidVolume > 0.0){
         fragColor = Color[0];
-        gl_Position = gl_in[0].gl_Position + vec4(box[0], 0.0);
+        gl_Position = gl_in[0].gl_Position;
         fragPosition = Position[0];
         fragTexCoord = texCoords[0];
         fragNormal = normals[0];
