@@ -8,7 +8,6 @@ include(FetchContent)
 add_compile_definitions(SRC_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\")
 
 set(SDL2_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/SDL2/lib/cmake/SDL2)
-set(GLEW_VERBOSE 1)
 
 find_package(SDL2 CONFIG REQUIRED)
 find_package(glfw3 3.2 REQUIRED)
