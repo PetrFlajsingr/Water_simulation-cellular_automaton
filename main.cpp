@@ -27,6 +27,38 @@ std::pair<unsigned int, unsigned int> getWindowSize() {
   return {w, h};
 }
 
+void initWaterFall(SimulationCompute simulation){
+  simulation.setSolid({{23, 48, 0}, {24, 48, 0}, {25, 48, 0}, {26, 48, 0}, {27, 48, 0}});
+  {
+    std::vector<glm::uvec3> result{};
+    for (auto z : MakeRange::range(10)) {
+      result.emplace_back(glm::uvec3{20, 0, z});
+      result.emplace_back(glm::uvec3{20, 1, z});
+      result.emplace_back(glm::uvec3{30, 0, z});
+      result.emplace_back(glm::uvec3{30, 1, z});
+    }
+    for (auto x : MakeRange::range(20, 30)) {
+      result.emplace_back(glm::uvec3{x, 0, 10});
+      result.emplace_back(glm::uvec3{x, 1, 10});
+    }
+    simulation.setSolid(result);
+    simulation.setSource({{23, 49, 0}, {24, 49, 0}, {25, 49, 0}, {26, 49, 0}, {27, 49, 0}});
+  }
+}
+
+void initWaterCube(SimulationCompute simulation){
+  {
+    using namespace MakeRange;
+    std::vector<glm::uvec3> positions;
+    std::vector<float> volumes;
+    for (auto [x, y, z] : range<unsigned int, 3>({5, 5, 5}, {40, 40, 40}, {1, 1, 1})) {
+      positions.emplace_back(glm::vec3{x, y, z});
+      volumes.emplace_back(1.0);
+    }
+    simulation.setFluidVolume(positions, volumes);
+  }
+}
+
 int main() {
   /*Create Window*/
   auto mainLoop = std::make_shared<sdl2cpp::MainLoop>();
@@ -51,32 +83,7 @@ int main() {
   auto gridRenderer = GridRenderer(tankSize, proj);
   auto simulation = SimulationCompute(tankSize);
 
-  /*  {
-      using namespace MakeRange;
-      std::vector<glm::uvec3> positions;
-      std::vector<float> volumes;
-      for (auto [x, y, z] : range<unsigned int, 3>({5, 5, 5}, {40, 40, 40}, {1, 1, 1})) {
-        positions.emplace_back(glm::vec3{x, y, z});
-        volumes.emplace_back(1.0);
-      }
-      simulation.setFluidVolume(positions, volumes);
-    }*/
-  simulation.setSolid({{23, 48, 0}, {24, 48, 0}, {25, 48, 0}, {26, 48, 0}, {27, 48, 0}});
-  {
-    std::vector<glm::uvec3> result{};
-    for (auto z : MakeRange::range(10)) {
-      result.emplace_back(glm::uvec3{20, 0, z});
-      result.emplace_back(glm::uvec3{20, 1, z});
-      result.emplace_back(glm::uvec3{30, 0, z});
-      result.emplace_back(glm::uvec3{30, 1, z});
-    }
-    for (auto x : MakeRange::range(20, 30)) {
-      result.emplace_back(glm::uvec3{x, 0, 10});
-      result.emplace_back(glm::uvec3{x, 1, 10});
-    }
-    simulation.setSolid(result);
-    simulation.setSource({{23, 49, 0}, {24, 49, 0}, {25, 49, 0}, {26, 49, 0}, {27, 49, 0}});
-  }
+
   glClearColor(0, 0, 0, 1);
 
   glEnable(GL_DEPTH_TEST);
@@ -87,6 +94,8 @@ int main() {
   glPointSize(5);
 
   UI ui{*window, *mainLoop};
+
+  initWaterFall(simulation);
 
   auto start = std::chrono::system_clock::now();
   mainLoop->setIdleCallback([&]() {
@@ -99,25 +108,12 @@ int main() {
         start = now;
         for ([[maybe_unused]] auto n : MakeRange::range(ui.getSimulationSteps())) {
           simulation.simulate();
-          if (ui.isWaterfallEnabled()) {
-            simulation.setFluidVolume({{23, 49, 0}, {24, 49, 0}, {25, 49, 0}, {26, 49, 0}, {27, 49, 0}},
-                                      std::vector<float>{1.0, 1.0, 1.0, 1.0});
-          }
         }
       }
     }
     if (ui.isResetPressed()) {
       simulation.reset();
-      /*      {
-              using namespace MakeRange;
-              std::vector<glm::uvec3> positions;
-              std::vector<float> volumes;
-              for (auto [x, y, z] : range<unsigned int, 3>({5, 5, 5}, {40, 40, 40}, {1, 1, 1})) {
-                positions.emplace_back(glm::vec3{x, y, z});
-                volumes.emplace_back(1.0);
-              }
-              simulation.setFluidVolume(positions, volumes);
-            }*/
+      initWaterFall(simulation);
     }
 
     gridRenderer.draw(ui.camera.GetViewMatrix(), DrawType(ui.selectedVisualisation()), ui.getCellSize());
