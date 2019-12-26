@@ -23,7 +23,7 @@ layout(std430, binding=1) buffer ReadBuffer{
 
 uvec3 globalSize = uvec3(gl_NumWorkGroups.x * gl_WorkGroupSize.x, gl_NumWorkGroups.y * gl_WorkGroupSize.y, gl_NumWorkGroups.z * gl_WorkGroupSize.z);
 
-const float maximumCellVolume = 4/3;
+const float maximumCellVolume = 1.0;
 const float minimumCellVolume = 0.005;
 const float maximumCompression = 0.25;
 const float maximumFlow = 4.0f;
@@ -61,7 +61,7 @@ void main() {
         if (lowerVolumeNeighborCount != 0) {
             for (int offsetIndex = 0; offsetIndex < verticalNeighbourSize; ++offsetIndex){
                 ivec3 currentNeighbour = ivec3(gl_GlobalInvocationID) + neighbourOffsets[offsetIndex];
-                if ( neighborChecks[offsetIndex]) {
+                if (neighborChecks[offsetIndex]) {
                     inFlow += horizontalFlowVolume(readCells[to1DCoord(currentNeighbour)].fluidVerticalLefover,
                     readCells[myCellID].fluidVolume,
                     readCells[myCellID].solidVolume,
@@ -78,6 +78,13 @@ void main() {
         writeCells[myCellID].fluidVolume = readCells[myCellID].fluidVolume + (inFlow - outFlow);
 
         writeCells[myCellID].fluidVolume = writeCells[myCellID].fluidVolume * float(writeCells[myCellID].fluidVolume >= minimumCellVolume);
+        if (bool(writeCells[myCellID].flags & CELL_SOURCE)){
+            writeCells[myCellID].fluidVolume = maximumCellVolume;
+        }
+        if (bool(writeCells[myCellID].flags & CELL_SINK)){
+            writeCells[myCellID].fluidVolume = 0.0;
+        }
+
     }
 
 }

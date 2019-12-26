@@ -73,9 +73,9 @@ int main() {
     for (auto x : MakeRange::range(20, 30)) {
       result.emplace_back(glm::uvec3{x, 0, 10});
       result.emplace_back(glm::uvec3{x, 1, 10});
-
     }
     simulation.setSolid(result);
+    simulation.setSource({{23, 49, 0}, {24, 49, 0}, {25, 49, 0}, {26, 49, 0}, {27, 49, 0}});
   }
   glClearColor(0, 0, 0, 1);
 

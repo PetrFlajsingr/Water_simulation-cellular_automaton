@@ -25,13 +25,13 @@ SimulationCompute::SimulationCompute(const glm::uvec3 tankSize) : tankSize(tankS
 
 void SimulationCompute::simulate() {
   const glm::uvec3 localSizes{2, 2, 2};
-/*    [[maybe_unused]] Cell *ptrRD;
-    [[maybe_unused]] Cell *ptrWR;
-    ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
-    ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_READ_WRITE));
+  /*      [[maybe_unused]] Cell *ptrRD;
+        [[maybe_unused]] Cell *ptrWR;
+        ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
+        ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_READ_WRITE));
 
-    cellBuffers[0]->unmap();
-    cellBuffers[1]->unmap();*/
+        cellBuffers[0]->unmap();
+        cellBuffers[1]->unmap();*/
 
   verticalProgram->use();
   cellBuffers[0]->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
@@ -41,11 +41,12 @@ void SimulationCompute::simulate() {
 
   glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 
-/*    ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
-    ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_READ_WRITE));
-
-    cellBuffers[0]->unmap();
-    cellBuffers[1]->unmap();*/
+  /*      ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
+        ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_READ_WRITE));
+    auto linearIndex = 19 + 0 * tankSize.x + 0 * tankSize.y * tankSize.z;
+    std::cout << ptrWR[linearIndex]  << std::endl;
+        cellBuffers[0]->unmap();
+        cellBuffers[1]->unmap();*/
 
   horizontalProgram->use();
   swapBuffers();
@@ -55,14 +56,11 @@ void SimulationCompute::simulate() {
 
   glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 
-/*    ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
-    ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_READ_WRITE));
+  /*      ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
+        ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_READ_WRITE));
 
-  auto linearIndex = 20 + 1 * tankSize.x + 0 * tankSize.y * tankSize.z;
-    std::cout << ptrWR[linearIndex]  << std::endl;
-
-    cellBuffers[0]->unmap();
-    cellBuffers[1]->unmap();*/
+        cellBuffers[0]->unmap();
+        cellBuffers[1]->unmap();*/
 
   swapBuffers();
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
@@ -75,54 +73,39 @@ void SimulationCompute::initBuffers(int size) {
 
 void SimulationCompute::setFluidVolume(int index, float volume) {
   auto index3D = Utilities::from1Dto3Dindex(index, tankSize);
-  setFluidVolume(std::vector<glm::uvec3>{index3D}, std::vector<float>{volume});
+  setCells({index3D}, CellFlags::Cell_NoFLags, {volume}, {0.0});
 }
 
 void SimulationCompute::setFluidVolume(glm::vec3 index, float volume) {
-  setFluidVolume(std::vector<glm::uvec3>{index}, std::vector<float>{volume});
+  setCells({index}, CellFlags::Cell_NoFLags, {volume}, {0.0});
 }
 
-void SimulationCompute::setFluidVolume(std::vector<glm::uvec3> indices, std::vector<float> volumes) {
-  using namespace MakeRange;
-
-  auto ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_WRITE_ONLY));
-  auto ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_WRITE_ONLY));
-
-  for (auto i : range(indices.size())) {
-    auto linearIndex = indices[i].x + indices[i].y * tankSize.x + indices[i].z * tankSize.y * tankSize.z;
-    ptrRD[linearIndex].setFluidVolume(volumes[i]);
-    ptrWR[linearIndex].setFluidVolume(volumes[i]);
-  }
-
-  cellBuffers[0]->unmap();
-  cellBuffers[1]->unmap();
+void SimulationCompute::setFluidVolume(const std::vector<glm::uvec3> &indices, const std::vector<float> &volumes) {
+  setCells(indices, CellFlags::Cell_NoFLags, volumes, std::vector<float>(indices.size(), 0.0));
 }
 
 void SimulationCompute::setSolid(int index) {
   auto index3D = Utilities::from1Dto3Dindex(index, tankSize);
-  setSolid(std::vector<glm::uvec3>{index3D});
+  setCells({index3D}, CellFlags::Cell_Solid, {0.0}, {1.0});
 }
 
-void SimulationCompute::setSolid(glm::vec3 index) {
-  setSolid(std::vector<glm::uvec3>{index});
+void SimulationCompute::setSolid(glm::vec3 index) { setCells({index}, CellFlags::Cell_Solid, {0.0}, {1.0}); }
+
+void SimulationCompute::setSolid(const std::vector<glm::uvec3> &indices) {
+  setCells({indices}, CellFlags::Cell_Solid, std::vector<float>(indices.size(), {0.0}), std::vector<float>(indices.size(), 1.0));
 }
 
-void SimulationCompute::setSolid(std::vector<glm::uvec3> indices) {
-  using namespace MakeRange;
+void SimulationCompute::setSource(int index) {
+  auto index3D = Utilities::from1Dto3Dindex(index, tankSize);
+  setCells({index3D}, CellFlags::Cell_Source, {1.0}, {0.0});
+}
 
-  auto ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_WRITE_ONLY));
-  auto ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_WRITE_ONLY));
+void SimulationCompute::setSource(glm::vec3 index) {
+  setCells(std::vector<glm::uvec3>{index}, CellFlags::Cell_Solid, {1.0}, {0.0});
+}
 
-  for (auto i : range(indices.size())) {
-    auto linearIndex = indices[i].x + indices[i].y * tankSize.x + indices[i].z * tankSize.y * tankSize.z;
-    ptrRD[linearIndex].setSolidVolume(1.0);
-    ptrRD[linearIndex].setFlags(CellFlags::Cell_Solid);
-    ptrWR[linearIndex].setSolidVolume(1.0);
-    ptrWR[linearIndex].setFlags(CellFlags::Cell_Solid);
-  }
-
-  cellBuffers[0]->unmap();
-  cellBuffers[1]->unmap();
+void SimulationCompute::setSource(const std::vector<glm::uvec3> &indices) {
+  setCells({indices}, CellFlags::Cell_Source, std::vector<float>(indices.size(), 1.0), std::vector<float>(indices.size(), 0.0));
 }
 
 void SimulationCompute::swapBuffers() {
@@ -133,3 +116,23 @@ void SimulationCompute::swapBuffers() {
 void SimulationCompute::reset() { initBuffers(glm::compMul(tankSize)); }
 
 SimulationCompute::BufferPtr SimulationCompute::getCellBuffer() { return cellBuffers[currentBuffer]; }
+
+void SimulationCompute::setCells(std::vector<glm::uvec3> indices, CellFlags cellType, std::vector<float> fluidVolumes,
+                                 std::vector<float> solidVolumes) {
+  using namespace MakeRange;
+  auto ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_WRITE_ONLY));
+  auto ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_WRITE_ONLY));
+
+  for (auto i : range(indices.size())) {
+    auto linearIndex = indices[i].x + indices[i].y * tankSize.x + indices[i].z * tankSize.y * tankSize.z;
+    ptrRD[linearIndex].setFluidVolume(fluidVolumes[i]);
+    ptrRD[linearIndex].setSolidVolume(solidVolumes[i]);
+    ptrRD[linearIndex].setFlags(cellType);
+    ptrWR[linearIndex].setFluidVolume(fluidVolumes[i]);
+    ptrWR[linearIndex].setSolidVolume(solidVolumes[i]);
+    ptrWR[linearIndex].setFlags(cellType);
+  }
+
+  cellBuffers[0]->unmap();
+  cellBuffers[1]->unmap();
+}
