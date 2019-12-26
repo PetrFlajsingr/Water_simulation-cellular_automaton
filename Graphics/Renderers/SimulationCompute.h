@@ -22,6 +22,9 @@ public:
   void setFluidVolume(int index, float volume);
   void setFluidVolume(glm::vec3 index, float volume);
   void setFluidVolume(std::vector<glm::uvec3> indices, std::vector<float> volumes);
+  void setSolid(glm::vec3 index);
+  void setSolid(int index);
+  void setSolid(std::vector<glm::uvec3> indices);
   void swapBuffers();
   void reset();
   BufferPtr getCellBuffer();

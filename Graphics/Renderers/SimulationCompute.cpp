@@ -95,6 +95,31 @@ void SimulationCompute::setFluidVolume(std::vector<glm::uvec3> indices, std::vec
   cellBuffers[1]->unmap();
 }
 
+void SimulationCompute::setSolid(int index) {
+  auto index3D = Utilities::from1Dto3Dindex(index, tankSize);
+  setSolid(std::vector<glm::uvec3>{index3D});
+}
+
+void SimulationCompute::setSolid(glm::vec3 index) {
+  setSolid(std::vector<glm::uvec3>{index});
+}
+
+void SimulationCompute::setSolid(std::vector<glm::uvec3> indices) {
+  using namespace MakeRange;
+
+  auto ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_WRITE_ONLY));
+  auto ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_WRITE_ONLY));
+
+  for (auto i : range(indices.size())) {
+    auto linearIndex = indices[i].x + indices[i].y * tankSize.x + indices[i].z * tankSize.y * tankSize.z;
+    ptrRD[linearIndex].setSolidVolume(1.0);
+    ptrWR[linearIndex].setSolidVolume(1.0);
+  }
+
+  cellBuffers[0]->unmap();
+  cellBuffers[1]->unmap();
+}
+
 void SimulationCompute::swapBuffers() {
   std::swap(cellBuffers[0], cellBuffers[1]);
   currentBuffer = (currentBuffer + 1) % 2;
