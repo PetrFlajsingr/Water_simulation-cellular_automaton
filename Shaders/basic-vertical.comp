@@ -4,6 +4,7 @@
 #define CELL_SOLID 1
 #define CELL_SOURCE 2
 #define CELL_SINK 4
+#define FLOW_DOWN 8
 
 struct Cell{
     float fluidVolume;
@@ -42,20 +43,20 @@ void main() {
     uvec3 globalSize = uvec3(gl_NumWorkGroups.x * gl_WorkGroupSize.x, gl_NumWorkGroups.y * gl_WorkGroupSize.y, gl_NumWorkGroups.z * gl_WorkGroupSize.z);
     uint myCellID = (gl_GlobalInvocationID.z * globalSize.x * globalSize.y)+ (gl_GlobalInvocationID.y * globalSize.x) + gl_GlobalInvocationID.x;
     uint invocationCount = globalSize.x * globalSize.y * globalSize.z;
+    uint upperCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + (gl_GlobalInvocationID.y + 1) * globalSize.x + gl_GlobalInvocationID.x;
+    uint bottomCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + (gl_GlobalInvocationID.y - 1) * globalSize.x + gl_GlobalInvocationID.x;
 
 
     if (myCellID < invocationCount){
         writeCells[myCellID].fluidVolume = 0.0;
         float inFlow = 0.0;
         if (gl_GlobalInvocationID.y + 1 < globalSize.y){
-            uint upperCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + (gl_GlobalInvocationID.y + 1) * globalSize.x + gl_GlobalInvocationID.x;
             inFlow = verticalFlowVolume(readCells[upperCellID].fluidVolume, readCells[myCellID].fluidVolume) - (readCells[myCellID].fluidVolume + readCells[myCellID].solidVolume);
             inFlow = clamp(inFlow, 0, min(maximumFlow, readCells[upperCellID].fluidVolume));
             inFlow = clamp(inFlow, 0, maximumCellVolume - readCells[myCellID].solidVolume);
         }
         float outFlow = 0.0;
         if (int(gl_GlobalInvocationID.y) - 1 >= 0){
-            uint bottomCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + (gl_GlobalInvocationID.y - 1) * globalSize.x + gl_GlobalInvocationID.x;
             outFlow = verticalFlowVolume(readCells[myCellID].fluidVolume, readCells[bottomCellID].fluidVolume) - (readCells[bottomCellID].fluidVolume + readCells[bottomCellID].solidVolume);
             outFlow = clamp(outFlow, 0, min(maximumFlow, readCells[myCellID].fluidVolume));
             outFlow = clamp(outFlow, 0, maximumCellVolume - readCells[bottomCellID].solidVolume);

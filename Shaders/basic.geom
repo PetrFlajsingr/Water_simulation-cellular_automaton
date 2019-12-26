@@ -4,6 +4,7 @@
 #define CELL_SOLID 1
 #define CELL_SOURCE 2
 #define CELL_SINK 4
+#define FLOW_DOWN 8
 
 struct Cell{
     float fluidVolume;
@@ -13,8 +14,7 @@ struct Cell{
 };
 
 layout(points) in;
-//layout(points, max_vertices = 24) out;
-layout(triangle_strip, max_vertices = 26) out;
+layout(triangle_strip, max_vertices = 36) out;
 
 layout(location = 0) in vec3 Position[];
 layout(location = 1) in vec4 Color[];
@@ -32,7 +32,6 @@ layout(location = 1) out vec4 fragColor;
 layout(location = 2) out vec2 fragTexCoord;
 layout(location = 3) out vec3 fragNormal;
 layout(location = 4) out vec3 fragCameraPosition;
-layout(location = 5) out mat4 fragView;
 
 layout(std430, binding=1) buffer ReadBuffer{
     Cell readCells[];
@@ -63,18 +62,18 @@ vec3(0, 1.000000, 1.00000),
 vec3(0, 1.000000, 0)
 };
 const uvec3 cube_index_table[12] = {
-uvec3(3, 1, 0),
-uvec3(5, 7, 4),
-uvec3(1, 4, 0),
-uvec3(2, 5, 1),
-uvec3(7, 2, 3),
-uvec3(7, 0, 4),
-uvec3(2, 1, 3),
-uvec3(6, 7, 5),
-uvec3(5, 4, 1),
-uvec3(6, 5, 2),
-uvec3(6, 2, 7),
-uvec3(3, 0, 7)
+uvec3(0, 1, 3),
+uvec3(4, 7, 5),
+uvec3(0, 4, 1),
+uvec3(1, 5, 2),
+uvec3(3, 2, 7),
+uvec3(4, 0, 7),
+uvec3(3, 1, 2),
+uvec3(5, 7, 6),
+uvec3(1, 4, 5),
+uvec3(2, 5, 6),
+uvec3(7, 2, 6),
+uvec3(7, 0, 3)
 };
 
 float[8] avgVolume() {
@@ -139,15 +138,13 @@ void main() {
             }
             fragTexCoord = texCoords[0];
             fragCameraPosition = CameraPosition[0];
-            fragView = View[0];
-            fragNormal = cross(fragy[2] - fragy[0], fragy[1] - fragy[0]);
+            fragNormal = -cross(fragy[2] - fragy[0], fragy[1] - fragy[0]);
             for (uint j = 0; j < 3; ++j) {
                 gl_Position = poly[j];
                 fragPosition = fragy[j];
                 EmitVertex();
             }
+            EndPrimitive();
         }
-        EndPrimitive();
     }
-
 }

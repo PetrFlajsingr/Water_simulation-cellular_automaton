@@ -4,6 +4,7 @@
 #define CELL_SOLID 1
 #define CELL_SOURCE 2
 #define CELL_SINK 4
+#define FLOW_DOWN 8
 
 struct Cell{
     float fluidVolume;
