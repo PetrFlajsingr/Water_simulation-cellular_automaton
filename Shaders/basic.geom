@@ -1,10 +1,15 @@
 #version 430
 
+#define NO_FLAG 0
+#define CELL_SOLID 1
+#define CELL_SOURCE 2
+#define CELL_SINK 4
+
 struct Cell{
     float fluidVolume;
     float solidVolume;
     float fluidHorizontalLefover;
-    uint stable;
+    int flags;
 };
 
 layout(points) in;
@@ -73,7 +78,11 @@ uvec3(3, 0, 7)
 };
 
 float[8] avgVolume() {
-    float result[8] = { 1, 1, 1, 1, 0.f, 0.f, 0.f, 0.f};
+    float result[8] = { 1, 1, 1, 1, 0.f, 0.f, 0.f, 0.f };
+    if(bool(readCells[instanceID[0]].flags & CELL_SOLID)){
+        float result2[8] = { 1, 1, 1, 1, 1.f, 1.f, 1.f, 1.f };
+        return result2;
+    }
     uint zOffset = tankSize.x * tankSize.y;
     result[5] = readCells[instanceID[0]].fluidVolume + readCells[instanceID[0] + 1u].fluidVolume
     + readCells[instanceID[0] + 1u + zOffset].fluidVolume
@@ -111,7 +120,7 @@ float[8] avgVolume() {
 
 
 void main() {
-    if (readCells[instanceID[0]].fluidVolume > 0.0){
+    if (readCells[instanceID[0]].fluidVolume > 0.0 || bool(readCells[instanceID[0]].flags & CELL_SOLID)){
         float vols[8] = avgVolume();
         for (uint i = 0; i < 12; ++i) {
             vec4 poly[3];
@@ -125,6 +134,9 @@ void main() {
                 fragy[j] = Position[0] + cubeVertex;
             }
             fragColor = Color[0];
+            if(bool(readCells[instanceID[0]].flags & CELL_SOLID)){
+                fragColor = vec4(0.0, 1.0, 0.0, 1.0);
+            }
             fragTexCoord = texCoords[0];
             fragCameraPosition = CameraPosition[0];
             fragView = View[0];

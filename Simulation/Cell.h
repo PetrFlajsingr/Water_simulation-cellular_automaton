@@ -6,6 +6,15 @@
 #define GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_CELL_H
 
 #include <cstdint>
+#include <string>
+#include <iostream>
+
+enum class CellFlags {
+  Cell_NoFLags = 0u,
+  Cell_Solid = 1 << 0,
+  Cell_Source = 1 << 1,
+  Cell_Sink = 1 << 2,
+};
 
 class Cell {
 public:
@@ -13,15 +22,20 @@ public:
 
   void setSolidVolume(float solidVolume);
 
-  void setStable(uint32_t stable);
-
-  explicit Cell(float fluidVolume = 0.0, uint32_t stable = 0, float solidVolume = 0.0);
+  explicit Cell(float fluidVolume = 0.0, CellFlags flags = CellFlags::Cell_NoFLags, float solidVolume = 0.0);
 
 private:
   float fluidVolume;
   float solidVolume;
   float fluidVerticalLefover;
-  uint32_t stable;
+  CellFlags flags;
+
+public:
+  void setFlags(CellFlags flags);
+
+  friend std::ostream &operator<<(std::ostream &out, const Cell &cell);
+
 };
+
 
 #endif // GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_CELL_H

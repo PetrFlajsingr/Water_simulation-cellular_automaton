@@ -25,7 +25,7 @@ SimulationCompute::SimulationCompute(const glm::uvec3 tankSize) : tankSize(tankS
 
 void SimulationCompute::simulate() {
   const glm::uvec3 localSizes{2, 2, 2};
-  /*  [[maybe_unused]] Cell *ptrRD;
+/*    [[maybe_unused]] Cell *ptrRD;
     [[maybe_unused]] Cell *ptrWR;
     ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
     ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_READ_WRITE));
@@ -41,7 +41,7 @@ void SimulationCompute::simulate() {
 
   glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 
-  /*  ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
+/*    ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
     ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_READ_WRITE));
 
     cellBuffers[0]->unmap();
@@ -55,8 +55,11 @@ void SimulationCompute::simulate() {
 
   glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 
-  /*  ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
+/*    ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
     ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_READ_WRITE));
+
+  auto linearIndex = 20 + 1 * tankSize.x + 0 * tankSize.y * tankSize.z;
+    std::cout << ptrWR[linearIndex]  << std::endl;
 
     cellBuffers[0]->unmap();
     cellBuffers[1]->unmap();*/
@@ -113,7 +116,9 @@ void SimulationCompute::setSolid(std::vector<glm::uvec3> indices) {
   for (auto i : range(indices.size())) {
     auto linearIndex = indices[i].x + indices[i].y * tankSize.x + indices[i].z * tankSize.y * tankSize.z;
     ptrRD[linearIndex].setSolidVolume(1.0);
+    ptrRD[linearIndex].setFlags(CellFlags::Cell_Solid);
     ptrWR[linearIndex].setSolidVolume(1.0);
+    ptrWR[linearIndex].setFlags(CellFlags::Cell_Solid);
   }
 
   cellBuffers[0]->unmap();

@@ -1,10 +1,15 @@
 #version 450
 
+#define NO_FLAG 0
+#define CELL_SOLID 1
+#define CELL_SOURCE 2
+#define CELL_SINK 4
+
 struct Cell{
     float fluidVolume;
     float solidVolume;
     float fluidHorizontalLefover;
-    uint stable;
+    int flags;
 };
 
 layout(location = 0) in vec3 inPosition;
