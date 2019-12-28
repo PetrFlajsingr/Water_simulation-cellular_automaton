@@ -22,9 +22,8 @@ public:
   void swapBuffers();
   void reset();
   BufferPtr getCellBuffer();
-  void setCells(const std::vector<glm::uvec3> &indices);
-  void setCells(glm::vec3 index);
-  void setCells(int index);
+  void setCells(glm::vec3 index, CellFlags cellType, std::vector<float> fluidVolumes = {0.0});
+  void setCells(int index, CellFlags cellType, std::vector<float> fluidVolumes = {0.0});
   void setCells(const std::vector<glm::uvec3>& indices, const CellFlags& cellType, std::vector<float> fluidVolumes = {0.0});
 
 private:

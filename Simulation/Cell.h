@@ -19,6 +19,8 @@ public:
 private:
   float fluidVolume;
   glm::vec4 velocity;
+
+  friend std::ostream &operator<<(std::ostream &out, const Cell &cell);
 };
 
 #endif // GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_CELL_H

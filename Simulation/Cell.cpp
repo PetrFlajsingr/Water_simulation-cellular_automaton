@@ -7,3 +7,8 @@
 Cell::Cell(float fluidVolume, glm::vec4 velocity) : fluidVolume(fluidVolume), velocity(velocity) {}
 
 void Cell::setFluidVolume(float fluidVolume) { Cell::fluidVolume = fluidVolume; }
+
+std::ostream &operator<<(std::ostream &out, const Cell &cell) {
+    out << " Fluid: " << cell.fluidVolume;
+    return out;
+}
