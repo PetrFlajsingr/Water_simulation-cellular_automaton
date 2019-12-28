@@ -17,8 +17,8 @@ public:
   explicit Cell(float fluidVolume = 0.0, glm::vec4 velocity = glm::vec4(0.0));
 
 private:
-  float fluidVolume;
-  glm::vec4 velocity;
+  glm::vec4 velocityFluidVolume;
+  //float fluidVolume;
 
   friend std::ostream &operator<<(std::ostream &out, const Cell &cell);
 };

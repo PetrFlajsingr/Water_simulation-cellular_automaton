@@ -7,8 +7,8 @@
 #define FLOW_DOWN 8
 
 struct CellData{
+    vec3 velocity;
     float fluidVolume;
-    vec4 velocity;
 };
 
 layout(location = 0) in vec3 inPosition;
