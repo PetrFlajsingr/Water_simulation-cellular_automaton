@@ -19,22 +19,16 @@ public:
   SimulationCompute(glm::uvec3 tankSize);
 
   void simulate();
-  void setFluidVolume(const std::vector<glm::uvec3> &indices, const std::vector<float> &volumes);
-  void setFluidVolume(glm::vec3 index, float volume);
-  void setFluidVolume(int index, float volume);
-  void setSolid(glm::vec3 index);
-  void setSolid(int index);
-  void setSolid(const std::vector<glm::uvec3> &indices);
-  void setSource(const std::vector<glm::uvec3> &indices);
-  void setSource(glm::vec3 index);
-  void setSource(int index);
   void swapBuffers();
   void reset();
   BufferPtr getCellBuffer();
+  void setCells(const std::vector<glm::uvec3> &indices);
+  void setCells(glm::vec3 index);
+  void setCells(int index);
+  void setCells(const std::vector<glm::uvec3>& indices, const CellFlags& cellType, std::vector<float> fluidVolumes = {0.0});
 
 private:
   void initBuffers(int size);
-  void setCells(std::vector<glm::uvec3> indices, CellFlags cellType, std::vector<float> fluidVolumes);
   ProgramPtr horizontalProgram;
   ProgramPtr verticalProgram;
 

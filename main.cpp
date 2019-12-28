@@ -28,7 +28,7 @@ std::pair<unsigned int, unsigned int> getWindowSize() {
 }
 
 void initWaterFall(SimulationCompute simulation) {
-  simulation.setSolid({{23, 48, 0}, {24, 48, 0}, {25, 48, 0}, {26, 48, 0}, {27, 48, 0}});
+  simulation.setCells({{23, 48, 0}, {24, 48, 0}, {25, 48, 0}, {26, 48, 0}, {27, 48, 0}}, CellFlags::Cell_Solid);
   {
     std::vector<glm::uvec3> result{};
     for (auto z : MakeRange::range(10)) {
@@ -41,8 +41,8 @@ void initWaterFall(SimulationCompute simulation) {
       result.emplace_back(glm::uvec3{x, 0, 10});
       result.emplace_back(glm::uvec3{x, 1, 10});
     }
-    simulation.setSolid(result);
-    simulation.setSource({{23, 49, 0}, {24, 49, 0}, {25, 49, 0}, {26, 49, 0}, {27, 49, 0}});
+    simulation.setCells(result, CellFlags::Cell_Solid);
+    simulation.setCells({{23, 49, 0}, {24, 49, 0}, {25, 49, 0}, {26, 49, 0}, {27, 49, 0}}, CellFlags::Cell_Source);
   }
 }
 
@@ -55,7 +55,7 @@ void initWaterCube(SimulationCompute simulation) {
       positions.emplace_back(glm::vec3{x, y, z});
       volumes.emplace_back(1.0);
     }
-    simulation.setFluidVolume(positions, volumes);
+    simulation.setCells(positions, CellFlags::Cell_NoFLags, volumes);
   }
 }
 
