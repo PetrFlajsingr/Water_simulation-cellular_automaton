@@ -27,7 +27,7 @@ std::pair<unsigned int, unsigned int> getWindowSize() {
   return {w, h};
 }
 
-void initWaterFall(SimulationCompute simulation){
+void initWaterFall(SimulationCompute simulation) {
   simulation.setSolid({{23, 48, 0}, {24, 48, 0}, {25, 48, 0}, {26, 48, 0}, {27, 48, 0}});
   {
     std::vector<glm::uvec3> result{};
@@ -46,7 +46,7 @@ void initWaterFall(SimulationCompute simulation){
   }
 }
 
-void initWaterCube(SimulationCompute simulation){
+void initWaterCube(SimulationCompute simulation) {
   {
     using namespace MakeRange;
     std::vector<glm::uvec3> positions;
@@ -83,7 +83,6 @@ int main() {
   auto gridRenderer = GridRenderer(tankSize, proj);
   auto simulation = SimulationCompute(tankSize);
 
-
   glClearColor(0, 0, 0, 1);
 
   glEnable(GL_DEPTH_TEST);
@@ -118,7 +117,8 @@ int main() {
 
     gridRenderer.draw(ui.camera.GetViewMatrix(), DrawType(ui.selectedVisualisation()), ui.getCellSize());
 
-    cellRenderer.draw(ui.camera.GetViewMatrix(), ui.camera.Position, simulation.getCellBuffer(), ui.getCellSize());
+    cellRenderer.draw(ui.camera.GetViewMatrix(), ui.camera.Position, simulation.getCellBuffer(), simulation.getInfoCellBuffer(),
+                      ui.getCellSize());
 
     ui.loop();
     ui.render();

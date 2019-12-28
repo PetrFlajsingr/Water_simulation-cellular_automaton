@@ -6,11 +6,9 @@
 #define CELL_SINK 4
 #define FLOW_DOWN 8
 
-struct Cell{
+struct CellData{
     float fluidVolume;
-    float solidVolume;
-    float fluidHorizontalLefover;
-    int flags;
+    vec4 velocity;
 };
 
 layout(location = 0) in vec3 inPosition;
@@ -30,7 +28,7 @@ layout(location = 5) out mat4 fragView;
 layout(location = 9) out uint instanceID;
 
 layout(std430, binding=1) buffer ReadBuffer{
-    Cell readCells[];
+    CellData readCells[];
 };
 
 uvec3 to3D(uint index){
@@ -42,17 +40,9 @@ void main() {
     vec3 cellPosition = to3D(gl_InstanceID);
     vec3 vertexPos = inPosition.xyz;
     vec4 color = vec4(inColor, 1.0);
-/*    if (fluidVolume <= 1.0){
-        //vertexPos.y *= fluidVolume;
-        //color.rgb *= 0.5 * (1-fluidVolume) + 0.5;
-    }
-    else if (fluidVolume > 1.0){
-        //color *= 0.5 * (fluidVolume/(1.0/3.0));
-    }*/
     vec4 pos = vec4(vertexPos + cellPosition, 1.0);
     pos.xyz *= cellSize;
     fragPosition = (Model * pos).xyz;
-  //  pos = Projection * View * Model * pos;
     gl_Position = pos;
     fragColor = color;
     fragView = View;

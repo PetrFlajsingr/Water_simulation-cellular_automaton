@@ -6,10 +6,13 @@
 #define CELL_SINK 4
 #define FLOW_DOWN 8
 
-struct Cell{
+struct CellData{
     float fluidVolume;
-    float solidVolume;
-    float fluidHorizontalLefover;
+    vec4 velocity;
+};
+
+struct CellInfo{
+    float fluidVerticalLefover;
     int flags;
 };
 
@@ -34,7 +37,11 @@ layout(location = 3) out vec3 fragNormal;
 layout(location = 4) out vec3 fragCameraPosition;
 
 layout(std430, binding=1) buffer ReadBuffer{
-    Cell readCells[];
+    CellData readCells[];
+};
+
+layout(std430, binding=2) buffer InfoBuffer{
+    CellInfo infoCells[];
 };
 
 vec3 normals[] = {
@@ -78,7 +85,7 @@ uvec3(7, 0, 3)
 
 float[8] avgVolume() {
     float result[8] = { 1, 1, 1, 1, 0.f, 0.f, 0.f, 0.f };
-    if(bool(readCells[instanceID[0]].flags & (CELL_SOLID | FLOW_DOWN))){
+    if (bool(infoCells[instanceID[0]].flags & (CELL_SOLID | FLOW_DOWN))){
         float cube[8] = { 1, 1, 1, 1, 1.f, 1.f, 1.f, 1.f };
         return cube;
     }
@@ -114,25 +121,12 @@ float[8] avgVolume() {
         result[i] =  result[i] / 4.f;
     }
 
-/*    if(bool((readCells[instanceID[0] + 1u].flags | readCells[instanceID[0] + 1u + zOffset].flags | readCells[instanceID[0] + zOffset].flags) & FLOW_DOWN)){
-        result[5] = 1.0;
-    }
-    if(bool((readCells[instanceID[0] + 1u].flags | readCells[instanceID[0] + 1u - zOffset].flags | readCells[instanceID[0] - zOffset].flags) & FLOW_DOWN)){
-        result[4] = 1.0;
-    }
-    if(bool((readCells[instanceID[0] - 1u].flags | readCells[instanceID[0] - 1u + zOffset].flags | readCells[instanceID[0] + zOffset].flags) & FLOW_DOWN)){
-        result[6] = 1.0;
-    }
-    if(bool((readCells[instanceID[0] - 1u].flags | readCells[instanceID[0] - 1u - zOffset].flags | readCells[instanceID[0] - zOffset].flags) & FLOW_DOWN)){
-        result[7] = 1.0;
-    }*/
-
     return result;
 }
 
 
 void main() {
-    if (readCells[instanceID[0]].fluidVolume > 0.0 || bool(readCells[instanceID[0]].flags & CELL_SOLID)){
+    if (readCells[instanceID[0]].fluidVolume > 0.0 || bool(infoCells[instanceID[0]].flags & CELL_SOLID)){
         float vols[8] = avgVolume();
         for (uint i = 0; i < 12; ++i) {
             vec4 poly[3];
@@ -146,7 +140,7 @@ void main() {
                 fragy[j] = Position[0] + cubeVertex;
             }
             fragColor = Color[0];
-            if(bool(readCells[instanceID[0]].flags & CELL_SOLID)){
+            if (bool(infoCells[instanceID[0]].flags & CELL_SOLID)){
                 fragColor = vec4(0.0, 1.0, 0.0, 1.0);
             }
             fragTexCoord = texCoords[0];

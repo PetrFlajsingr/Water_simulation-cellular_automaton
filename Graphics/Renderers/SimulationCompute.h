@@ -6,6 +6,7 @@
 #define GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_SIMULATIONCOMPUTE_H
 
 #include <Cell.h>
+#include <CellInfo.h>
 #include <geGL/geGL.h>
 #include <glm/glm.hpp>
 
@@ -33,13 +34,17 @@ public:
 
 private:
   void initBuffers(int size);
-  void setCells(std::vector<glm::uvec3> indices, CellFlags cellType, std::vector<float> fluidVolumes,
-                std::vector<float> solidVolumes);
+  void setCells(std::vector<glm::uvec3> indices, CellFlags cellType, std::vector<float> fluidVolumes);
   ProgramPtr horizontalProgram;
   ProgramPtr verticalProgram;
 
   glm::uvec3 tankSize;
   std::array<BufferPtr, 2> cellBuffers;
+  BufferPtr infoCellBuffer;
+
+public:
+  const BufferPtr &getInfoCellBuffer() const;
+private:
   unsigned int currentBuffer = 0;
 };
 
