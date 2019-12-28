@@ -78,9 +78,9 @@ uvec3(7, 0, 3)
 
 float[8] avgVolume() {
     float result[8] = { 1, 1, 1, 1, 0.f, 0.f, 0.f, 0.f };
-    if(bool(readCells[instanceID[0]].flags & CELL_SOLID)){
-        float result2[8] = { 1, 1, 1, 1, 1.f, 1.f, 1.f, 1.f };
-        return result2;
+    if(bool(readCells[instanceID[0]].flags & (CELL_SOLID | FLOW_DOWN))){
+        float cube[8] = { 1, 1, 1, 1, 1.f, 1.f, 1.f, 1.f };
+        return cube;
     }
     uint zOffset = tankSize.x * tankSize.y;
     result[5] = readCells[instanceID[0]].fluidVolume + readCells[instanceID[0] + 1u].fluidVolume
@@ -113,6 +113,19 @@ float[8] avgVolume() {
     for (uint i = 4; i < 8; ++i) {
         result[i] =  result[i] / 4.f;
     }
+
+/*    if(bool((readCells[instanceID[0] + 1u].flags | readCells[instanceID[0] + 1u + zOffset].flags | readCells[instanceID[0] + zOffset].flags) & FLOW_DOWN)){
+        result[5] = 1.0;
+    }
+    if(bool((readCells[instanceID[0] + 1u].flags | readCells[instanceID[0] + 1u - zOffset].flags | readCells[instanceID[0] - zOffset].flags) & FLOW_DOWN)){
+        result[4] = 1.0;
+    }
+    if(bool((readCells[instanceID[0] - 1u].flags | readCells[instanceID[0] - 1u + zOffset].flags | readCells[instanceID[0] + zOffset].flags) & FLOW_DOWN)){
+        result[6] = 1.0;
+    }
+    if(bool((readCells[instanceID[0] - 1u].flags | readCells[instanceID[0] - 1u - zOffset].flags | readCells[instanceID[0] - zOffset].flags) & FLOW_DOWN)){
+        result[7] = 1.0;
+    }*/
 
     return result;
 }

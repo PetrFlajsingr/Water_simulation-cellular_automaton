@@ -23,7 +23,7 @@ layout(std430, binding=1) buffer ReadBuffer{
 
 const float maximumCellVolume = 1.0;
 const float minimumCellVolume = 0.005;
-const float maximumCompression = 0.25;
+const float maximumCompression = 0.0;
 const float maximumFlow = 4.0f;
 
 float verticalFlowVolume(float sourceFluidVolume, float destinationFluidVolume/*, uint neighborCount*/){
@@ -67,6 +67,5 @@ void main() {
         writeCells[myCellID].fluidVerticalLefover = writeCells[myCellID].fluidVerticalLefover * float(writeCells[myCellID].fluidVolume >= minimumCellVolume);
 
         writeCells[myCellID].fluidVerticalLefover = readCells[myCellID].fluidVolume - outFlow;
-
     }
 }

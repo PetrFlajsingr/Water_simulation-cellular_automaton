@@ -4,6 +4,7 @@
 #define CELL_SOLID 1
 #define CELL_SOURCE 2
 #define CELL_SINK 4
+#define FLOW_DOWN 8
 
 struct Cell{
     float fluidVolume;
@@ -25,7 +26,7 @@ uvec3 globalSize = uvec3(gl_NumWorkGroups.x * gl_WorkGroupSize.x, gl_NumWorkGrou
 
 const float maximumCellVolume = 1.0;
 const float minimumCellVolume = 0.005;
-const float maximumCompression = 0.25;
+const float maximumCompression = 0.0;
 const float maximumFlow = 4.0f;
 const uint verticalNeighbourSize = 4;
 const ivec3 neighbourOffsets[4] = { ivec3(-1, 0, 0), ivec3(1, 0, 0), ivec3(0, 0, -1), ivec3(0, 0, 1) };
@@ -84,7 +85,6 @@ void main() {
         if (bool(writeCells[myCellID].flags & CELL_SINK)){
             writeCells[myCellID].fluidVolume = 0.0;
         }
-
     }
 
 }
