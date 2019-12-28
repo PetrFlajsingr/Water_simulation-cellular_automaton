@@ -46,7 +46,11 @@ public:
 private:
   bool resetPressed = false;
   unsigned int selected = 1;
+  int simulationCycles = 1;
 
+public:
+  int getSimulationSteps() const;
+private:
   FPSCounter fpsCounter;
 
   bool SDLHandler(const SDL_Event &event);

@@ -5,7 +5,9 @@ layout(location = 1) in vec4 fragColor;
 layout(location = 2) in vec2 fragTexCoord;
 layout(location = 3) in vec3 fragNormal;
 layout(location = 4) in vec3 fragCameraPosition;
-layout(location = 5) in mat4 fragView;
+layout(location = 10) in float fluidVolume;
+
+layout(location = 5) uniform mat4 View;
 
 
 void main() {
@@ -25,6 +27,8 @@ void main() {
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
     vec3 specular = specularStrength * spec * lightColor;
 
-    vec3 result = (ambient + diffuse + specular) * fragColor.rgb;
+    vec3 color = fluidVolume >= 1.0f ? vec3(1, 0, 0) : fragColor.rgb;
+
+    vec3 result = (ambient + diffuse + specular) * color;
     gl_FragColor = vec4(result, fragColor.a);
 }
