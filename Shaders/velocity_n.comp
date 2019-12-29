@@ -179,7 +179,7 @@ void main() {
         const uint neighborID = dirToID(i);
         if (isFlagSet(infoCells[neighborID].flags, CELL_SOLID)
         || readCells[neighborID].fluidVolume >= maximumCellVolume) {
-            reflect = reflectVelocity(readCells[neighborID].velocity, getNormal(i));
+            reflect = reflectVelocity(writeCells[myCellID].velocity, getNormal(i));
             vec3 aReflectMul = vec3(float(reflect.x > 0),
             float(reflect.y > 0),
             float(reflect.z > 0));
@@ -199,7 +199,6 @@ void main() {
         infoCells[myCellID].reflectB.xyz += tmpReflectB;
         infoCells[myCellID].reflectA.xyz /= cntUsed;
         infoCells[myCellID].reflectB.xyz /= cntUsed;
+        writeCells[myCellID].velocity = reflectVelocity(writeCells[myCellID].velocity, getNormal(DOWN));
     }
-    writeCells[myCellID].velocity -= infoCells[myCellID].reflectA.xyz +
-    infoCells[myCellID].reflectB.xyz;
 }
