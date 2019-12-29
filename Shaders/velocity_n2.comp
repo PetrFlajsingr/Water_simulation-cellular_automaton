@@ -54,17 +54,12 @@ uint backCellID = (gl_GlobalInvocationID.z + 1) * globalSize.x * globalSize.y + 
 uint leftCellID =  gl_GlobalInvocationID.z * globalSize.x * globalSize.y + globalSize.x + gl_GlobalInvocationID.x - 1;
 uint rightCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + globalSize.x + gl_GlobalInvocationID.x + 1;
 
-uint getNeighborID(int direction) {
-    switch (direction) {
-        case LEFT: return leftCellID;
-        case RIGHT: return rightCellID;
-        case UP: return upperCellID;
-        case DOWN: return bottomCellID;
-        case FRONT: return frontCellID;
-        case BACK: return backCellID;
-    }
-    return 0;
-}
+#define LEFT_ID leftCellID
+#define RIGHT_ID rightCellID
+#define UP_ID upperCellID
+#define DOWN_ID bottomCellID
+#define FRONT_ID frontCellID
+#define BACK_ID backCellID
 
 float getNeighborVel(CellData cell, int direction) {
     switch (direction) {
@@ -99,9 +94,9 @@ void main() {
     - readCells[myCellID].fluidVolume * writeCells[myCellID].velocity.z,
     0);
 
-    writeCells[myCellID].fluidVolume += max(readCells[getNeighborID(UP)].fluidVolume
-    * -writeCells[getNeighborID(UP)].velocity.y
-    * float(writeCells[getNeighborID(UP)].velocity.y < 0), 0);
+    writeCells[myCellID].fluidVolume += max(readCells[UP_ID].fluidVolume
+    /** -writeCells[getNeighborID(UP)].velocity.y
+    * float(writeCells[getNeighborID(UP)].velocity.y < 0)*/, 0);
 
 
     if (bool(infoCells[myCellID].flags & CELL_SOURCE)){
