@@ -42,7 +42,7 @@ int to1DCoord(uvec3 coord){
 }
 
 const float waterWeight = 1;
-const float timeStep = 0.0001;
+const float timeStep = 0.01;
 float getDragCoefficient() {
     return 0.99;
 }
@@ -78,41 +78,48 @@ void main() {
     writeCells[myCellID].fluidVolume = 0.0;
     float inFlow = 0.0;
 
-    float tmp = 0.01;
+    float tmp = 0.000;
     float pressure = writeCells[myCellID].fluidVolume - 1;
     //pressure *= float(pressure >= 1);
-    pressure /= 40;
+    pressure = tmp;
+
+
+    float sidePressure = 10;
 
     float outFlow = 0.0;
     // y -
-    if (writeCells[upperCellID].velocity.y < 0) {
-        if (gl_GlobalInvocationID.y + 1 < globalSize.y && !isFull(readCells[myCellID].fluidVolume)){
-            inFlow = waterWeight * readCells[upperCellID].fluidVolume * -writeCells[upperCellID].velocity.y;
-            inFlow = clamp(inFlow, 0, min(maximumFlow, readCells[upperCellID].fluidVolume));
-            inFlow = clamp(inFlow, 0, maximumCellVolume - mySolidVolume);
-        }
-        if (int(gl_GlobalInvocationID.y) - 1 >= 0){
-            outFlow = waterWeight * readCells[myCellID].fluidVolume * -writeCells[myCellID].velocity.y;
-            outFlow = clamp(outFlow, 0, min(maximumFlow, readCells[myCellID].fluidVolume));
-            outFlow = clamp(outFlow, 0, maximumCellVolume - bottomSolidVolume);
-        }
-        writeCells[myCellID].fluidVolume = readCells[myCellID].fluidVolume + (inFlow - outFlow);
-        writeCells[myCellID].fluidVolume = writeCells[myCellID].fluidVolume * float(writeCells[myCellID].fluidVolume >= minimumCellVolume);
-    } else {
-        // y +
-        if (gl_GlobalInvocationID.y + 1 < globalSize.y && !isFull(readCells[myCellID].fluidVolume)){
-            inFlow = waterWeight * readCells[bottomCellID].fluidVolume * writeCells[bottomCellID].velocity.y;
-            inFlow = clamp(inFlow, 0, min(maximumFlow, readCells[bottomCellID].fluidVolume));
-            inFlow = clamp(inFlow, 0, maximumCellVolume - mySolidVolume);
-        }
-        if (int(gl_GlobalInvocationID.y) - 1 >= 0){
-            outFlow = waterWeight * readCells[myCellID].fluidVolume * writeCells[myCellID].velocity.y;
-            outFlow = clamp(outFlow, 0, min(maximumFlow, readCells[myCellID].fluidVolume));
-            outFlow = clamp(outFlow, 0, maximumCellVolume - bottomSolidVolume);
-        }
-        writeCells[myCellID].fluidVolume = readCells[myCellID].fluidVolume + (inFlow - outFlow);
-        writeCells[myCellID].fluidVolume = writeCells[myCellID].fluidVolume * float(writeCells[myCellID].fluidVolume >= minimumCellVolume);
+    if (gl_GlobalInvocationID.y + 1 < globalSize.y && !isFull(readCells[myCellID].fluidVolume)){
+        float velocity = -writeCells[upperCellID].velocity.y * float(writeCells[upperCellID].velocity.y < 0);
+        inFlow = waterWeight * readCells[upperCellID].fluidVolume * (velocity + tmp);
+        inFlow = clamp(inFlow, 0, min(maximumFlow, readCells[upperCellID].fluidVolume));
+        inFlow = clamp(inFlow, 0, maximumCellVolume - mySolidVolume);
     }
+    if (int(gl_GlobalInvocationID.y) - 1 >= 0){
+        float velocity = -writeCells[myCellID].velocity.y * float(writeCells[myCellID].velocity.y < 0);
+        outFlow = waterWeight * readCells[myCellID].fluidVolume * (velocity + pressure);
+        outFlow = clamp(outFlow, 0, min(maximumFlow, readCells[myCellID].fluidVolume));
+        outFlow = clamp(outFlow, 0, maximumCellVolume - bottomSolidVolume);
+    }
+    writeCells[myCellID].fluidVolume = readCells[myCellID].fluidVolume + (inFlow - outFlow);
+    //writeCells[myCellID].fluidVolume = writeCells[myCellID].fluidVolume * float(writeCells[myCellID].fluidVolume >= minimumCellVolume);
+    // y +
+    if (gl_GlobalInvocationID.y - 1 >= 0 && !isFull(readCells[myCellID].fluidVolume)){
+        float velocity = writeCells[bottomCellID].velocity.y * float(writeCells[bottomCellID].velocity.y > 0);
+        inFlow = waterWeight * readCells[bottomCellID].fluidVolume * (velocity + tmp);
+        inFlow = clamp(inFlow, 0, min(maximumFlow, readCells[bottomCellID].fluidVolume));
+        inFlow = clamp(inFlow, 0, maximumCellVolume - mySolidVolume);
+    } else {
+        writeCells[myCellID + 1].velocity.x += sidePressure;
+        writeCells[myCellID - 1].velocity.x -= sidePressure;
+    }
+    if (int(gl_GlobalInvocationID.y) + 1 <= globalSize.y){
+        float velocity = writeCells[myCellID].velocity.y * float(writeCells[myCellID].velocity.y > 0);
+        outFlow = waterWeight * readCells[myCellID].fluidVolume * (velocity + pressure);
+        outFlow = clamp(outFlow, 0, min(maximumFlow, readCells[myCellID].fluidVolume));
+        outFlow = clamp(outFlow, 0, maximumCellVolume - bottomSolidVolume);
+    }
+    writeCells[myCellID].fluidVolume = writeCells[myCellID].fluidVolume + (inFlow - outFlow);
+    //        writeCells[myCellID].fluidVolume = writeCells[myCellID].fluidVolume * float(writeCells[myCellID].fluidVolume >= minimumCellVolume);
 
     //x +
     inFlow = 0;
@@ -130,7 +137,7 @@ void main() {
         outFlow = clamp(outFlow, 0, maximumCellVolume - bottomSolidVolume);
     }
     writeCells[myCellID].fluidVolume = writeCells[myCellID].fluidVolume + (inFlow - outFlow);
-    writeCells[myCellID].fluidVolume = writeCells[myCellID].fluidVolume * float(writeCells[myCellID].fluidVolume >= minimumCellVolume);
+    //    writeCells[myCellID].fluidVolume = writeCells[myCellID].fluidVolume * float(writeCells[myCellID].fluidVolume >= minimumCellVolume);
 
     inFlow = 0;
     if (gl_GlobalInvocationID.x - 1 >= 0){
@@ -167,7 +174,7 @@ void main() {
         outFlow = clamp(outFlow, 0, maximumCellVolume - bottomSolidVolume);
     }
     writeCells[myCellID].fluidVolume = writeCells[myCellID].fluidVolume + (inFlow - outFlow);
-    writeCells[myCellID].fluidVolume = writeCells[myCellID].fluidVolume * float(writeCells[myCellID].fluidVolume >= minimumCellVolume);
+    //    writeCells[myCellID].fluidVolume = writeCells[myCellID].fluidVolume * float(writeCells[myCellID].fluidVolume >= minimumCellVolume);
     //z-
     inFlow = 0;
     if (gl_GlobalInvocationID.z + 1 < globalSize.z){
@@ -184,7 +191,7 @@ void main() {
         outFlow = clamp(outFlow, 0, maximumCellVolume - bottomSolidVolume);
     }
     writeCells[myCellID].fluidVolume = writeCells[myCellID].fluidVolume + (inFlow - outFlow);
-    writeCells[myCellID].fluidVolume = writeCells[myCellID].fluidVolume * float(writeCells[myCellID].fluidVolume >= minimumCellVolume);
+    //   writeCells[myCellID].fluidVolume = writeCells[myCellID].fluidVolume * float(writeCells[myCellID].fluidVolume >= minimumCellVolume);
 
     if (bool(infoCells[myCellID].flags & CELL_SOURCE)){
         writeCells[myCellID].fluidVolume = maximumCellVolume;
