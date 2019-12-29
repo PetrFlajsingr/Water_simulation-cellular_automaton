@@ -13,7 +13,7 @@ class CellInfoVelocity {
 private:
   glm::vec4 reflectA;
   glm::vec4 reflectB;
-  CellFlags flags;
+  alignas(16) CellFlags flags;
 
 public:
   explicit CellInfoVelocity(const glm::vec4 &reflectA = glm::vec4(0.0), const glm::vec4 &reflectB = glm::vec4(0.0),

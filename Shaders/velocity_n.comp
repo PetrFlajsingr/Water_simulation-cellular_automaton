@@ -16,6 +16,7 @@ struct CellInfo{
     vec4 reflectA;
     vec4 reflectB;
     int flags;
+    float _padding[3];
 };
 
 layout(local_size_x = 2, local_size_y = 2, local_size_z = 2) in;

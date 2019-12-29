@@ -12,8 +12,10 @@ struct CellData{
 };
 
 struct CellInfo{
-    float fluidVerticalLefover;
+    vec4 reflectA;
+    vec4 reflectB;
     int flags;
+    float _padding[3];
 };
 
 layout(points) in;
