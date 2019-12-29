@@ -7,6 +7,7 @@
 
 #include <Cell.h>
 #include <CellInfo.h>
+#include <CellInfoVelocity.h>
 #include <geGL/geGL.h>
 #include <glm/glm.hpp>
 
@@ -25,6 +26,31 @@ public:
   void setCells(glm::vec3 index, CellFlags cellType, std::vector<float> fluidVolumes = {0.0});
   void setCells(int index, CellFlags cellType, std::vector<float> fluidVolumes = {0.0});
   void setCells(const std::vector<glm::uvec3>& indices, const CellFlags& cellType, std::vector<float> fluidVolumes = {0.0});
+  template <typename Range>
+  void setRangeCells(Range &&indices, CellFlags cellType, float fluidVolume = 0.0f) {
+
+    if (cellType == CellFlags::Cell_Solid || cellType == CellFlags::Cell_Sink) {
+      fluidVolume = 0.0f;
+    } else if (cellType == CellFlags::Cell_Source) {
+      fluidVolume = 1.0f;
+    }
+
+    auto ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_WRITE_ONLY));
+    auto ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_WRITE_ONLY));
+    auto ptrInfo = reinterpret_cast<CellInfoVelocity *>(infoCellBuffer->map(GL_WRITE_ONLY));
+
+    for (auto [x, y, z] : indices) {
+      auto linearIndex = x + y * tankSize.x + z * tankSize.y * tankSize.x;
+      ptrRD[linearIndex].setFluidVolume(fluidVolume);
+      ptrInfo[linearIndex].setFlags(cellType);
+      ptrWR[linearIndex].setFluidVolume(fluidVolume);
+      ptrInfo[linearIndex].setFlags(cellType);
+    }
+
+    cellBuffers[0]->unmap();
+    cellBuffers[1]->unmap();
+    infoCellBuffer->unmap();
+  }
 
 private:
   void initBuffers(int size);

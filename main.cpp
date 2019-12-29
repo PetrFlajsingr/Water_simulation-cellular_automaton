@@ -96,6 +96,10 @@ int main() {
 
   initWaterFall(simulation);
 
+
+  simulation.setRangeCells(MakeRange::range<int, 3>({0, 0, 0}, {50, 1, 50}, {1, 1, 1}), CellFlags::Cell_Solid);
+  simulation.setRangeCells(MakeRange::range<int, 3>({10, 10, 10}, {30, 11, 30}, {1, 1, 1}), CellFlags::Cell_NoFLags, 1.0f);
+
   auto start = std::chrono::system_clock::now();
   mainLoop->setIdleCallback([&]() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

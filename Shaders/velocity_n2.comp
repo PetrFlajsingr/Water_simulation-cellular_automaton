@@ -81,7 +81,7 @@ float getNeighborVel(CellData cell, int direction) {
     }
     return 0;
 }
-const float waterWeight = 0.1;
+const float waterWeight = 2;
 
 void main() {
     uint myCellID = (gl_GlobalInvocationID.z * globalSize.x * globalSize.y)+ (gl_GlobalInvocationID.y * globalSize.x) + gl_GlobalInvocationID.x;
@@ -91,9 +91,9 @@ void main() {
     }
 
     writeCells[myCellID].fluidVolume = max(readCells[myCellID].fluidVolume
-    - readCells[myCellID].fluidVolume * abs(writeCells[myCellID].velocity.x)
-    - readCells[myCellID].fluidVolume * abs(writeCells[myCellID].velocity.y)
-    - readCells[myCellID].fluidVolume * abs(writeCells[myCellID].velocity.z),
+    - readCells[myCellID].fluidVolume * abs(writeCells[myCellID].velocity.x) * waterWeight
+    - readCells[myCellID].fluidVolume * abs(writeCells[myCellID].velocity.y) * waterWeight
+    - readCells[myCellID].fluidVolume * abs(writeCells[myCellID].velocity.z) * waterWeight,
     0);
 
     writeCells[myCellID].fluidVolume += max(

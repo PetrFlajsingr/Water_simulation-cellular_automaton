@@ -54,7 +54,7 @@ float getDragCoefficient() {
 
 vec3 getGlobalForces() {
     vec3 gravity = vec3(0, -9.81, 0);
-    vec3 current = vec3(1, 0, 1);
+    vec3 current = vec3(0, 0, 0);
     return (gravity + current) * timeStep;
 }
 
@@ -177,7 +177,7 @@ void main() {
     vec3 tmpReflectB = vec3(0);
     for (int i = 0; i < 6; ++i) {
         const uint neighborID = dirToID(i);
-        if (isFlagSet(infoCells[myCellID].flags, CELL_SOLID)
+        if (isFlagSet(infoCells[neighborID].flags, CELL_SOLID)
         || readCells[neighborID].fluidVolume >= maximumCellVolume) {
             reflect = reflectVelocity(readCells[neighborID].velocity, getNormal(i));
             vec3 aReflectMul = vec3(float(reflect.x > 0),
@@ -200,4 +200,6 @@ void main() {
         infoCells[myCellID].reflectA.xyz /= cntUsed;
         infoCells[myCellID].reflectB.xyz /= cntUsed;
     }
+    writeCells[myCellID].velocity -= infoCells[myCellID].reflectA.xyz +
+    infoCells[myCellID].reflectB.xyz;
 }
