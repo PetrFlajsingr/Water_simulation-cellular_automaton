@@ -10,6 +10,7 @@
 #include <glm/gtx/component_wise.hpp>
 #include <shader_literals.h>
 #include <types/Range.h>
+#include <glm/gtc/type_ptr.hpp>
 
 using namespace ge::gl;
 
@@ -24,7 +25,7 @@ SimulationCompute::SimulationCompute(const glm::uvec3 tankSize) : tankSize(tankS
 }
 
 void SimulationCompute::simulate() {
-  const glm::uvec3 localSizes{2, 2, 2};
+  const glm::uvec3 localSizes{4, 4, 4};
   [[maybe_unused]] Cell *ptrRD;
   [[maybe_unused]] Cell *ptrWR;
   /*
@@ -35,6 +36,7 @@ void SimulationCompute::simulate() {
   cellBuffers[1]->unmap();*/
 
    /*verticalProgram->use();
+   verticalProgram->set3v("globalSize", glm::value_ptr(tankSize));
    cellBuffers[0]->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
    cellBuffers[1]->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
    infoCellBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
@@ -50,6 +52,7 @@ void SimulationCompute::simulate() {
         cellBuffers[1]->unmap();*/
 
   /* horizontalProgram->use();
+   horizontalProgram->set3v("globalSize", glm::value_ptr(tankSize));
    swapBuffers();
    cellBuffers[0]->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
    cellBuffers[1]->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
@@ -59,30 +62,32 @@ void SimulationCompute::simulate() {
    glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);*/
 
   velocityProgram->use();
+  velocityProgram->set3v("globalSize", glm::value_ptr(tankSize));
   cellBuffers[0]->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
   cellBuffers[1]->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
   infoCellBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
-  glDispatchCompute(tankSize.x / localSizes.x, tankSize.y / localSizes.y, tankSize.z / localSizes.z);
+  glDispatchCompute(std::ceil(tankSize.x / localSizes.x), std::ceil(tankSize.y / localSizes.y), std::ceil(tankSize.z / localSizes.z));
 
   glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 
 
   velocity2Program->use();
+  velocity2Program->set3v("globalSize", glm::value_ptr(tankSize));
   cellBuffers[0]->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
   cellBuffers[1]->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
   infoCellBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
-  glDispatchCompute(tankSize.x / localSizes.x, tankSize.y / localSizes.y, tankSize.z / localSizes.z);
+  glDispatchCompute(std::ceil(tankSize.x / localSizes.x), std::ceil(tankSize.y / localSizes.y), std::ceil(tankSize.z / localSizes.z));
 
   glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 
-  /*  ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
+    ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
     ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_READ_WRITE));
     auto ptrInfo = reinterpret_cast<CellInfo *>(infoCellBuffer->map(GL_READ_ONLY));
-    auto linearIndex = 0 + 0 * tankSize.x + 32 * tankSize.y * tankSize.x;
+    auto linearIndex = 10 + 9 * tankSize.x + 11 * tankSize.y * tankSize.x;
     std::cout << linearIndex << " " << ptrInfo[linearIndex] << ptrWR[linearIndex] << std::endl;
     cellBuffers[0]->unmap();
     cellBuffers[1]->unmap();
-    infoCellBuffer->unmap();*/
+    infoCellBuffer->unmap();
 
   swapBuffers();
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);

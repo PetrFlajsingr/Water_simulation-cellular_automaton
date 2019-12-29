@@ -18,9 +18,9 @@ struct CellInfo{
     int flags;
 };
 
-layout(local_size_x = 2,
-local_size_y = 2,
-local_size_z = 2
+layout(local_size_x = 4,
+local_size_y = 4,
+local_size_z = 4
 ) in;
 layout(std430, binding=0) buffer WriteBuffer{
     CellData writeCells[];
@@ -32,7 +32,7 @@ layout(std430, binding=2) buffer InfoBuffer{
     CellInfo infoCells[];
 };
 
-uvec3 globalSize = uvec3(gl_NumWorkGroups.x * gl_WorkGroupSize.x, gl_NumWorkGroups.y * gl_WorkGroupSize.y, gl_NumWorkGroups.z * gl_WorkGroupSize.z);
+layout(location = 0) uniform uvec3 globalSize;
 
 const float maximumCellVolume = 1.0;
 const float minimumCellVolume = 0.005;
@@ -84,7 +84,6 @@ float getNeighborVel(CellData cell, int direction) {
 const float waterWeight = 0.1;
 
 void main() {
-    uvec3 globalSize = uvec3(gl_NumWorkGroups.x * gl_WorkGroupSize.x, gl_NumWorkGroups.y * gl_WorkGroupSize.y, gl_NumWorkGroups.z * gl_WorkGroupSize.z);
     uint myCellID = (gl_GlobalInvocationID.z * globalSize.x * globalSize.y)+ (gl_GlobalInvocationID.y * globalSize.x) + gl_GlobalInvocationID.x;
     uint invocationCount = globalSize.x * globalSize.y * globalSize.z;
     if (myCellID >= invocationCount){

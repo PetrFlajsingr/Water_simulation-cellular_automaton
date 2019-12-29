@@ -27,6 +27,8 @@ layout(std430, binding=2) buffer InfoBuffer{
     CellInfo infoCells[];
 };
 
+layout(location = 0) uniform uvec3 globalSize;
+
 const float maximumCellVolume = 1.0;
 const float minimumCellVolume = 0.005;
 const float maximumCompression = 0.0;
@@ -46,7 +48,7 @@ float verticalFlowVolume(float sourceFluidVolume, float destinationFluidVolume/*
 }
 
 void main() {
-    uvec3 globalSize = uvec3(gl_NumWorkGroups.x * gl_WorkGroupSize.x, gl_NumWorkGroups.y * gl_WorkGroupSize.y, gl_NumWorkGroups.z * gl_WorkGroupSize.z);
+    //uvec3 globalSize = uvec3(gl_NumWorkGroups.x * gl_WorkGroupSize.x, gl_NumWorkGroups.y * gl_WorkGroupSize.y, gl_NumWorkGroups.z * gl_WorkGroupSize.z);
     uint myCellID = (gl_GlobalInvocationID.z * globalSize.x * globalSize.y)+ (gl_GlobalInvocationID.y * globalSize.x) + gl_GlobalInvocationID.x;
     uint invocationCount = globalSize.x * globalSize.y * globalSize.z;
     uint upperCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + (gl_GlobalInvocationID.y + 1) * globalSize.x + gl_GlobalInvocationID.x;
