@@ -185,9 +185,9 @@ void main() {
         }
     }
     if (cntUsed > 0) {
-        infoCells[myCellID].reflectA.xyz /= cntUsed;
-        infoCells[myCellID].reflectB.xyz /= cntUsed;
         infoCells[myCellID].reflectA.xyz += tmpReflectA;
         infoCells[myCellID].reflectB.xyz += tmpReflectB;
+        infoCells[myCellID].reflectA.xyz /= cntUsed;
+        infoCells[myCellID].reflectB.xyz /= cntUsed;
     }
 }
