@@ -30,6 +30,7 @@ private:
   void initBuffers(int size);
   ProgramPtr horizontalProgram;
   ProgramPtr verticalProgram;
+  ProgramPtr velocityProgram;
 
   glm::uvec3 tankSize;
   std::array<BufferPtr, 2> cellBuffers;

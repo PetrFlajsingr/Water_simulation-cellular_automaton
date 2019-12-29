@@ -32,6 +32,7 @@ CellRenderer::CellRenderer([[maybe_unused]] const std::string &cellModelPath, co
   vao->addAttrib(vbo, 1, 3, GL_FLOAT, static_cast<GLsizei>(sizeof(Model::VertexData)), offsetof(Model::VertexData, color));
 }
 
+float t = 0;
 void CellRenderer::draw(const glm::mat4 &viewMat, const glm::vec3 &cameraPos, const BufferPtr &cellBuffer,
                         const BufferPtr &cellInfoBuffer, float cellSize) {
   program->use();
@@ -43,10 +44,13 @@ void CellRenderer::draw(const glm::mat4 &viewMat, const glm::vec3 &cameraPos, co
   program->setMatrix4fv("View", glm::value_ptr(viewMat), 1, GL_FALSE);
   program->setMatrix4fv("Projection", glm::value_ptr(projectionMat), 1, GL_FALSE);
   program->set("cellSize", cellSize);
+  program->set("time", t);
   program->set3uiv("tankSize", glm::value_ptr(tankSize), 1);
   program->set3fv("cameraPosition", glm::value_ptr(cameraPos));
   glDrawArraysInstanced(GL_POINTS, 0, 1, glm::compMul(tankSize));
   cellBuffer->unbindBase(GL_SHADER_STORAGE_BUFFER, 1);
   cellInfoBuffer->unbindBase(GL_SHADER_STORAGE_BUFFER, 2);
   vao->unbind();
+
+  t+=0.001;
 }

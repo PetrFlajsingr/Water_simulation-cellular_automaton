@@ -110,6 +110,10 @@ int main() {
         }
       }
     }
+    if (ui.isWaterfallEnabled()) {
+      simulation.setCells({{10, 10, 10}, {10, 10, 11}, {10, 10, 12}}, CellFlags::Cell_NoFLags,
+                          {1.f, 1.f, 1.f});
+    }
     if (ui.isResetPressed()) {
       simulation.reset();
       initWaterFall(simulation);
