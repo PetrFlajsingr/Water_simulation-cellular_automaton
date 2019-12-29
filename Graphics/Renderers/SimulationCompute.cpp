@@ -3,6 +3,7 @@
 //
 
 #include "SimulationCompute.h"
+#include <CellInfoVelocity.h>
 #include <Utilities.h>
 #include <geGL/StaticCalls.h>
 #include <geGL_utils.h>
@@ -79,9 +80,10 @@ void SimulationCompute::simulate() {
 
 void SimulationCompute::initBuffers(int size) {
   auto cells = std::vector<Cell>(size);
-  auto infoCells = std::vector<CellInfo>(size);
+  //auto infoCells = std::vector<CellInfo>(size);
+  auto infoCellsVelocity = std::vector<CellInfoVelocity>(size);
   cellBuffers = {createBuffer(cells, GL_DYNAMIC_COPY), createBuffer(cells, GL_DYNAMIC_COPY)};
-  infoCellBuffer = createBuffer(infoCells, GL_DYNAMIC_COPY);
+  infoCellBuffer = createBuffer(infoCellsVelocity, GL_DYNAMIC_COPY);
 }
 
 void SimulationCompute::swapBuffers() {
@@ -114,7 +116,7 @@ void SimulationCompute::setCells(const std::vector<glm::uvec3> &indices, const C
 
   auto ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_WRITE_ONLY));
   auto ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_WRITE_ONLY));
-  auto ptrInfo = reinterpret_cast<CellInfo *>(infoCellBuffer->map(GL_WRITE_ONLY));
+  auto ptrInfo = reinterpret_cast<CellInfoVelocity *>(infoCellBuffer->map(GL_WRITE_ONLY));
 
   for (auto i : range(indices.size())) {
     auto linearIndex = indices[i].x + indices[i].y * tankSize.x + indices[i].z * tankSize.y * tankSize.x;

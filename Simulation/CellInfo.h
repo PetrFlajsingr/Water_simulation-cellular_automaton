@@ -6,12 +6,7 @@
 #define GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_CELLINFO_H
 
 #include <ostream>
-enum class CellFlags {
-  Cell_NoFLags = 0u,
-  Cell_Solid = 1 << 0,
-  Cell_Source = 1 << 1,
-  Cell_Sink = 1 << 2,
-};
+#include <CellFlags.h>
 
 class CellInfo {
 
