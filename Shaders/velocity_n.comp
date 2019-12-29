@@ -160,8 +160,8 @@ void main() {
 
     int cntUsed = 0;
     vec3 reflect = vec3(0);
-    infoCells[myCellID].reflectA = vec3(0);
-    infoCells[myCellID].reflectB = vec3(0);
+    infoCells[myCellID].reflectA = vec4(0);
+    infoCells[myCellID].reflectB = vec4(0);
 
     vec3 tmpReflectA = vec3(0);
     vec3 tmpReflectB = vec3(0);
@@ -169,27 +169,27 @@ void main() {
         const uint neighborID = getNeighborID(i);
         if (isFlagSet(infoCells[myCellID].flags, CELL_SOLID)
         || readCells[neighborID].fluidVolume >= maximumCellVolume) {
-            reflect = reflectVelocity(velocity, getNormal(i));
-            infoCells[myCellID].reflectA += vec3(
+            reflect = reflectVelocity(readCells[neighborID].velocity, getNormal(i));
+            infoCells[myCellID].reflectA.xyz += vec3(
             reflect.x * float(reflect.x > 0),
             reflect.y * float(reflect.y > 0),
             reflect.z * float(reflect.z > 0)
             );
-            infoCells[myCellID].reflectB += vec3(
+            infoCells[myCellID].reflectB.xyz += vec3(
             reflect.x * float(reflect.x < 0),
             reflect.y * float(reflect.y < 0),
             reflect.z * float(reflect.z < 0)
             );
 
             tmpReflectA += getSpread(i);
-            tmpReflectb -= getSpread(i);
+            tmpReflectB -= getSpread(i);
             ++cntUsed;
         }
     }
     if (cntUsed > 0) {
-        infoCells[myCellID].reflectA /= cntUsed;
-        infoCells[myCellID].reflectB /= cntUsed;
-        infoCells[myCellID].reflectA += tmpReflectA;
-        infoCells[myCellID].reflectB += tmpReflectB;
+        infoCells[myCellID].reflectA.xyz /= cntUsed;
+        infoCells[myCellID].reflectB.xyz /= cntUsed;
+        infoCells[myCellID].reflectA.xyz += tmpReflectA;
+        infoCells[myCellID].reflectB.xyz += tmpReflectB;
     }
 }
