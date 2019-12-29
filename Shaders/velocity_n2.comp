@@ -52,10 +52,10 @@ const ivec3 neighbourOffsets[4] = { ivec3(-1, 0, 0), ivec3(1, 0, 0), ivec3(0, 0,
 
 uint upperCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + (gl_GlobalInvocationID.y + 1) * globalSize.x + gl_GlobalInvocationID.x;
 uint bottomCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + (gl_GlobalInvocationID.y - 1) * globalSize.x + gl_GlobalInvocationID.x;
-uint frontCellID = (gl_GlobalInvocationID.z - 1) * globalSize.x * globalSize.y + globalSize.x + gl_GlobalInvocationID.x;
-uint backCellID = (gl_GlobalInvocationID.z + 1) * globalSize.x * globalSize.y + globalSize.x + gl_GlobalInvocationID.x;
-uint leftCellID =  gl_GlobalInvocationID.z * globalSize.x * globalSize.y + globalSize.x + gl_GlobalInvocationID.x - 1;
-uint rightCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + globalSize.x + gl_GlobalInvocationID.x + 1;
+uint frontCellID = (gl_GlobalInvocationID.z - 1) * globalSize.x * globalSize.y + gl_GlobalInvocationID.y * globalSize.x + gl_GlobalInvocationID.x;
+uint backCellID = (gl_GlobalInvocationID.z + 1) * globalSize.x * globalSize.y + gl_GlobalInvocationID.y * globalSize.x + gl_GlobalInvocationID.x;
+uint leftCellID =  gl_GlobalInvocationID.z * globalSize.x * globalSize.y + gl_GlobalInvocationID.y * globalSize.x + gl_GlobalInvocationID.x - 1;
+uint rightCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + gl_GlobalInvocationID.y * globalSize.x + gl_GlobalInvocationID.x + 1;
 
 #define LEFT_ID leftCellID
 #define RIGHT_ID rightCellID
@@ -81,7 +81,7 @@ float getNeighborVel(CellData cell, int direction) {
     }
     return 0;
 }
-
+const float waterWeight = 0.1;
 
 void main() {
     uvec3 globalSize = uvec3(gl_NumWorkGroups.x * gl_WorkGroupSize.x, gl_NumWorkGroups.y * gl_WorkGroupSize.y, gl_NumWorkGroups.z * gl_WorkGroupSize.z);
@@ -97,9 +97,41 @@ void main() {
     - readCells[myCellID].fluidVolume * abs(writeCells[myCellID].velocity.z),
     0);
 
-    writeCells[myCellID].fluidVolume = max(readCells[UP_ID].fluidVolume
-    * -writeCells[UP_ID].velocity.y
-    * float(writeCells[UP_ID].velocity.y < 0), 0);
+    writeCells[myCellID].fluidVolume += max(
+    min(readCells[UP_ID].fluidVolume,
+    readCells[UP_ID].fluidVolume
+    * -writeCells[UP_ID].velocity.y * waterWeight
+    * float(writeCells[UP_ID].velocity.y < 0)), 0);
+
+    writeCells[myCellID].fluidVolume += max(
+    min(readCells[DOWN_ID].fluidVolume,
+    readCells[DOWN_ID].fluidVolume
+    * writeCells[DOWN_ID].velocity.y * waterWeight
+    * float(writeCells[DOWN_ID].velocity.y > 0)), 0);
+
+    writeCells[myCellID].fluidVolume += max(
+    min(readCells[LEFT_ID].fluidVolume,
+    readCells[LEFT_ID].fluidVolume
+    * writeCells[LEFT_ID].velocity.x * waterWeight
+    * float(writeCells[LEFT_ID].velocity.x > 0)), 0);
+
+    writeCells[myCellID].fluidVolume += max(
+    min(readCells[RIGHT_ID].fluidVolume,
+    readCells[RIGHT_ID].fluidVolume
+    * -writeCells[RIGHT_ID].velocity.x * waterWeight
+    * float(writeCells[RIGHT_ID].velocity.x < 0)), 0);
+
+    writeCells[myCellID].fluidVolume += max(
+    min(readCells[FRONT_ID].fluidVolume,
+    readCells[FRONT_ID].fluidVolume
+    * writeCells[FRONT_ID].velocity.z * waterWeight
+    * float(writeCells[FRONT_ID].velocity.z > 0)), 0);
+
+    writeCells[myCellID].fluidVolume += max(
+    min(readCells[BACK_ID].fluidVolume,
+    readCells[BACK_ID].fluidVolume
+    * -writeCells[BACK_ID].velocity.z * waterWeight
+    * float(writeCells[BACK_ID].velocity.z < 0)), 0);
 
 
     if (bool(infoCells[myCellID].flags & CELL_SOURCE)){
