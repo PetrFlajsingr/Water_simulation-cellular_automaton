@@ -86,6 +86,10 @@ float getNeighborVel(CellData cell, int direction) {
     return 0;
 }
 
+bool isFlagSet(int flags, int flag) {
+    return (flags & flag) == flag;
+}
+
 void main() {
     uvec3 globalSize = uvec3(gl_NumWorkGroups.x * gl_WorkGroupSize.x, gl_NumWorkGroups.y * gl_WorkGroupSize.y, gl_NumWorkGroups.z * gl_WorkGroupSize.z);
     uint myCellID = (gl_GlobalInvocationID.z * globalSize.x * globalSize.y)+ (gl_GlobalInvocationID.y * globalSize.x) + gl_GlobalInvocationID.x;
@@ -111,6 +115,6 @@ void main() {
     writeCells[myCellID].velocity += getRatioNeighbor(readCells[myCellID], readCells[bottomCellID]) * getNeighborVel(readCells[bottomCellID], UP);
     writeCells[myCellID].velocity += getRatioNeighbor(readCells[myCellID], readCells[upperCellID]) * getNeighborVel(readCells[upperCellID], DOWN);
     writeCells[myCellID].velocity *= getDragCoefficient();
-    writeCells[myCellID].velocity *= float((infoCells[myCellID].flags & CELL_SOLID) == CELL_SOLID);
+    writeCells[myCellID].velocity *= float(isFlagSet(infoCells[myCellID].flags, CELL_SOLID));
 
 }
