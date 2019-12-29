@@ -63,12 +63,12 @@ float getRatioNeighbor(CellData currentCell, CellData neighbor) {
 }
 
 
-#define LEFT 0
-#define RIGHT 1
-#define UP 2
-#define DOWN 3
-#define FRONT 4
-#define BACK 5
+    #define LEFT 0
+    #define RIGHT 1
+    #define UP 2
+    #define DOWN 3
+    #define FRONT 4
+    #define BACK 5
 float getNeighborVel(CellData cell, int direction) {
     switch (direction) {
         case LEFT:
@@ -170,19 +170,17 @@ void main() {
         if (isFlagSet(infoCells[myCellID].flags, CELL_SOLID)
         || readCells[neighborID].fluidVolume >= maximumCellVolume) {
             reflect = reflectVelocity(readCells[neighborID].velocity, getNormal(i));
-            infoCells[myCellID].reflectA.xyz += vec3(
-            reflect.x * float(reflect.x > 0),
-            reflect.y * float(reflect.y > 0),
-            reflect.z * float(reflect.z > 0)
-            );
-            infoCells[myCellID].reflectB.xyz += vec3(
-            reflect.x * float(reflect.x < 0),
-            reflect.y * float(reflect.y < 0),
-            reflect.z * float(reflect.z < 0)
-            );
+            vec3 aReflectMul = vec3(float(reflect.x > 0),
+            float(reflect.y > 0),
+            float(reflect.z > 0));
+            vec3 bReflectMul = vec3(float(reflect.x < 0),
+            float(reflect.y < 0),
+            float(reflect.z < 0));
+            infoCells[myCellID].reflectA.xyz += reflect * aReflectMul;
+            infoCells[myCellID].reflectB.xyz += reflect * bReflectMul;
 
-            tmpReflectA += getSpread(i);
-            tmpReflectB -= getSpread(i);
+            tmpReflectA += getSpread(i) * aReflectMul;
+            tmpReflectB -= getSpread(i) * bReflectMul;
             ++cntUsed;
         }
     }
