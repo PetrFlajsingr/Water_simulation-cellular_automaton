@@ -16,7 +16,7 @@ SimulationCompute::SimulationCompute(const glm::uvec3 tankSize) : tankSize(tankS
   using namespace ShaderLiterals;
   horizontalProgram = std::make_shared<ge::gl::Program>("basic-horizontal"_comp);
   verticalProgram = std::make_shared<ge::gl::Program>("basic-vertical"_comp);
-  velocityProgram = std::make_shared<ge::gl::Program>("velocity"_comp);
+  velocityProgram = std::make_shared<ge::gl::Program>("velocity_n"_comp);
 
   initBuffers(glm::compMul(tankSize));
 }

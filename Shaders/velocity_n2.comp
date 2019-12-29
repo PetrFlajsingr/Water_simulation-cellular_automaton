@@ -1,0 +1,54 @@
+#version 450
+
+
+#define NO_FLAG 0
+#define CELL_SOLID 1
+#define CELL_SOURCE 2
+#define CELL_SINK 4
+#define FLOW_DOWN 8
+
+struct CellData{
+    vec3 velocity;
+    float fluidVolume;
+};
+
+struct CellInfo{
+    float fluidVerticalLefover;
+    int flags;
+};
+
+layout(local_size_x = 2, local_size_y = 2, local_size_z = 2) in;
+layout(std430, binding=0) buffer WriteBuffer{
+    CellData writeCells[];
+};
+layout(std430, binding=1) buffer ReadBuffer{
+    CellData readCells[];
+};
+layout(std430, binding=2) buffer InfoBuffer{
+    CellInfo infoCells[];
+};
+
+uvec3 globalSize = uvec3(gl_NumWorkGroups.x * gl_WorkGroupSize.x, gl_NumWorkGroups.y * gl_WorkGroupSize.y, gl_NumWorkGroups.z * gl_WorkGroupSize.z);
+
+const float maximumCellVolume = 1.0;
+const float minimumCellVolume = 0.005;
+const float maximumCompression = 0.0;
+const float maximumFlow = 4.0f;
+const uint verticalNeighbourSize = 4;
+const ivec3 neighbourOffsets[4] = { ivec3(-1, 0, 0), ivec3(1, 0, 0), ivec3(0, 0, -1), ivec3(0, 0, 1) };
+
+void main() {
+    writeCells[myCellID].fluidVolume = max(readCells[myCellID].fluidVolume
+    - readCells[myCellID].fluidVolume * readCells[myCellID].velocity.x
+    - readCells[myCellID].fluidVolume * readCells[myCellID].velocity.y
+    - readCells[myCellID].fluidVolume * readCells[myCellID].velocity.z,
+    0);
+
+
+    if (bool(infoCells[myCellID].flags & CELL_SOURCE)){
+        writeCells[myCellID].fluidVolume = maximumCellVolume;
+    }
+    if (bool(infoCells[myCellID].flags & CELL_SINK)){
+        writeCells[myCellID].fluidVolume = 0.0;
+    }
+}
