@@ -41,7 +41,7 @@ int to1DCoord(uvec3 coord){
     return int(coord.z * globalSize.x * globalSize.y + coord.y * globalSize.x + coord.x);
 }
 
-const float waterWeight = 1;
+const float waterWeight = 0.001;
 const float timeStep = 0.01;
 float getDragCoefficient() {
     return 0.99;

@@ -19,7 +19,10 @@ struct CellInfo{
     float _padding[3];
 };
 
-layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(local_size_x = 2,
+local_size_y = 2,
+local_size_z = 2
+) in;
 layout(std430, binding=0) buffer WriteBuffer{
     CellData writeCells[];
 };
@@ -60,7 +63,7 @@ bool isFull(float volume) {
 }
 
 float getRatioNeighbor(CellData currentCell, CellData neighbor) {
-    return (currentCell.fluidVolume + neighbor.fluidVolume) / neighbor.fluidVolume;
+    return neighbor.fluidVolume / (currentCell.fluidVolume + neighbor.fluidVolume + 0.000001);
 }
 
 
@@ -70,20 +73,20 @@ float getRatioNeighbor(CellData currentCell, CellData neighbor) {
     #define DOWN 3
     #define FRONT 4
     #define BACK 5
-float getNeighborVel(CellData cell, int direction) {
+float getNeighborVel(CellData currentCell, CellData cell, int direction) {
     switch (direction) {
         case LEFT:
-        return float(cell.velocity.x < 0) * cell.velocity.x;
+        return float(cell.velocity.x < 0) * (currentCell.velocity.x - cell.velocity.x);
         case RIGHT:
-        return float(cell.velocity.x > 0) * cell.velocity.x;
+        return float(cell.velocity.x > 0) * (currentCell.velocity.x - cell.velocity.x);
         case UP:
-        return float(cell.velocity.y > 0) * cell.velocity.y;
+        return float(cell.velocity.y > 0) * (currentCell.velocity.y - cell.velocity.y);
         case DOWN:
-        return float(cell.velocity.y < 0) * cell.velocity.y;
+        return float(cell.velocity.y < 0) * (currentCell.velocity.y - cell.velocity.y);
         case FRONT:
-        return float(cell.velocity.z < 0) * cell.velocity.z;
+        return float(cell.velocity.z < 0) * (currentCell.velocity.z - cell.velocity.z);
         case BACK:
-        return float(cell.velocity.z > 0) * cell.velocity.z;
+        return float(cell.velocity.z > 0) * (currentCell.velocity.z - cell.velocity.z);
     }
     return 0;
 }
@@ -157,14 +160,14 @@ void main() {
     }
 
     writeCells[myCellID].velocity = (readCells[myCellID].velocity + getGlobalForces());
-    writeCells[myCellID].velocity += getRatioNeighbor(readCells[myCellID], readCells[rightCellID]) * getNeighborVel(readCells[RIGHT_ID], LEFT);
-    writeCells[myCellID].velocity += getRatioNeighbor(readCells[myCellID], readCells[leftCellID]) * getNeighborVel(readCells[LEFT_ID], RIGHT);
-    writeCells[myCellID].velocity += getRatioNeighbor(readCells[myCellID], readCells[backCellID]) * getNeighborVel(readCells[BACK_ID], FRONT);
-    writeCells[myCellID].velocity += getRatioNeighbor(readCells[myCellID], readCells[frontCellID]) * getNeighborVel(readCells[FRONT_ID], BACK);
-    writeCells[myCellID].velocity += getRatioNeighbor(readCells[myCellID], readCells[bottomCellID]) * getNeighborVel(readCells[DOWN_ID], UP);
-    writeCells[myCellID].velocity += getRatioNeighbor(readCells[myCellID], readCells[upperCellID]) * getNeighborVel(readCells[UP_ID], DOWN);
+    writeCells[myCellID].velocity += getRatioNeighbor(readCells[myCellID], readCells[rightCellID]) * getNeighborVel(readCells[myCellID], readCells[RIGHT_ID], LEFT);
+    writeCells[myCellID].velocity += getRatioNeighbor(readCells[myCellID], readCells[leftCellID]) * getNeighborVel(readCells[myCellID], readCells[LEFT_ID], RIGHT);
+    writeCells[myCellID].velocity += getRatioNeighbor(readCells[myCellID], readCells[backCellID]) * getNeighborVel(readCells[myCellID], readCells[BACK_ID], FRONT);
+    writeCells[myCellID].velocity += getRatioNeighbor(readCells[myCellID], readCells[frontCellID]) * getNeighborVel(readCells[myCellID], readCells[FRONT_ID], BACK);
+    writeCells[myCellID].velocity += getRatioNeighbor(readCells[myCellID], readCells[bottomCellID]) * getNeighborVel(readCells[myCellID], readCells[DOWN_ID], UP);
+    writeCells[myCellID].velocity += getRatioNeighbor(readCells[myCellID], readCells[upperCellID]) * getNeighborVel(readCells[myCellID], readCells[UP_ID], DOWN);
     writeCells[myCellID].velocity *= getDragCoefficient();
-    writeCells[myCellID].velocity *= float(isFlagSet(infoCells[myCellID].flags, CELL_SOLID));
+    writeCells[myCellID].velocity *= float(!isFlagSet(infoCells[myCellID].flags, CELL_SOLID));
 
     int cntUsed = 0;
     vec3 reflect = vec3(0);

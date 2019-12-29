@@ -24,7 +24,7 @@ SimulationCompute::SimulationCompute(const glm::uvec3 tankSize) : tankSize(tankS
 }
 
 void SimulationCompute::simulate() {
-  const glm::uvec3 localSizes{4, 4, 4};
+  const glm::uvec3 localSizes{2, 2, 2};
   [[maybe_unused]] Cell *ptrRD;
   [[maybe_unused]] Cell *ptrWR;
   /*
