@@ -106,15 +106,16 @@ uint rightCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + globa
 
 uint getNeighborID(int direction) {
     switch (direction) {
-        case LEFT: return upperCellID;
-        case RIGHT: return bottomCellID;
-        case UP: return frontCellID;
-        case DOWN: return backCellID;
-        case FRONT: return leftCellID;
-        case BACK: return rightCellID;
+        case LEFT: return leftCellID;
+        case RIGHT: return rightCellID;
+        case UP: return upperCellID;
+        case DOWN: return bottomCellID;
+        case FRONT: return frontCellID;
+        case BACK: return backCellID;
     }
     return 0;
 }
+
 
 vec3 getNormal(int direction) {
     switch (direction) {

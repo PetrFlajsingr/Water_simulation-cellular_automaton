@@ -38,6 +38,53 @@ const float maximumFlow = 4.0f;
 const uint verticalNeighbourSize = 4;
 const ivec3 neighbourOffsets[4] = { ivec3(-1, 0, 0), ivec3(1, 0, 0), ivec3(0, 0, -1), ivec3(0, 0, 1) };
 
+
+
+#define LEFT 0
+#define RIGHT 1
+#define UP 2
+#define DOWN 3
+#define FRONT 4
+#define BACK 5
+
+uint upperCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + (gl_GlobalInvocationID.y + 1) * globalSize.x + gl_GlobalInvocationID.x;
+uint bottomCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + (gl_GlobalInvocationID.y - 1) * globalSize.x + gl_GlobalInvocationID.x;
+uint frontCellID = (gl_GlobalInvocationID.z - 1) * globalSize.x * globalSize.y + globalSize.x + gl_GlobalInvocationID.x;
+uint backCellID = (gl_GlobalInvocationID.z + 1) * globalSize.x * globalSize.y + globalSize.x + gl_GlobalInvocationID.x;
+uint leftCellID =  gl_GlobalInvocationID.z * globalSize.x * globalSize.y + globalSize.x + gl_GlobalInvocationID.x - 1;
+uint rightCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + globalSize.x + gl_GlobalInvocationID.x + 1;
+
+uint getNeighborID(int direction) {
+    switch (direction) {
+        case LEFT: return leftCellID;
+        case RIGHT: return rightCellID;
+        case UP: return upperCellID;
+        case DOWN: return bottomCellID;
+        case FRONT: return frontCellID;
+        case BACK: return backCellID;
+    }
+    return 0;
+}
+
+float getNeighborVel(CellData cell, int direction) {
+    switch (direction) {
+        case LEFT:
+        return float(cell.velocity.x < 0) * cell.velocity.x;
+        case RIGHT:
+        return float(cell.velocity.x > 0) * cell.velocity.x;
+        case UP:
+        return float(cell.velocity.y > 0) * cell.velocity.y;
+        case DOWN:
+        return float(cell.velocity.y < 0) * cell.velocity.y;
+        case FRONT:
+        return float(cell.velocity.z < 0) * cell.velocity.z;
+        case BACK:
+        return float(cell.velocity.z > 0) * cell.velocity.z;
+    }
+    return 0;
+}
+
+
 void main() {
     uvec3 globalSize = uvec3(gl_NumWorkGroups.x * gl_WorkGroupSize.x, gl_NumWorkGroups.y * gl_WorkGroupSize.y, gl_NumWorkGroups.z * gl_WorkGroupSize.z);
     uint myCellID = (gl_GlobalInvocationID.z * globalSize.x * globalSize.y)+ (gl_GlobalInvocationID.y * globalSize.x) + gl_GlobalInvocationID.x;
@@ -51,6 +98,10 @@ void main() {
     - readCells[myCellID].fluidVolume * writeCells[myCellID].velocity.y
     - readCells[myCellID].fluidVolume * writeCells[myCellID].velocity.z,
     0);
+
+    writeCells[myCellID].fluidVolume += max(readCells[getNeighborID(UP)].fluidVolume
+    * -writeCells[getNeighborID(UP)].velocity.y
+    * float(writeCells[getNeighborID(UP)].velocity.y < 0), 0);
 
 
     if (bool(infoCells[myCellID].flags & CELL_SOURCE)){
