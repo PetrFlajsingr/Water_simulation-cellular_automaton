@@ -18,6 +18,7 @@ SimulationCompute::SimulationCompute(const glm::uvec3 tankSize) : tankSize(tankS
   horizontalProgram = std::make_shared<ge::gl::Program>("basic-horizontal"_comp);
   verticalProgram = std::make_shared<ge::gl::Program>("basic-vertical"_comp);
   velocityProgram = std::make_shared<ge::gl::Program>("velocity_n"_comp);
+  velocity2Program = std::make_shared<ge::gl::Program>("velocity_n2"_comp);
 
   initBuffers(glm::compMul(tankSize));
 }
@@ -58,6 +59,15 @@ void SimulationCompute::simulate() {
    glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);*/
 
   velocityProgram->use();
+  cellBuffers[0]->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
+  cellBuffers[1]->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
+  infoCellBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
+  glDispatchCompute(tankSize.x / localSizes.x, tankSize.y / localSizes.y, tankSize.z / localSizes.z);
+
+  glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
+
+
+  velocity2Program->use();
   cellBuffers[0]->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
   cellBuffers[1]->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
   infoCellBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
