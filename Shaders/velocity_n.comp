@@ -166,7 +166,7 @@ void main() {
     //writeCells[myCellID].velocity += getRatioNeighbor(readCells[myCellID], readCells[bottomCellID]) * getNeighborVel(readCells[myCellID], readCells[DOWN_ID], UP);
     //writeCells[myCellID].velocity += getRatioNeighbor(readCells[myCellID], readCells[upperCellID]) * getNeighborVel(readCells[myCellID], readCells[UP_ID], DOWN);
     writeCells[myCellID].velocity *= getDragCoefficient();
-    writeCells[myCellID].velocity *= float(!isFlagSet(infoCells[myCellID].flags, CELL_SOLID));
+    writeCells[myCellID].velocity *= float(!isFlagSet(infoCells[myCellID].flags, CELL_SOLID) && readCells[myCellID].fluidVolume > 0);
 
     int cntUsed = 0;
     vec3 reflect = vec3(0);
@@ -195,10 +195,10 @@ void main() {
         }
     }
     if (cntUsed > 0) {
-        infoCells[myCellID].reflectA.xyz += tmpReflectA * 10;
-        infoCells[myCellID].reflectB.xyz += tmpReflectB * 10;
-        infoCells[myCellID].reflectA.xyz /= cntUsed * 20;
-        infoCells[myCellID].reflectB.xyz /= cntUsed * 20;
+        infoCells[myCellID].reflectA.xyz += tmpReflectA;
+        infoCells[myCellID].reflectB.xyz += tmpReflectB;
+        infoCells[myCellID].reflectA.xyz /= cntUsed * 1;
+        infoCells[myCellID].reflectB.xyz /= cntUsed * 1;
         writeCells[myCellID].velocity = vec3(0);
     }
 }

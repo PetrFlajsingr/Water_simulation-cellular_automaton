@@ -61,7 +61,7 @@ vec2 texCoords[1] = {
 };
 
 const vec3 cube_vec_table[8] = {
-vec3(1.00000, 0.000000, 0),
+vec3(1.00000, 0.00000, 0),
 vec3(1.00000, 0.000000, 1.00000),
 vec3(0, 0.000000, 1.00000),
 vec3(0, 0.000000, 0),
@@ -128,7 +128,7 @@ float[8] avgVolume() {
 
 
 void main() {
-    if (readCells[instanceID[0]].fluidVolume > 0.0 || bool(infoCells[instanceID[0]].flags & CELL_SOLID)){
+    if (readCells[instanceID[0]].fluidVolume > 0.0 && !bool(infoCells[instanceID[0]].flags & CELL_SOLID)){
         float vols[8] = avgVolume();
         for (uint i = 0; i < 12; ++i) {
             vec4 poly[3];
