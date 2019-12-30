@@ -119,8 +119,8 @@ void main() {
     const vec3 cellVelocity = writeCells[myCellID].velocity;
     const vec3 reflectA = infoCells[myCellID].reflectA.xyz;
     const vec3 reflectB = infoCells[myCellID].reflectB.xyz;
-    vec3 out_velocityPlus = positive(cellVelocity)/* + reflectA*/;
-    vec3 out_velocityMinus = -(negative(cellVelocity)/* + reflectB*/);
+    vec3 out_velocityPlus = positive(cellVelocity) + reflectA;
+    vec3 out_velocityMinus = -(negative(cellVelocity) + reflectB);
 
     float outLength = sumComponents(out_velocityMinus) + sumComponents(out_velocityPlus);
     float outRatio = float(outLength > readCells[myCellID].fluidVolume && outLength != 0)

@@ -100,7 +100,7 @@ int main() {
   simulation.setRangeCells(MakeRange::range<int, 3>({0, 0, 0}, {50, 1, 50}, {1, 1, 1}), CellFlags::Solid);
   simulation.setRangeCells(MakeRange::range<int, 3>({0, 1, 0}, {50, 5, 50}, {1, 1, 49}), CellFlags::Solid);
   simulation.setRangeCells(MakeRange::range<int, 3>({0, 1, 0}, {50, 5, 50}, {49, 1, 1}), CellFlags::Solid);
-  simulation.setRangeCells(MakeRange::range<int, 3>({10, 10, 10}, {30, 11, 30}, {1, 1, 1}), CellFlags::NoFlag, 1.0f);
+  simulation.setRangeCells(MakeRange::range<int, 3>({10, 10, 10}, {30, 22, 30}, {1, 1, 1}), CellFlags::NoFlag, 1.0f);
 
   auto start = std::chrono::system_clock::now();
   mainLoop->setIdleCallback([&]() {

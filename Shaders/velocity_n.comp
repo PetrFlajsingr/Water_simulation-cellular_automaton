@@ -199,6 +199,6 @@ void main() {
         infoCells[myCellID].reflectB.xyz += tmpReflectB;
         infoCells[myCellID].reflectA.xyz /= cntUsed * 1;
         infoCells[myCellID].reflectB.xyz /= cntUsed * 1;
-        //writeCells[myCellID].velocity = vec3(0);
+        writeCells[myCellID].velocity = vec3(0);
     }
 }
