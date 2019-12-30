@@ -99,6 +99,10 @@ vec3 negative(vec3 value) {
     return vec3(negative(value.x), negative(value.y), negative(value.z));
 }
 
+float sumComponents(vec3 value) {
+    return value.x + value.y + value.z;
+}
+
 void main() {
     uint myCellID = (gl_GlobalInvocationID.z * globalSize.x * globalSize.y)+ (gl_GlobalInvocationID.y * globalSize.x) + gl_GlobalInvocationID.x;
     uint invocationCount = globalSize.x * globalSize.y * globalSize.z;
@@ -110,15 +114,15 @@ void main() {
     const vec3 reflectA = infoCells[myCellID].reflectA.xyz;
     const vec3 reflectB = infoCells[myCellID].reflectB.xyz;
     vec3 out_velocityPlus = positive(cellVelocity) + reflectA;
-    vec3 out_velocityMinus = negative(cellVelocity) + reflectB;
+    vec3 out_velocityMinus = -(negative(cellVelocity) + reflectB);
 
-    float outLength = length(out_velocityMinus) + length(out_velocityPlus);
-    float outRatio = float(outLength > readCells[myCellID].fluidVolume) * readCells[myCellID].fluidVolume / (outLength + 0.000001) + float(outLength <= readCells[myCellID].fluidVolume);
+    float outLength = sumComponents(out_velocityMinus) + sumComponents(out_velocityPlus);
+    float outRatio = float(outLength > readCells[myCellID].fluidVolume && outLength != 0)
+    * readCells[myCellID].fluidVolume / (outLength + 0.00000000001 * float(outLength == 0))
+    + float(outLength <= readCells[myCellID].fluidVolume);
     out_velocityPlus *= outRatio;
-    out_velocityMinus *= -outRatio;
+    out_velocityMinus *= outRatio;
     outLength *= outRatio;
-    vec3 in_velocityPlus;
-    vec3 in_velocityMinus;
 
     writeCells[myCellID].fluidVolume = readCells[myCellID].fluidVolume * (1.0f - outLength);
 
