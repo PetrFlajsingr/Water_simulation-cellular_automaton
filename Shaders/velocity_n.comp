@@ -49,7 +49,7 @@ int to1DCoord(uvec3 coord){
 
 const float timeStep = 0.01;
 float getDragCoefficient() {
-    return 0.9999;
+    return 0.9;
 }
 
 vec3 getGlobalForces() {
@@ -197,8 +197,8 @@ void main() {
     if (cntUsed > 0) {
         infoCells[myCellID].reflectA.xyz += tmpReflectA;
         infoCells[myCellID].reflectB.xyz += tmpReflectB;
-        infoCells[myCellID].reflectA.xyz /= cntUsed * 1;
-        infoCells[myCellID].reflectB.xyz /= cntUsed * 1;
+        infoCells[myCellID].reflectA.xyz /= cntUsed;
+        infoCells[myCellID].reflectB.xyz /= cntUsed;
         writeCells[myCellID].velocity = vec3(0);
     }
 }
