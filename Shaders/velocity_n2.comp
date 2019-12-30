@@ -42,6 +42,9 @@ const uint verticalNeighbourSize = 4;
 const ivec3 neighbourOffsets[4] = { ivec3(-1, 0, 0), ivec3(1, 0, 0), ivec3(0, 0, -1), ivec3(0, 0, 1) };
 
 
+bool isFlagSet(int flags, int flag) {
+    return (flags & flag) == flag;
+}
 
 #define LEFT 0
 #define RIGHT 1
@@ -123,16 +126,37 @@ void main() {
     out_velocityPlus *= outRatio;
     out_velocityMinus *= outRatio;
     outLength *= outRatio;
+    outLength = sumComponents(out_velocityMinus) + sumComponents(out_velocityPlus);
 
     writeCells[myCellID].fluidVolume = readCells[myCellID].fluidVolume * (1.0f - outLength);
 
+    const float m = 0;
+    float a = 0;
+    if (writeCells[myCellID].fluidVolume < m) {
+        a = writeCells[myCellID].fluidVolume;
+        writeCells[myCellID].fluidVolume = 0;
+    }
 
-    writeCells[UP_ID].fluidVolume += readCells[myCellID].fluidVolume * out_velocityPlus.y;
-    writeCells[DOWN_ID].fluidVolume += readCells[myCellID].fluidVolume * out_velocityMinus.y;
-    writeCells[LEFT_ID].fluidVolume += readCells[myCellID].fluidVolume * out_velocityMinus.x;
-    writeCells[RIGHT_ID].fluidVolume += readCells[myCellID].fluidVolume * out_velocityPlus.x;
-    writeCells[FRONT_ID].fluidVolume += readCells[myCellID].fluidVolume * out_velocityMinus.z;
-    writeCells[BACK_ID].fluidVolume += readCells[myCellID].fluidVolume * out_velocityPlus.z;
+   writeCells[UP_ID].fluidVolume += (readCells[myCellID].fluidVolume * out_velocityPlus.y + a* out_velocityPlus.y) * float(!isFlagSet(infoCells[UP_ID].flags, CELL_SOLID));
+   writeCells[UP_ID].velocity.y += out_velocityPlus.y;
+   writeCells[DOWN_ID].fluidVolume += (readCells[myCellID].fluidVolume * out_velocityMinus.y + a* out_velocityMinus.y) * float(!isFlagSet(infoCells[DOWN_ID].flags, CELL_SOLID));
+   writeCells[DOWN_ID].velocity.y -= out_velocityMinus.y;
+   writeCells[LEFT_ID].fluidVolume += (readCells[myCellID].fluidVolume * out_velocityMinus.x + a* out_velocityMinus.x) * float(!isFlagSet(infoCells[LEFT_ID].flags, CELL_SOLID));
+   writeCells[LEFT_ID].velocity.x -= out_velocityMinus.x;
+   writeCells[RIGHT_ID].fluidVolume += (readCells[myCellID].fluidVolume * out_velocityPlus.x + a* out_velocityPlus.x) * float(!isFlagSet(infoCells[RIGHT_ID].flags, CELL_SOLID));
+   writeCells[RIGHT_ID].velocity.x += out_velocityPlus.x;
+   writeCells[FRONT_ID].fluidVolume += (readCells[myCellID].fluidVolume * out_velocityMinus.z + a* out_velocityMinus.z) * float(!isFlagSet(infoCells[FRONT_ID].flags, CELL_SOLID));
+   writeCells[FRONT_ID].velocity.z -= out_velocityMinus.z;
+   writeCells[BACK_ID].fluidVolume += (readCells[myCellID].fluidVolume * out_velocityPlus.z + a* out_velocityPlus.z) * float(!isFlagSet(infoCells[BACK_ID].flags, CELL_SOLID));
+   writeCells[BACK_ID].velocity.z += out_velocityPlus.z;
+
+
+   writeCells[myCellID].fluidVolume += (readCells[myCellID].fluidVolume * out_velocityPlus.y + a* out_velocityPlus.y) * float(isFlagSet(infoCells[UP_ID].flags, CELL_SOLID));
+   writeCells[myCellID].fluidVolume += (readCells[myCellID].fluidVolume * out_velocityMinus.y + a* out_velocityMinus.y) * float(isFlagSet(infoCells[DOWN_ID].flags, CELL_SOLID));
+   writeCells[myCellID].fluidVolume += (readCells[myCellID].fluidVolume * out_velocityMinus.x + a* out_velocityMinus.x) * float(isFlagSet(infoCells[LEFT_ID].flags, CELL_SOLID));
+   writeCells[myCellID].fluidVolume += (readCells[myCellID].fluidVolume * out_velocityPlus.x + a* out_velocityPlus.x) * float(isFlagSet(infoCells[RIGHT_ID].flags, CELL_SOLID));
+   writeCells[myCellID].fluidVolume += (readCells[myCellID].fluidVolume * out_velocityMinus.z + a* out_velocityMinus.z) * float(isFlagSet(infoCells[FRONT_ID].flags, CELL_SOLID));
+   writeCells[myCellID].fluidVolume += (readCells[myCellID].fluidVolume * out_velocityPlus.z + a* out_velocityPlus.z) * float(isFlagSet(infoCells[BACK_ID].flags, CELL_SOLID));
 
 
     /*writeCells[myCellID].fluidVolume = max(readCells[myCellID].fluidVolume

@@ -128,7 +128,7 @@ float[8] avgVolume() {
 
 
 void main() {
-    if (readCells[instanceID[0]].fluidVolume > 0.0 && !bool(infoCells[instanceID[0]].flags & CELL_SOLID)){
+    if (readCells[instanceID[0]].fluidVolume > 0.05 && !bool(infoCells[instanceID[0]].flags & CELL_SOLID)){
         float vols[8] = avgVolume();
         for (uint i = 0; i < 12; ++i) {
             vec4 poly[3];

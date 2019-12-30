@@ -49,7 +49,7 @@ int to1DCoord(uvec3 coord){
 
 const float timeStep = 0.01;
 float getDragCoefficient() {
-    return 0.98;
+    return 0.9999;
 }
 
 vec3 getGlobalForces() {
