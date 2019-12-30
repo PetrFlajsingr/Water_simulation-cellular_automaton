@@ -96,12 +96,15 @@ int main() {
 
   initWaterFall(simulation);
 
-
-  constexpr auto testCellsHeight = 25;
+  constexpr auto testCellsHeight = 30;
+  constexpr auto testCellsWidth = 3;
+  constexpr auto testCellsDepth = 30;
   simulation.setRangeCells(MakeRange::range<int, 3>({0, 0, 0}, {50, 1, 50}, {1, 1, 1}), CellFlags::Solid);
   simulation.setRangeCells(MakeRange::range<int, 3>({0, 1, 0}, {50, 5, 50}, {1, 1, 49}), CellFlags::Solid);
   simulation.setRangeCells(MakeRange::range<int, 3>({0, 1, 0}, {50, 5, 50}, {49, 1, 1}), CellFlags::Solid);
-  simulation.setRangeCells(MakeRange::range<int, 3>({10, 10, 10}, {40, testCellsHeight + 10, 40}, {1, 1, 1}), CellFlags::NoFlag, 1.0f);
+  simulation.setRangeCells(
+      MakeRange::range<int, 3>({10, 10, 10}, {10 + testCellsWidth, testCellsHeight + 10, 10 + testCellsDepth}, {1, 1, 1}),
+      CellFlags::NoFlag, .5f);
 
   auto start = std::chrono::system_clock::now();
   mainLoop->setIdleCallback([&]() {
@@ -118,8 +121,7 @@ int main() {
       }
     }
     if (ui.isWaterfallEnabled()) {
-      simulation.setCells({{10, 10, 10}, {10, 10, 11}, {10, 10, 12}}, CellFlags::NoFlag,
-                          {1.f, 1.f, 1.f});
+      simulation.setCells({{10, 10, 10}, {10, 10, 11}, {10, 10, 12}}, CellFlags::NoFlag, {1.f, 1.f, 1.f});
     }
     if (ui.isResetPressed()) {
       simulation.reset();
