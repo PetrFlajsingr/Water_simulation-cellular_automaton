@@ -83,6 +83,22 @@ float getNeighborVel(CellData cell, int direction) {
 }
 const float waterWeight = 1;
 
+float positive(float value) {
+    return value * float(value > 0);
+}
+
+vec3 positive(vec3 value) {
+    return vec3(positive(value.x), positive(value.y), positive(value.z));
+}
+
+float negative(float value) {
+    return value * float(value < 0);
+}
+
+vec3 negative(vec3 value) {
+    return vec3(negative(value.x), negative(value.y), negative(value.z));
+}
+
 void main() {
     uint myCellID = (gl_GlobalInvocationID.z * globalSize.x * globalSize.y)+ (gl_GlobalInvocationID.y * globalSize.x) + gl_GlobalInvocationID.x;
     uint invocationCount = globalSize.x * globalSize.y * globalSize.z;
@@ -90,12 +106,32 @@ void main() {
         return;
     }
 
-    vec3 out_velocityPlus;
-    vec3 out_velocityMinus;
+    const vec3 cellVelocity = writeCells[myCellID].velocity;
+    const vec3 reflectA = infoCells[myCellID].reflectA.xyz;
+    const vec3 reflectB = infoCells[myCellID].reflectB.xyz;
+    vec3 out_velocityPlus = positive(cellVelocity) + reflectA;
+    vec3 out_velocityMinus = negative(cellVelocity) + reflectB;
+
+    float outLength = length(out_velocityMinus) + length(out_velocityPlus);
+    float outRatio = float(outLength > readCells[myCellID].fluidVolume) * readCells[myCellID].fluidVolume / (outLength + 0.000001) + float(outLength <= readCells[myCellID].fluidVolume);
+    out_velocityPlus *= outRatio;
+    out_velocityMinus *= -outRatio;
+    outLength *= outRatio;
     vec3 in_velocityPlus;
     vec3 in_velocityMinus;
 
-    writeCells[myCellID].fluidVolume = max(readCells[myCellID].fluidVolume
+    writeCells[myCellID].fluidVolume = readCells[myCellID].fluidVolume * (1.0f - outLength);
+
+
+    writeCells[UP_ID].fluidVolume += readCells[myCellID].fluidVolume * out_velocityPlus.y;
+    writeCells[DOWN_ID].fluidVolume += readCells[myCellID].fluidVolume * out_velocityMinus.y;
+    writeCells[LEFT_ID].fluidVolume += readCells[myCellID].fluidVolume * out_velocityMinus.x;
+    writeCells[RIGHT_ID].fluidVolume += readCells[myCellID].fluidVolume * out_velocityPlus.x;
+    writeCells[FRONT_ID].fluidVolume += readCells[myCellID].fluidVolume * out_velocityMinus.z;
+    writeCells[BACK_ID].fluidVolume += readCells[myCellID].fluidVolume * out_velocityPlus.z;
+
+
+    /*writeCells[myCellID].fluidVolume = max(readCells[myCellID].fluidVolume
     - readCells[myCellID].fluidVolume * (abs(writeCells[myCellID].velocity.x) + infoCells[LEFT_ID].reflectA.x - infoCells[RIGHT_ID].reflectB.x) * waterWeight
     - readCells[myCellID].fluidVolume * (abs(writeCells[myCellID].velocity.y) + infoCells[UP_ID].reflectA.y - infoCells[DOWN_ID].reflectB.y) * waterWeight
     - readCells[myCellID].fluidVolume * (abs(writeCells[myCellID].velocity.z) + infoCells[BACK_ID].reflectA.z - infoCells[FRONT_ID].reflectB.z) * waterWeight,
@@ -135,7 +171,7 @@ void main() {
     min(readCells[BACK_ID].fluidVolume / 2,
     readCells[BACK_ID].fluidVolume
     * (-writeCells[BACK_ID].velocity.z - infoCells[BACK_ID].reflectB.z) * waterWeight
-    * float(writeCells[BACK_ID].velocity.z < 0 || infoCells[BACK_ID].reflectB.z < 0)), 0);
+    * float(writeCells[BACK_ID].velocity.z < 0 || infoCells[BACK_ID].reflectB.z < 0)), 0);*/
 
 
     if (bool(infoCells[myCellID].flags & CELL_SOURCE)){
