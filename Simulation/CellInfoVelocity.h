@@ -17,7 +17,7 @@ private:
 
 public:
   explicit CellInfoVelocity(const glm::vec4 &reflectA = glm::vec4(0.0), const glm::vec4 &reflectB = glm::vec4(0.0),
-                            CellFlags flags = CellFlags::Cell_NoFLags);
+                            CellFlags flags = CellFlags::NoFlag);
 
 public:
   void setFlags(const CellFlags &flags);

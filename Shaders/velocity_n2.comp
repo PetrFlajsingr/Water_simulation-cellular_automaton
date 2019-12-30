@@ -90,6 +90,11 @@ void main() {
         return;
     }
 
+    vec3 out_velocityPlus;
+    vec3 out_velocityMinus;
+    vec3 in_velocityPlus;
+    vec3 in_velocityMinus;
+
     writeCells[myCellID].fluidVolume = max(readCells[myCellID].fluidVolume
     - readCells[myCellID].fluidVolume * abs(writeCells[myCellID].velocity.x + infoCells[LEFT_ID].reflectA.x - infoCells[RIGHT_ID].reflectB.x) * waterWeight
     - readCells[myCellID].fluidVolume * abs(writeCells[myCellID].velocity.y + infoCells[UP_ID].reflectA.y - infoCells[DOWN_ID].reflectB.y) * waterWeight

@@ -5,11 +5,11 @@
 #ifndef GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_CELLFLAGS_H
 #define GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_CELLFLAGS_H
 
-enum class CellFlags {
-  Cell_NoFLags = 0u,
-  Cell_Solid = 1 << 0,
-  Cell_Source = 1 << 1,
-  Cell_Sink = 1 << 2,
+enum class CellFlags : unsigned int {
+  NoFlag = 0u,
+  Solid = 1u << 0u,
+  FluidSource = 1u << 1u,
+  FluidSink = 1u << 2u,
 };
 
 #endif // GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_CELLFLAGS_H

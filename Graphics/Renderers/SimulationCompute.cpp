@@ -123,9 +123,9 @@ void SimulationCompute::setCells(const std::vector<glm::uvec3> &indices, const C
                                  std::vector<float> fluidVolumes) {
   using namespace MakeRange;
 
-  if (cellType == CellFlags::Cell_Solid || cellType == CellFlags::Cell_Sink) {
+  if (cellType == CellFlags::Solid || cellType == CellFlags::FluidSink) {
     fluidVolumes = std::vector<float>(indices.size(), 0.0);
-  } else if (cellType == CellFlags::Cell_Source) {
+  } else if (cellType == CellFlags::FluidSource) {
     fluidVolumes = std::vector<float>(indices.size(), 1.0);
   }
 

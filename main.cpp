@@ -28,7 +28,7 @@ std::pair<unsigned int, unsigned int> getWindowSize() {
 }
 
 void initWaterFall(SimulationCompute simulation) {
-  simulation.setCells({{23, 48, 0}, {24, 48, 0}, {25, 48, 0}, {26, 48, 0}, {27, 48, 0}}, CellFlags::Cell_Solid);
+  simulation.setCells({{23, 48, 0}, {24, 48, 0}, {25, 48, 0}, {26, 48, 0}, {27, 48, 0}}, CellFlags::Solid);
   {
     std::vector<glm::uvec3> result{};
     for (auto z : MakeRange::range(10)) {
@@ -41,8 +41,8 @@ void initWaterFall(SimulationCompute simulation) {
       result.emplace_back(glm::uvec3{x, 0, 10});
       result.emplace_back(glm::uvec3{x, 1, 10});
     }
-    simulation.setCells(result, CellFlags::Cell_Solid);
-    simulation.setCells({{23, 49, 0}, {24, 49, 0}, {25, 49, 0}, {26, 49, 0}, {27, 49, 0}}, CellFlags::Cell_Source);
+    simulation.setCells(result, CellFlags::Solid);
+    simulation.setCells({{23, 49, 0}, {24, 49, 0}, {25, 49, 0}, {26, 49, 0}, {27, 49, 0}}, CellFlags::FluidSource);
   }
 }
 
@@ -55,7 +55,7 @@ void initWaterCube(SimulationCompute simulation) {
       positions.emplace_back(glm::vec3{x, y, z});
       volumes.emplace_back(1.0);
     }
-    simulation.setCells(positions, CellFlags::Cell_NoFLags, volumes);
+    simulation.setCells(positions, CellFlags::NoFlag, volumes);
   }
 }
 
@@ -97,10 +97,10 @@ int main() {
   initWaterFall(simulation);
 
 
-  simulation.setRangeCells(MakeRange::range<int, 3>({0, 0, 0}, {50, 1, 50}, {1, 1, 1}), CellFlags::Cell_Solid);
-  simulation.setRangeCells(MakeRange::range<int, 3>({0, 1, 0}, {50, 5, 50}, {1, 1, 49}), CellFlags::Cell_Solid);
-  simulation.setRangeCells(MakeRange::range<int, 3>({0, 1, 0}, {50, 5, 50}, {49, 1, 1}), CellFlags::Cell_Solid);
-  simulation.setRangeCells(MakeRange::range<int, 3>({10, 10, 10}, {30, 11, 30}, {1, 1, 1}), CellFlags::Cell_NoFLags, 1.0f);
+  simulation.setRangeCells(MakeRange::range<int, 3>({0, 0, 0}, {50, 1, 50}, {1, 1, 1}), CellFlags::Solid);
+  simulation.setRangeCells(MakeRange::range<int, 3>({0, 1, 0}, {50, 5, 50}, {1, 1, 49}), CellFlags::Solid);
+  simulation.setRangeCells(MakeRange::range<int, 3>({0, 1, 0}, {50, 5, 50}, {49, 1, 1}), CellFlags::Solid);
+  simulation.setRangeCells(MakeRange::range<int, 3>({10, 10, 10}, {30, 11, 30}, {1, 1, 1}), CellFlags::NoFlag, 1.0f);
 
   auto start = std::chrono::system_clock::now();
   mainLoop->setIdleCallback([&]() {
@@ -117,7 +117,7 @@ int main() {
       }
     }
     if (ui.isWaterfallEnabled()) {
-      simulation.setCells({{10, 10, 10}, {10, 10, 11}, {10, 10, 12}}, CellFlags::Cell_NoFLags,
+      simulation.setCells({{10, 10, 10}, {10, 10, 11}, {10, 10, 12}}, CellFlags::NoFlag,
                           {1.f, 1.f, 1.f});
     }
     if (ui.isResetPressed()) {

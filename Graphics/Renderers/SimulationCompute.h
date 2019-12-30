@@ -29,9 +29,9 @@ public:
   template <typename Range>
   void setRangeCells(Range &&indices, CellFlags cellType, float fluidVolume = 0.0f) {
 
-    if (cellType == CellFlags::Cell_Solid || cellType == CellFlags::Cell_Sink) {
+    if (cellType == CellFlags::Solid || cellType == CellFlags::FluidSink) {
       fluidVolume = 0.0f;
-    } else if (cellType == CellFlags::Cell_Source) {
+    } else if (cellType == CellFlags::FluidSource) {
       fluidVolume = 1.0f;
     }
 

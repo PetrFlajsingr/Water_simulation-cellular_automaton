@@ -9,16 +9,16 @@ void CellInfo::setFlags(CellFlags flag) { CellInfo::flags = flag; }
 std::ostream &operator<<(std::ostream &out, const CellInfo &cell) {
   {
     switch (cell.flags) {
-    case CellFlags::Cell_Solid:
+    case CellFlags::Solid:
       out << "[Solid]";
       break;
-    case CellFlags::Cell_Source:
+    case CellFlags::FluidSource:
       out << "[Source]";
       break;
-    case CellFlags::Cell_NoFLags:
+    case CellFlags::NoFlag:
       out << "[Regular]";
       break;
-    case CellFlags::Cell_Sink:
+    case CellFlags::FluidSink:
       out << "[Sink]";
       break;
     }
