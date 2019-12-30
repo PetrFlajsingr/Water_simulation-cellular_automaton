@@ -37,6 +37,7 @@ layout(location = 1) out vec4 fragColor;
 layout(location = 2) out vec2 fragTexCoord;
 layout(location = 3) out vec3 fragNormal;
 layout(location = 4) out vec3 fragCameraPosition;
+layout(location = 10) out float fluidVolume;
 
 layout(std430, binding=1) buffer ReadBuffer{
     CellData readCells[];
@@ -120,7 +121,7 @@ float[8] avgVolume() {
     + float(readCells[instanceID[0] - 1u - zOffset].fluidVolume > 0)
     + float(readCells[instanceID[0] - zOffset].fluidVolume > 0);
     for (uint i = 4; i < 8; ++i) {
-        result[i] =  result[i] / 4.f;
+        result[i] =  clamp(result[i] / 4.f, 0.0, 1.0f);
     }
 
     return result;
@@ -142,8 +143,10 @@ void main() {
                 fragy[j] = Position[0] + cubeVertex;
             }
             fragColor = Color[0];
+            fluidVolume = readCells[instanceID[0]].fluidVolume;
             if (bool(infoCells[instanceID[0]].flags & CELL_SOLID)){
                 fragColor = vec4(0.0, 1.0, 0.0, 1.0);
+                fluidVolume = -1;
             }
             fragTexCoord = texCoords[0];
             fragCameraPosition = CameraPosition[0];
