@@ -94,16 +94,17 @@ int main() {
 
   UI ui{*window, *mainLoop};
 
-  initWaterFall(simulation);
+  //initWaterFall(simulation);
 
-  constexpr auto testCellsHeight = 30;
-  constexpr auto testCellsWidth = 3;
-  constexpr auto testCellsDepth = 30;
-  simulation.setRangeCells(MakeRange::range<int, 3>({0, 0, 0}, {50, 1, 50}, {1, 1, 1}), CellFlags::Solid);
-  simulation.setRangeCells(MakeRange::range<int, 3>({0, 1, 0}, {50, 5, 50}, {1, 1, 49}), CellFlags::Solid);
-  simulation.setRangeCells(MakeRange::range<int, 3>({0, 1, 0}, {50, 5, 50}, {49, 1, 1}), CellFlags::Solid);
+  const glm::uvec3 testAreaStart {10, 10, 10};
+  const glm::uvec3 testAreaDims {10, 25, 10};
+  simulation.setRangeCells(MakeRange::range<unsigned int, 3>({0, 0, 0}, {tankSize.x, 1, tankSize.z}, {1, 1, 1}), CellFlags::Solid);
+  simulation.setRangeCells(MakeRange::range<unsigned int, 3>({0, 1, 0}, {tankSize.x, 5, tankSize.z}, {1, 1, tankSize.z - 1}), CellFlags::Solid);
+  simulation.setRangeCells(MakeRange::range<unsigned int, 3>({0, 1, 0}, {tankSize.x, 5, tankSize.z}, {tankSize.x - 1, 1, 1}), CellFlags::Solid);
   simulation.setRangeCells(
-      MakeRange::range<int, 3>({10, 10, 10}, {10 + testCellsWidth, testCellsHeight + 10, 10 + testCellsDepth}, {1, 1, 1}),
+      MakeRange::range<unsigned int, 3>({testAreaStart.x, testAreaStart.y, testAreaStart.z},
+          {testAreaStart.x + testAreaDims.x, testAreaStart.y + testAreaDims.y, testAreaStart.z + testAreaDims.z},
+          {1, 1, 1}),
       CellFlags::NoFlag, .5f);
 
   auto start = std::chrono::system_clock::now();
