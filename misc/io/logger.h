@@ -71,7 +71,7 @@ public:
 
   void startTime();
 
-  void endTime();
+  std::chrono::nanoseconds endTime();
 
   /**
    * Print time difference between endTime() and startTime() calls

@@ -126,7 +126,10 @@ void Logger<OutStream>::log(const T &... message) const {
 
 template <typename OutStream> void Logger<OutStream>::startTime() { startTimeMs = now<std::chrono::nanoseconds>(); }
 
-template <typename OutStream> void Logger<OutStream>::endTime() { endTimeMs = now<std::chrono::nanoseconds>(); }
+template <typename OutStream> std::chrono::nanoseconds Logger<OutStream>::endTime() {
+  endTimeMs = now<std::chrono::nanoseconds>();
+  return endTimeMs - startTimeMs;
+}
 
 template <typename OutStream> void Logger<OutStream>::printElapsedTime() {
   auto tmp = endTimeMs - startTimeMs;

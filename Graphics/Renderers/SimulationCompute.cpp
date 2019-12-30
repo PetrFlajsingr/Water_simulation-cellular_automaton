@@ -12,6 +12,7 @@
 #include <shader_literals.h>
 #include <types/Range.h>
 #include <utility>
+#include "io/logger.h"
 
 using namespace ge::gl;
 
@@ -22,6 +23,8 @@ SimulationCompute::SimulationCompute(const glm::uvec3 tankSize) : tankSize(tankS
 
   initBuffers(glm::compMul(tankSize));
 }
+
+
 
 void SimulationCompute::simulate() {
   const glm::uvec3 localSizes{2, 2, 2};

@@ -27,7 +27,7 @@ std::pair<unsigned int, unsigned int> getWindowSize() {
   return {w, h};
 }
 
-void initWaterFall(SimulationCompute simulation){
+void initWaterFall(SimulationCompute simulation) {
   simulation.setSolid({{23, 48, 0}, {24, 48, 0}, {25, 48, 0}, {26, 48, 0}, {27, 48, 0}});
   {
     std::vector<glm::uvec3> result{};
@@ -46,7 +46,7 @@ void initWaterFall(SimulationCompute simulation){
   }
 }
 
-void initWaterCube(SimulationCompute simulation){
+void initWaterCube(SimulationCompute simulation) {
   {
     using namespace MakeRange;
     std::vector<glm::uvec3> positions;
@@ -83,7 +83,6 @@ int main() {
   auto gridRenderer = GridRenderer(tankSize, proj);
   auto simulation = SimulationCompute(tankSize);
 
-
   glClearColor(0, 0, 0, 1);
 
   glEnable(GL_DEPTH_TEST);
@@ -96,6 +95,20 @@ int main() {
   UI ui{*window, *mainLoop};
 
   initWaterFall(simulation);
+
+ /* {
+    std::vector<unsigned int> sizes{10, 20, 50, 100, 200};
+    for (auto size : sizes) {
+      glm::uvec3 tankSize{size};
+      auto simulation = SimulationCompute(tankSize);
+      auto logger = Logger{std::cout};
+      auto bench = [&simulation] { simulation.simulate(); };
+
+      logger.measure<decltype(bench), std::chrono::nanoseconds>(std::move(bench), 100000,
+                                                                fmt::format("Grid size count: {0}x{0}x{0}", size));
+    }
+  }
+  return 0;*/
 
   auto start = std::chrono::system_clock::now();
   mainLoop->setIdleCallback([&]() {
