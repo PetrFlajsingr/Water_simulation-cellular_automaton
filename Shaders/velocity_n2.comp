@@ -92,45 +92,45 @@ void main() {
 
     writeCells[myCellID].fluidVolume = max(readCells[myCellID].fluidVolume
     - readCells[myCellID].fluidVolume * abs(writeCells[myCellID].velocity.x) * waterWeight
-    - readCells[myCellID].fluidVolume * abs(writeCells[myCellID].velocity.y) * waterWeight
+    - readCells[myCellID].fluidVolume * abs(writeCells[myCellID].velocity.y + infoCells[UP_ID].reflectA.y) * waterWeight
     - readCells[myCellID].fluidVolume * abs(writeCells[myCellID].velocity.z) * waterWeight,
     0);
 
     writeCells[myCellID].fluidVolume += max(
     min(readCells[UP_ID].fluidVolume,
     readCells[UP_ID].fluidVolume
-    * -writeCells[UP_ID].velocity.y * waterWeight
-    * float(writeCells[UP_ID].velocity.y < 0)), 0);
+    * (-writeCells[UP_ID].velocity.y + infoCells[UP_ID].reflectA.y) * waterWeight
+    * float(writeCells[UP_ID].velocity.y < 0 || infoCells[UP_ID].reflectA.y > 0)), 0);
 
     writeCells[myCellID].fluidVolume += max(
     min(readCells[DOWN_ID].fluidVolume,
     readCells[DOWN_ID].fluidVolume
-    * writeCells[DOWN_ID].velocity.y * waterWeight
-    * float(writeCells[DOWN_ID].velocity.y > 0)), 0);
+    * (writeCells[DOWN_ID].velocity.y - infoCells[DOWN_ID].reflectB.y) * waterWeight
+    * float(writeCells[DOWN_ID].velocity.y > 0 || infoCells[DOWN_ID].reflectB.y < 0)), 0);
 
     writeCells[myCellID].fluidVolume += max(
     min(readCells[LEFT_ID].fluidVolume,
     readCells[LEFT_ID].fluidVolume
-    * writeCells[LEFT_ID].velocity.x * waterWeight
-    * float(writeCells[LEFT_ID].velocity.x > 0)), 0);
+    * (writeCells[LEFT_ID].velocity.x + infoCells[LEFT_ID].reflectA.x) * waterWeight
+    * float(writeCells[LEFT_ID].velocity.x > 0 || infoCells[LEFT_ID].reflectA.x > 0)), 0);
 
     writeCells[myCellID].fluidVolume += max(
     min(readCells[RIGHT_ID].fluidVolume,
     readCells[RIGHT_ID].fluidVolume
-    * -writeCells[RIGHT_ID].velocity.x * waterWeight
-    * float(writeCells[RIGHT_ID].velocity.x < 0)), 0);
+    * (-writeCells[RIGHT_ID].velocity.x - infoCells[RIGHT_ID].reflectB.x) * waterWeight
+    * float(writeCells[RIGHT_ID].velocity.x < 0 || infoCells[RIGHT_ID].reflectB.x < 0)), 0);
 
     writeCells[myCellID].fluidVolume += max(
     min(readCells[FRONT_ID].fluidVolume,
     readCells[FRONT_ID].fluidVolume
-    * writeCells[FRONT_ID].velocity.z * waterWeight
-    * float(writeCells[FRONT_ID].velocity.z > 0)), 0);
+    * (writeCells[FRONT_ID].velocity.z + infoCells[FRONT_ID].reflectA.z) * waterWeight
+    * float(writeCells[FRONT_ID].velocity.z > 0 || + infoCells[FRONT_ID].reflectA.z > 0)), 0);
 
     writeCells[myCellID].fluidVolume += max(
     min(readCells[BACK_ID].fluidVolume,
     readCells[BACK_ID].fluidVolume
-    * -writeCells[BACK_ID].velocity.z * waterWeight
-    * float(writeCells[BACK_ID].velocity.z < 0)), 0);
+    * (-writeCells[BACK_ID].velocity.z - infoCells[BACK_ID].reflectB.z) * waterWeight
+    * float(writeCells[BACK_ID].velocity.z < 0 || infoCells[BACK_ID].reflectB.z < 0)), 0);
 
 
     if (bool(infoCells[myCellID].flags & CELL_SOURCE)){

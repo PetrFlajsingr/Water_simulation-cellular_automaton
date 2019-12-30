@@ -189,16 +189,16 @@ void main() {
             infoCells[myCellID].reflectA.xyz += reflect * aReflectMul;
             infoCells[myCellID].reflectB.xyz += reflect * bReflectMul;
 
-            tmpReflectA += getSpread(i) * aReflectMul;
-            tmpReflectB -= getSpread(i) * bReflectMul;
+            tmpReflectA += getSpread(i) * -(aReflectMul - 1.0f);
+            tmpReflectB -= getSpread(i) * -(bReflectMul - 1.0f);
             ++cntUsed;
         }
     }
     if (cntUsed > 0) {
-        infoCells[myCellID].reflectA.xyz += tmpReflectA;
-        infoCells[myCellID].reflectB.xyz += tmpReflectB;
-        infoCells[myCellID].reflectA.xyz /= cntUsed;
-        infoCells[myCellID].reflectB.xyz /= cntUsed;
-        writeCells[myCellID].velocity = reflectVelocity(writeCells[myCellID].velocity, getNormal(DOWN));
+        infoCells[myCellID].reflectA.xyz += tmpReflectA * 10;
+        infoCells[myCellID].reflectB.xyz += tmpReflectB * 10;
+        infoCells[myCellID].reflectA.xyz /= cntUsed * 20;
+        infoCells[myCellID].reflectB.xyz /= cntUsed * 20;
+        writeCells[myCellID].velocity = vec3(0);
     }
 }
