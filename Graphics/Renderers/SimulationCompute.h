@@ -58,6 +58,7 @@ private:
   ProgramPtr verticalProgram;
   ProgramPtr velocityProgram;
   ProgramPtr velocity2Program;
+  ProgramPtr velocity3Program;
 
   glm::uvec3 tankSize;
   std::array<BufferPtr, 2> cellBuffers;
