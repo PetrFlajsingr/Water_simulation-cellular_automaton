@@ -125,7 +125,6 @@ int main() {
         start = now;
         for ([[maybe_unused]] auto n : MakeRange::range(ui.getSimulationSteps())) {
           simulation.simulate();
-          simulation.setCells({{23, 49, 0}, {24, 49, 0}, {25, 49, 0}, {26, 49, 0}, {27, 49, 0}}, CellFlags::FluidSource);
         }
       }
     }
