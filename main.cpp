@@ -94,7 +94,7 @@ int main() {
 
   UI ui{*window, *mainLoop};
 
-  initWaterFall(simulation);
+  //initWaterFall(simulation);
 
   const glm::uvec3 testAreaStart {10, 2, 10};
   const glm::uvec3 testAreaDims {18, 20, 18};
@@ -113,11 +113,6 @@ int main() {
   mainLoop->setIdleCallback([&]() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    simulation.setSimulationType(ui.selectedSimulation());
-    if (ui.isResetPressed()) {
-      simulation.reset();
-      initWaterFall(simulation);
-    }
     const auto simSpeed = ui.simulationSpeed();
     if (ui.isSimulationRunning()) {
       auto now = std::chrono::system_clock::now();
@@ -131,10 +126,14 @@ int main() {
     if (ui.isWaterfallEnabled()) {
       simulation.setCells({{10, 10, 10}, {10, 10, 11}, {10, 10, 12}}, CellFlags::NoFlag, {.9f, .9f, .9f});
     }
+    if (ui.isResetPressed()) {
+      simulation.reset();
+      initWaterFall(simulation);
+    }
 
     gridRenderer.draw(ui.camera.GetViewMatrix(), DrawType(ui.selectedVisualisation()), ui.getCellSize());
 
-    cellRenderer.draw(ui.camera.GetViewMatrix(), ui.camera.Position, simulation.getCellBuffer(), simulation.getInfoCellBuffer(), ui.selectedSimulation(),
+    cellRenderer.draw(ui.camera.GetViewMatrix(), ui.camera.Position, simulation.getCellBuffer(), simulation.getInfoCellBuffer(),
                       ui.getCellSize());
 
     ui.loop();

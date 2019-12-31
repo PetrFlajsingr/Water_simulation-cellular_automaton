@@ -31,7 +31,6 @@ public:
   [[nodiscard]] bool isWaterfallEnabled();
   [[nodiscard]] bool isResetPressed();
   [[nodiscard]] unsigned int selectedVisualisation();
-  [[nodiscard]] unsigned int selectedSimulation();
 
   Camera camera{glm::vec3(1.0, 1.0, 5.0)};
 private:
@@ -46,8 +45,7 @@ public:
   float getCellSize() const;
 private:
   bool resetPressed = false;
-  unsigned int selectedGrid = 1;
-  unsigned int selectedSimulationMethod = 1;
+  unsigned int selected = 1;
   int simulationCycles = 1;
 
 public:

@@ -71,82 +71,37 @@ void UI::loop() {
   ImGui::SetWindowPos(ImVec2(window.getWidth() - ImGui::GetWindowWidth(), previousSize.y));
   previousSize.y += ImGui::GetWindowSize().y;
   ImGui::InputInt("Simulation cycles", &simulationCycles, 1, 1);
-  if (simulationCycles < 1)
+  if(simulationCycles < 1)
     simulationCycles = 1;
-
-  bool open = true;
-  ImGui::Text("Method:");
-  ImGui::SameLine();
-  {
-    float w = ImGui::CalcItemWidth();
-    float spacing = 24.f;
-    float button_sz = ImGui::GetFrameHeight();
-    std::array<std::string, 2> items{"Basic", "Advanced"};
-    static unsigned int selected = 1;
-    ImGui::PushItemWidth(w - spacing * 2.0f - button_sz * 2.0f);
-    if (ImGui::BeginCombo("", items[selected].c_str())) {
-      for (std::size_t n = 0; n < items.size(); n++) {
-        bool is_selected = (n == selected);
-        if (ImGui::Selectable(items[n].c_str(), is_selected)) {
-/*          if (n != selected) {
-            std::cout << n << std::endl;
-          }*/
-
-          selected = n;
-        }
-        if (is_selected)
-          ImGui::SetItemDefaultFocus();
-      }
-      ImGui::EndCombo();
-    }
-    ImGui::PopItemWidth();
-
-    if (selectedSimulationMethod != selected)
-      ImGui::OpenPopup("Modal window");
-    if (ImGui::BeginPopupModal("Modal window")) {
-      ImGui::Text("This will reset the simulation!\n Are you sure?");
-      if (ImGui::Button("OK")) {
-        selectedSimulationMethod = selected;
-        resetPressed = true;
-        ImGui::CloseCurrentPopup();
-      }
-      ImGui::SameLine();
-      if (ImGui::Button("Cancel")) {
-        selected = selectedSimulationMethod;
-        ImGui::CloseCurrentPopup();
-      }
-      ImGui::EndPopup();
-    }
-  }
 
   ImGui::End();
 
   ImGui::Begin("Visual", showStatus, ImGuiWindowFlags_AlwaysAutoResize);
-  // ImGui::SetWindowSize(ImVec2(previousSize.x, ImGui::GetWindowHeight()));
+  //ImGui::SetWindowSize(ImVec2(previousSize.x, ImGui::GetWindowHeight()));
   ImGui::Text("Show:");
   ImGui::SameLine();
+  std::array<std::string, 3> items{"None", "Box", "Grid"};
+  float w = ImGui::CalcItemWidth();
+  float spacing = 24.f;
+  float button_sz = ImGui::GetFrameHeight();
+  ImGui::PushItemWidth(w - spacing * 2.0f - button_sz * 2.0f);
+  if (ImGui::BeginCombo("", items[selected].c_str())) // The second parameter is the label previewed before opening the combo.
   {
-    std::array<std::string, 3> items{"None", "Box", "Grid"};
-    float w = ImGui::CalcItemWidth();
-    float spacing = 24.f;
-    float button_sz = ImGui::GetFrameHeight();
-    ImGui::PushItemWidth(w - spacing * 2.0f - button_sz * 2.0f);
-    if (ImGui::BeginCombo("", items[selectedGrid].c_str())) {
-      for (std::size_t n = 0; n < items.size(); n++) {
-        bool is_selected = (n == selectedGrid);
-        if (ImGui::Selectable(items[n].c_str(), is_selected))
-          selectedGrid = n;
-        if (is_selected)
-          ImGui::SetItemDefaultFocus();
-      }
-      ImGui::EndCombo();
+    for (std::size_t n = 0; n < items.size(); n++) {
+      bool is_selected = (n == selected); // You can store your selection however you want, outside or inside your objects
+      if (ImGui::Selectable(items[n].c_str(), is_selected))
+        selected = n;
+      if (is_selected)
+        ImGui::SetItemDefaultFocus(); // You may set the initial focus when opening the combo (scrolling + for keyboard
+      // navigation support)
     }
-    ImGui::PopItemWidth();
+    ImGui::EndCombo();
   }
+  ImGui::PopItemWidth();
   ImGui::Text("Cell size");
   ImGui::SameLine();
-  ImGui::InputFloat("", &cellSize, 0.01, 0.1, "%.2f");
-  if (cellSize < 0.0)
+  ImGui::InputFloat("Cell Size", &cellSize, 0.01, 0.1, "%.2f");
+  if(cellSize < 0.0)
     cellSize = 0.0;
   ImGui::SetWindowPos(ImVec2(window.getWidth() - ImGui::GetWindowWidth(), previousSize.y));
   ImGui::End();
@@ -162,7 +117,7 @@ bool UI::isSimulationRunning() { return isSimRunning; }
 float UI::simulationSpeed() { return simSpeed; }
 bool UI::isWaterfallEnabled() { return waterfallEnabled; }
 bool UI::isResetPressed() { return resetPressed; }
-unsigned int UI::selectedVisualisation() { return selectedGrid; }
+unsigned int UI::selectedVisualisation() { return selected; }
 bool UI::SDLHandler(const SDL_Event &event) {
   static bool mousePressed = false;
   if (ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantCaptureKeyboard) {
@@ -203,4 +158,3 @@ bool UI::SDLHandler(const SDL_Event &event) {
 }
 float UI::getCellSize() const { return cellSize; }
 int UI::getSimulationSteps() const { return simulationCycles; }
-unsigned int UI::selectedSimulation() { return selectedSimulationMethod; }
