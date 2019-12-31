@@ -179,7 +179,7 @@ void main() {
         if (isFlagSet(infoCells[neighborID].flags, CELL_SOLID)
         || readCells[neighborID].fluidVolume >= maximumCellVolume) {
             if (intersectsPlane(writeCells[myCellID].velocity, getNormal(i))) {
-                reflect = 0.5*reflectVelocity(writeCells[myCellID].velocity, getNormal(i));
+                reflect = reflectVelocity(writeCells[myCellID].velocity, getNormal(i));
             } else {
                 reflect = writeCells[myCellID].velocity;
             }
