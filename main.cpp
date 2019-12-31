@@ -96,16 +96,18 @@ int main() {
 
   //initWaterFall(simulation);
 
-  const glm::uvec3 testAreaStart {10, 10, 10};
-  const glm::uvec3 testAreaDims {10, 25, 10};
+  const glm::uvec3 testAreaStart {11, 11, 11};
+  const glm::uvec3 testAreaDims {3, 3, 3};
   simulation.setRangeCells(MakeRange::range<unsigned int, 3>({0, 0, 0}, {tankSize.x, 1, tankSize.z}, {1, 1, 1}), CellFlags::Solid);
   simulation.setRangeCells(MakeRange::range<unsigned int, 3>({0, 1, 0}, {tankSize.x, 5, tankSize.z}, {1, 1, tankSize.z - 1}), CellFlags::Solid);
   simulation.setRangeCells(MakeRange::range<unsigned int, 3>({0, 1, 0}, {tankSize.x, 5, tankSize.z}, {tankSize.x - 1, 1, 1}), CellFlags::Solid);
+  simulation.setRangeCells(MakeRange::range<unsigned int, 3>({9, 1, 9}, {19, 5, 19}, {1, 1, 9}), CellFlags::Solid);
+  simulation.setRangeCells(MakeRange::range<unsigned int, 3>({9, 1, 9}, {19, 5, 19}, {9, 1, 1}), CellFlags::Solid);
   simulation.setRangeCells(
       MakeRange::range<unsigned int, 3>({testAreaStart.x, testAreaStart.y, testAreaStart.z},
           {testAreaStart.x + testAreaDims.x, testAreaStart.y + testAreaDims.y, testAreaStart.z + testAreaDims.z},
           {1, 1, 1}),
-      CellFlags::NoFlag, .5f);
+      CellFlags::NoFlag, .9f);
 
   auto start = std::chrono::system_clock::now();
   mainLoop->setIdleCallback([&]() {
@@ -122,7 +124,7 @@ int main() {
       }
     }
     if (ui.isWaterfallEnabled()) {
-      simulation.setCells({{10, 10, 10}, {10, 10, 11}, {10, 10, 12}}, CellFlags::NoFlag, {1.f, 1.f, 1.f});
+      simulation.setCells({{10, 10, 10}, {10, 10, 11}, {10, 10, 12}}, CellFlags::NoFlag, {.9f, .9f, .9f});
     }
     if (ui.isResetPressed()) {
       simulation.reset();
