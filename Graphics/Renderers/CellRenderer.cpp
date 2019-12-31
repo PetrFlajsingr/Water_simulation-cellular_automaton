@@ -34,7 +34,7 @@ CellRenderer::CellRenderer([[maybe_unused]] const std::string &cellModelPath, co
 
 float t = 0;
 void CellRenderer::draw(const glm::mat4 &viewMat, const glm::vec3 &cameraPos, const BufferPtr &cellBuffer,
-                        const BufferPtr &cellInfoBuffer, float cellSize) {
+                        const BufferPtr &cellInfoBuffer, bool visualizeVolumes, float cellSize) {
   program->use();
 
   vao->bind();
@@ -47,6 +47,7 @@ void CellRenderer::draw(const glm::mat4 &viewMat, const glm::vec3 &cameraPos, co
   program->set("time", t);
   program->set3uiv("tankSize", glm::value_ptr(tankSize), 1);
   program->set3fv("cameraPosition", glm::value_ptr(cameraPos));
+  program->set1i("showIntensity", visualizeVolumes ? 1 : 0);
   glDrawArraysInstanced(GL_POINTS, 0, 1, glm::compMul(tankSize));
   cellBuffer->unbindBase(GL_SHADER_STORAGE_BUFFER, 1);
   cellInfoBuffer->unbindBase(GL_SHADER_STORAGE_BUFFER, 2);

@@ -6,8 +6,10 @@ layout(location = 2) in vec2 fragTexCoord;
 layout(location = 3) in vec3 fragNormal;
 layout(location = 4) in vec3 fragCameraPosition;
 layout(location = 10) in float fluidVolume;
+layout(location = 11) uniform int showIntensity;
 
 layout(location = 5) uniform mat4 View;
+
 
 
 float hash(float n) { return fract(sin(n) * 1e4); }
@@ -171,7 +173,7 @@ void main() {
 
     vec3 result = (ambient + diffuse + specular) * (color);
 
-    if (fluidVolume >= 0) {
+    if (fluidVolume >= 0 && bool(showIntensity)) {
         float fraction = 1f - fract(fluidVolume);
         result.r += fraction;
     }

@@ -133,7 +133,7 @@ int main() {
 
     gridRenderer.draw(ui.camera.GetViewMatrix(), DrawType(ui.selectedVisualisation()), ui.getCellSize());
 
-    cellRenderer.draw(ui.camera.GetViewMatrix(), ui.camera.Position, simulation.getCellBuffer(), simulation.getInfoCellBuffer(),
+    cellRenderer.draw(ui.camera.GetViewMatrix(), ui.camera.Position, simulation.getCellBuffer(), simulation.getInfoCellBuffer(), ui.isVisualizeVolumes(),
                       ui.getCellSize());
 
     ui.loop();

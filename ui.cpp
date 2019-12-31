@@ -77,6 +77,7 @@ void UI::loop() {
   ImGui::End();
 
   ImGui::Begin("Visual", showStatus, ImGuiWindowFlags_AlwaysAutoResize);
+  ImGui::Checkbox("Visualise volumes:", &visualizeVolumes);
   //ImGui::SetWindowSize(ImVec2(previousSize.x, ImGui::GetWindowHeight()));
   ImGui::Text("Show:");
   ImGui::SameLine();
@@ -158,3 +159,4 @@ bool UI::SDLHandler(const SDL_Event &event) {
 }
 float UI::getCellSize() const { return cellSize; }
 int UI::getSimulationSteps() const { return simulationCycles; }
+bool UI::isVisualizeVolumes() const { return visualizeVolumes; }

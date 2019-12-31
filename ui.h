@@ -47,6 +47,10 @@ private:
   bool resetPressed = false;
   unsigned int selected = 1;
   int simulationCycles = 1;
+  bool visualizeVolumes = true;
+
+public:
+  bool isVisualizeVolumes() const;
 
 public:
   int getSimulationSteps() const;
