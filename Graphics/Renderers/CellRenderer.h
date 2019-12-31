@@ -19,10 +19,11 @@ class CellRenderer {
 public:
   CellRenderer(const std::string &cellModelPath, const glm::mat4 &projectionMat, const glm::uvec3 &tankSize);
 
-  void draw(const glm::mat4 &viewMat, const glm::vec3 &cameraPos, const BufferPtr& cellBuffer, const BufferPtr& cellInfoBuffer, float cellSize = 0.5);
+  void draw(const glm::mat4 &viewMat, const glm::vec3 &cameraPos, const BufferPtr& cellBuffer, const BufferPtr& cellInfoBuffer, unsigned int simulationType, float cellSize = 0.5);
 
 private:
-  ProgramPtr program;
+  ProgramPtr basicProgram;
+  ProgramPtr velocityProgram;
   BufferPtr vbo;
   BufferPtr ebo;
   VertexArrayPtr vao = std::make_shared<ge::gl::VertexArray>();

@@ -19,7 +19,9 @@ class SimulationCompute {
 public:
   SimulationCompute(glm::uvec3 tankSize);
 
+  void simulateAdvanced();
   void simulate();
+  void simulateBasic();
   void swapBuffers();
   void reset();
   BufferPtr getCellBuffer();
@@ -37,14 +39,27 @@ public:
 
     auto ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_WRITE_ONLY));
     auto ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_WRITE_ONLY));
-    auto ptrInfo = reinterpret_cast<CellInfoVelocity *>(infoCellBuffer->map(GL_WRITE_ONLY));
+    if(simulationType == 0) {
+      auto ptrInfo = reinterpret_cast<CellInfo *>(infoCellBuffer->map(GL_WRITE_ONLY));
 
-    for (auto [x, y, z] : indices) {
-      auto linearIndex = x + y * tankSize.x + z * tankSize.y * tankSize.x;
-      ptrRD[linearIndex].setFluidVolume(fluidVolume);
-      ptrInfo[linearIndex].setFlags(cellType);
-      ptrWR[linearIndex].setFluidVolume(fluidVolume);
-      ptrInfo[linearIndex].setFlags(cellType);
+      for (auto [x, y, z] : indices) {
+        auto linearIndex = x + y * tankSize.x + z * tankSize.y * tankSize.x;
+        ptrRD[linearIndex].setFluidVolume(fluidVolume);
+        ptrInfo[linearIndex].setFlags(cellType);
+        ptrWR[linearIndex].setFluidVolume(fluidVolume);
+        ptrInfo[linearIndex].setFlags(cellType);
+      }
+    }
+    else {
+      auto ptrInfo = reinterpret_cast<CellInfoVelocity *>(infoCellBuffer->map(GL_WRITE_ONLY));
+
+      for (auto [x, y, z] : indices) {
+        auto linearIndex = x + y * tankSize.x + z * tankSize.y * tankSize.x;
+        ptrRD[linearIndex].setFluidVolume(fluidVolume);
+        ptrInfo[linearIndex].setFlags(cellType);
+        ptrWR[linearIndex].setFluidVolume(fluidVolume);
+        ptrInfo[linearIndex].setFlags(cellType);
+      }
     }
 
     cellBuffers[0]->unmap();
@@ -53,6 +68,7 @@ public:
   }
 
 private:
+  const glm::uvec3 localSizes{4, 4, 4};
   void initBuffers(int size);
   ProgramPtr horizontalProgram;
   ProgramPtr verticalProgram;
@@ -63,6 +79,10 @@ private:
   glm::uvec3 tankSize;
   std::array<BufferPtr, 2> cellBuffers;
   BufferPtr infoCellBuffer;
+  unsigned int simulationType = 1;
+
+public:
+  void setSimulationType(unsigned int simulationType);
 
 public:
   const BufferPtr &getInfoCellBuffer() const;

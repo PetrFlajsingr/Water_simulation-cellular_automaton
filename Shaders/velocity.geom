@@ -12,8 +12,10 @@ struct CellData{
 };
 
 struct CellInfo{
-    float fluidVerticalLefover;
+    vec4 reflectA;
+    vec4 reflectB;
     int flags;
+    float _padding[3];
 };
 
 layout(points) in;
@@ -86,7 +88,7 @@ uvec3(7, 0, 3)
 
 float[8] avgVolume() {
     float result[8] = { 1, 1, 1, 1, 0.f, 0.f, 0.f, 0.f };
-    if (bool(infoCells[instanceID[0]].flags & (CELL_SOLID))){
+    if (bool(infoCells[instanceID[0]].flags & (CELL_SOLID | FLOW_DOWN))){
         float cube[8] = { 1, 1, 1, 1, 1.f, 1.f, 1.f, 1.f };
         return cube;
     }
