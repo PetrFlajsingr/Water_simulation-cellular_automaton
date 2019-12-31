@@ -122,6 +122,8 @@ void main() {
     vec3 out_velocityPlus = positive(cellVelocity) + reflectA;
     vec3 out_velocityMinus = -(negative(cellVelocity) + reflectB);
 
+ //   writeCells[myCellID].velocity = out_velocityPlus - out_velocityMinus;
+
     float outLength = sumComponents(out_velocityMinus) + sumComponents(out_velocityPlus);
     float outRatio = float(outLength > readCells[myCellID].fluidVolume && outLength != 0)
     * readCells[myCellID].fluidVolume / (outLength + 0.00000000001 * float(outLength == 0))

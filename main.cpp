@@ -96,8 +96,8 @@ int main() {
 
   //initWaterFall(simulation);
 
-  const glm::uvec3 testAreaStart {11, 11, 11};
-  const glm::uvec3 testAreaDims {3, 3, 3};
+  const glm::uvec3 testAreaStart {10, 2, 10};
+  const glm::uvec3 testAreaDims {18, 20, 18};
   simulation.setRangeCells(MakeRange::range<unsigned int, 3>({0, 0, 0}, {tankSize.x, 1, tankSize.z}, {1, 1, 1}), CellFlags::Solid);
   simulation.setRangeCells(MakeRange::range<unsigned int, 3>({0, 1, 0}, {tankSize.x, 5, tankSize.z}, {1, 1, tankSize.z - 1}), CellFlags::Solid);
   simulation.setRangeCells(MakeRange::range<unsigned int, 3>({0, 1, 0}, {tankSize.x, 5, tankSize.z}, {tankSize.x - 1, 1, 1}), CellFlags::Solid);
