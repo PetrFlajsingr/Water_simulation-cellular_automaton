@@ -5,6 +5,7 @@
 #include "BasicSimulationCompute.h"
 #include <CellInfoVelocity.h>
 #include <Utilities.h>
+#include <cmath>
 #include <geGL/StaticCalls.h>
 #include <geGL_utils.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -39,7 +40,9 @@ void BasicSimulationCompute::simulate() {
   cellBuffers[1]->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
   infoCellBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
 
-  glDispatchCompute(tankSize.x / localSizes.x, tankSize.y / localSizes.y, tankSize.z / localSizes.z);
+  glDispatchCompute(static_cast<int>(std::ceil(tankSize.x / static_cast<float>(localSizes.x))),
+                    static_cast<int>(std::ceil(tankSize.y / static_cast<float>(localSizes.y))),
+                    static_cast<int>(std::ceil(tankSize.z / static_cast<float>(localSizes.z))));
 
   glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 
@@ -49,20 +52,25 @@ void BasicSimulationCompute::simulate() {
         cellBuffers[0]->unmap();
         cellBuffers[1]->unmap();*/
 
-   horizontalProgram->use();
-   horizontalProgram->set3v("globalSize", glm::value_ptr(tankSize));
-   swapBuffers();
-   cellBuffers[0]->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
-   cellBuffers[1]->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
-   infoCellBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
-   glDispatchCompute(tankSize.x / localSizes.x, tankSize.y / localSizes.y, tankSize.z / localSizes.z);
+  horizontalProgram->use();
+  horizontalProgram->set3v("globalSize", glm::value_ptr(tankSize));
+  swapBuffers();
+  cellBuffers[0]->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
+  cellBuffers[1]->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
+  infoCellBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
 
-   glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
+  glDispatchCompute(static_cast<int>(std::ceil(tankSize.x / static_cast<float>(localSizes.x))),
+                    static_cast<int>(std::ceil(tankSize.y / static_cast<float>(localSizes.y))),
+                    static_cast<int>(std::ceil(tankSize.z / static_cast<float>(localSizes.z))));
+
+  glDispatchCompute(12, 12, 12);
+
+  glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 
   ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
   ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_READ_WRITE));
   auto ptrInfo = reinterpret_cast<CellInfo *>(infoCellBuffer->map(GL_READ_ONLY));
-  auto linearIndex = 10 + 0 * tankSize.x + 0 * tankSize.y * tankSize.x;
+  auto linearIndex = 23 + 48 * tankSize.x + 0 * tankSize.y * tankSize.x;
   std::cout << linearIndex << " " << ptrInfo[linearIndex] << ptrWR[linearIndex] << std::endl;
   std::cout << "--------" << std::endl;
   cellBuffers[0]->unmap();
@@ -76,7 +84,7 @@ void BasicSimulationCompute::simulate() {
 void BasicSimulationCompute::initBuffers(int size) {
   auto cells = std::vector<Cell>(size);
   auto infoCells = std::vector<CellInfo>(size);
-  //auto infoCellsVelocity = std::vector<CellInfoVelocity>(size);
+  // auto infoCellsVelocity = std::vector<CellInfoVelocity>(size);
   cellBuffers = {createBuffer(cells, GL_DYNAMIC_COPY), createBuffer(cells, GL_DYNAMIC_COPY)};
   infoCellBuffer = createBuffer(infoCells, GL_DYNAMIC_COPY);
 }
@@ -100,7 +108,7 @@ void BasicSimulationCompute::setCells(glm::vec3 index, CellFlags cellType, std::
 }
 
 void BasicSimulationCompute::setCells(const std::vector<glm::uvec3> &indices, const CellFlags &cellType,
-                                 std::vector<float> fluidVolumes) {
+                                      std::vector<float> fluidVolumes) {
   using namespace MakeRange;
 
   if (cellType == CellFlags::Solid || cellType == CellFlags::FluidSink) {
@@ -118,7 +126,7 @@ void BasicSimulationCompute::setCells(const std::vector<glm::uvec3> &indices, co
     ptrRD[linearIndex].setFluidVolume(fluidVolumes[i]);
     ptrInfo[linearIndex].setFlags(cellType);
     ptrWR[linearIndex].setFluidVolume(fluidVolumes[i]);
-    ptrInfo[linearIndex].setFlags(cellType);
+    // std::cout << linearIndex << " " << ptrInfo[linearIndex] << ptrWR[linearIndex] << std::endl;
   }
 
   cellBuffers[0]->unmap();
