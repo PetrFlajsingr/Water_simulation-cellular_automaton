@@ -2,8 +2,8 @@
 // Created by Igor Frank on 13.12.19.
 //
 
-#ifndef GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_SIMULATIONCOMPUTE_H
-#define GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_SIMULATIONCOMPUTE_H
+#ifndef GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_ADVANCEDSIMULATIONCOMPUTE_H
+#define GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_ADVANCEDSIMULATIONCOMPUTE_H
 
 #include <Cell.h>
 #include <CellInfo.h>
@@ -11,13 +11,13 @@
 #include <geGL/geGL.h>
 #include <glm/glm.hpp>
 
-class SimulationCompute {
+class AdvancedSimulationCompute {
   using ProgramPtr = std::shared_ptr<ge::gl::Program>;
   using BufferPtr = std::shared_ptr<ge::gl::Buffer>;
   using VertexArrayPtr = std::shared_ptr<ge::gl::VertexArray>;
 
 public:
-  SimulationCompute(glm::uvec3 tankSize);
+  AdvancedSimulationCompute(glm::uvec3 tankSize);
 
   void simulate();
   void swapBuffers();
@@ -70,4 +70,4 @@ private:
   unsigned int currentBuffer = 0;
 };
 
-#endif // GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_SIMULATIONCOMPUTE_H
+#endif // GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_ADVANCEDSIMULATIONCOMPUTE_H

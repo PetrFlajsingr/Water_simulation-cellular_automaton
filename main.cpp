@@ -4,7 +4,8 @@
 #include <Camera.h>
 #include <Renderers/CellRenderer.h>
 #include <Renderers/GridRenderer.h>
-#include <Renderers/SimulationCompute.h>
+#include <Renderers/Simulators/AdvancedSimulationCompute.h>
+#include <Renderers/Simulators/BasicSimulationCompute.h>
 #include <SDL2CPP/MainLoop.h>
 #include <SDL2CPP/Window.h>
 #include <chrono>
@@ -27,7 +28,24 @@ std::pair<unsigned int, unsigned int> getWindowSize() {
   return {w, h};
 }
 
-void initWaterFall(SimulationCompute simulation) {
+void initWaterFall(AdvancedSimulationCompute simulation) {
+  simulation.setCells({{23, 48, 0}, {24, 48, 0}, {25, 48, 0}, {26, 48, 0}, {27, 48, 0}}, CellFlags::Solid);
+  {
+    std::vector<glm::uvec3> result{};
+    for (auto z : MakeRange::range(10)) {
+      result.emplace_back(glm::uvec3{20, 0, z});
+      result.emplace_back(glm::uvec3{20, 1, z});
+      result.emplace_back(glm::uvec3{30, 0, z});
+      result.emplace_back(glm::uvec3{30, 1, z});
+    }
+    for (auto x : MakeRange::range(20, 30)) {
+      result.emplace_back(glm::uvec3{x, 0, 10});
+      result.emplace_back(glm::uvec3{x, 1, 10});
+    }
+    simulation.setCells(result, CellFlags::Solid);
+    simulation.setCells({{23, 49, 0}, {24, 49, 0}, {25, 49, 0}, {26, 49, 0}, {27, 49, 0}}, CellFlags::FluidSource);
+  }
+}void initWaterFall(BasicSimulationCompute simulation) {
   simulation.setCells({{23, 48, 0}, {24, 48, 0}, {25, 48, 0}, {26, 48, 0}, {27, 48, 0}}, CellFlags::Solid);
   {
     std::vector<glm::uvec3> result{};
@@ -46,7 +64,7 @@ void initWaterFall(SimulationCompute simulation) {
   }
 }
 
-void initWaterCube(SimulationCompute simulation) {
+void initWaterCube(AdvancedSimulationCompute simulation) {
   {
     using namespace MakeRange;
     std::vector<glm::uvec3> positions;
@@ -81,7 +99,7 @@ int main() {
 
   auto cellRenderer = CellRenderer(SRC_DIR + "/Resources/Models/cube.obj"s, proj, tankSize);
   auto gridRenderer = GridRenderer(tankSize, proj);
-  auto simulation = SimulationCompute(tankSize);
+  auto simulation = BasicSimulationCompute(tankSize);
 
   glClearColor(0, 0, 0, 1);
 
@@ -133,7 +151,7 @@ int main() {
 
     gridRenderer.draw(ui.camera.GetViewMatrix(), DrawType(ui.selectedVisualisation()), ui.getCellSize());
 
-    cellRenderer.draw(ui.camera.GetViewMatrix(), ui.camera.Position, simulation.getCellBuffer(), simulation.getInfoCellBuffer(), ui.isVisualizeVolumes(),
+    cellRenderer.drawBasic(ui.camera.GetViewMatrix(), ui.camera.Position, simulation.getCellBuffer(), simulation.getInfoCellBuffer(), ui.isVisualizeVolumes(),
                       ui.getCellSize());
 
     ui.loop();
