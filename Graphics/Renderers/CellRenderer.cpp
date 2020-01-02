@@ -4,7 +4,6 @@
 
 #include "CellRenderer.h"
 #include <GlslShaderLoader.h>
-#include <IboBuffer.h>
 #include <Model.h>
 #include <geGL/StaticCalls.h>
 #include <geGL_utils.h>
@@ -23,7 +22,7 @@ CellRenderer::CellRenderer([[maybe_unused]] const std::string &cellModelPath, co
   using namespace ShaderLiterals;
   setShaderLocation(SRC_DIR + "/Shaders"s);
   programBasic = std::make_shared<Program>("basic"_vert, "basic"_frag, "basic"_geom);
-  programAdvanced = std::make_shared<Program>("basic"_vert, "basic"_frag, "basic"_geom);
+  programAdvanced = std::make_shared<Program>("basic"_vert, "basic"_frag, "velocity"_geom);
   std::vector<glm::vec4> positions{glm::compMul(tankSize), glm::vec4(-1)};
 
   vbo = createBuffer(std::vector<Model::VertexData>{

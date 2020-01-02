@@ -14,10 +14,9 @@
 
 using namespace ge::gl;
 
-AdvancedSimulationCompute::AdvancedSimulationCompute(const glm::uvec3 tankSize) : tankSize(tankSize) {
+AdvancedSimulationCompute::AdvancedSimulationCompute(const glm::uvec3 tankSize) {
   using namespace ShaderLiterals;
-  horizontalProgram = std::make_shared<ge::gl::Program>("basic-horizontal"_comp);
-  verticalProgram = std::make_shared<ge::gl::Program>("basic-vertical"_comp);
+  SimulationCompute::tankSize = tankSize;
   velocityProgram = std::make_shared<ge::gl::Program>("velocity_n"_comp);
   velocity2Program = std::make_shared<ge::gl::Program>("velocity_n2"_comp);
   velocity3Program = std::make_shared<ge::gl::Program>("velocity_n3"_comp);
@@ -35,32 +34,6 @@ void AdvancedSimulationCompute::simulate() {
 
   cellBuffers[0]->unmap();
   cellBuffers[1]->unmap();*/
-
-  /*verticalProgram->use();
-  verticalProgram->set3v("globalSize", glm::value_ptr(tankSize));
-  cellBuffers[0]->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
-  cellBuffers[1]->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
-  infoCellBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
-
-  glDispatchCompute(tankSize.x / localSizes.x, tankSize.y / localSizes.y, tankSize.z / localSizes.z);
-
-  glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);*/
-
-  /*      ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
-        ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_READ_WRITE));
-
-        cellBuffers[0]->unmap();
-        cellBuffers[1]->unmap();*/
-
-  /* horizontalProgram->use();
-   horizontalProgram->set3v("globalSize", glm::value_ptr(tankSize));
-   swapBuffers();
-   cellBuffers[0]->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
-   cellBuffers[1]->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
-   infoCellBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
-   glDispatchCompute(tankSize.x / localSizes.x, tankSize.y / localSizes.y, tankSize.z / localSizes.z);
-
-   glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);*/
 
   velocityProgram->use();
   velocityProgram->set3v("globalSize", glm::value_ptr(tankSize));
@@ -82,7 +55,6 @@ void AdvancedSimulationCompute::simulate() {
 
   glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 
-
   velocity3Program->use();
   velocity3Program->set3v("globalSize", glm::value_ptr(tankSize));
   cellBuffers[0]->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
@@ -93,6 +65,7 @@ void AdvancedSimulationCompute::simulate() {
 
   glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 
+/*
   ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
   ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_READ_WRITE));
   auto ptrInfo = reinterpret_cast<CellInfo *>(infoCellBuffer->map(GL_READ_ONLY));
@@ -108,6 +81,7 @@ void AdvancedSimulationCompute::simulate() {
   cellBuffers[0]->unmap();
   cellBuffers[1]->unmap();
   infoCellBuffer->unmap();
+*/
 
   swapBuffers();
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
@@ -121,14 +95,7 @@ void AdvancedSimulationCompute::initBuffers(int size) {
   infoCellBuffer = createBuffer(infoCellsVelocity, GL_DYNAMIC_COPY);
 }
 
-void AdvancedSimulationCompute::swapBuffers() {
-  std::swap(cellBuffers[0], cellBuffers[1]);
-  currentBuffer = (currentBuffer + 1) % 2;
-}
-
 void AdvancedSimulationCompute::reset() { initBuffers(glm::compMul(tankSize)); }
-
-AdvancedSimulationCompute::BufferPtr AdvancedSimulationCompute::getCellBuffer() { return cellBuffers[currentBuffer]; }
 
 void AdvancedSimulationCompute::setCells(int index, CellFlags cellType, std::vector<float> fluidVolumes) {
   auto index3D = Utilities::from1Dto3Dindex(index, tankSize);
@@ -140,7 +107,7 @@ void AdvancedSimulationCompute::setCells(glm::vec3 index, CellFlags cellType, st
 }
 
 void AdvancedSimulationCompute::setCells(const std::vector<glm::uvec3> &indices, const CellFlags &cellType,
-                                 std::vector<float> fluidVolumes) {
+                                         std::vector<float> fluidVolumes) {
   using namespace MakeRange;
 
   if (cellType == CellFlags::Solid || cellType == CellFlags::FluidSink) {
@@ -165,4 +132,26 @@ void AdvancedSimulationCompute::setCells(const std::vector<glm::uvec3> &indices,
   cellBuffers[1]->unmap();
   infoCellBuffer->unmap();
 }
-const AdvancedSimulationCompute::BufferPtr &AdvancedSimulationCompute::getInfoCellBuffer() const { return infoCellBuffer; }
+void AdvancedSimulationCompute::setRangeCells(MultiDimRange<unsigned int, 3> &&indices, CellFlags cellType, float fluidVolume) {
+
+  if (cellType == CellFlags::Solid || cellType == CellFlags::FluidSink) {
+    fluidVolume = 0.0f;
+  } else if (cellType == CellFlags::FluidSource) {
+    fluidVolume = 1.0f;
+  }
+
+  auto ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_WRITE_ONLY));
+  auto ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_WRITE_ONLY));
+  auto ptrInfo = reinterpret_cast<CellInfoVelocity *>(infoCellBuffer->map(GL_WRITE_ONLY));
+
+  for (auto [x, y, z] : indices) {
+    auto linearIndex = x + y * tankSize.x + z * tankSize.y * tankSize.x;
+    ptrRD[linearIndex].setFluidVolume(fluidVolume);
+    ptrInfo[linearIndex].setFlags(cellType);
+    ptrWR[linearIndex].setFluidVolume(fluidVolume);
+    ptrInfo[linearIndex].setFlags(cellType);
+  }
+  cellBuffers[0]->unmap();
+  cellBuffers[1]->unmap();
+  infoCellBuffer->unmap();
+}

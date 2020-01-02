@@ -15,8 +15,9 @@
 
 using namespace ge::gl;
 
-BasicSimulationCompute::BasicSimulationCompute(const glm::uvec3 tankSize) : tankSize(tankSize) {
+BasicSimulationCompute::BasicSimulationCompute(const glm::uvec3 tankSize) {
   using namespace ShaderLiterals;
+  SimulationCompute::tankSize = tankSize;
   horizontalProgram = std::make_shared<ge::gl::Program>("basic-horizontal"_comp);
   verticalProgram = std::make_shared<ge::gl::Program>("basic-vertical"_comp);
 
@@ -89,14 +90,8 @@ void BasicSimulationCompute::initBuffers(int size) {
   infoCellBuffer = createBuffer(infoCells, GL_DYNAMIC_COPY);
 }
 
-void BasicSimulationCompute::swapBuffers() {
-  std::swap(cellBuffers[0], cellBuffers[1]);
-  currentBuffer = (currentBuffer + 1) % 2;
-}
-
 void BasicSimulationCompute::reset() { initBuffers(glm::compMul(tankSize)); }
 
-BasicSimulationCompute::BufferPtr BasicSimulationCompute::getCellBuffer() { return cellBuffers[currentBuffer]; }
 
 void BasicSimulationCompute::setCells(int index, CellFlags cellType, std::vector<float> fluidVolumes) {
   auto index3D = Utilities::from1Dto3Dindex(index, tankSize);
@@ -133,4 +128,28 @@ void BasicSimulationCompute::setCells(const std::vector<glm::uvec3> &indices, co
   cellBuffers[1]->unmap();
   infoCellBuffer->unmap();
 }
-const BasicSimulationCompute::BufferPtr &BasicSimulationCompute::getInfoCellBuffer() const { return infoCellBuffer; }
+
+void BasicSimulationCompute::setRangeCells(MultiDimRange<unsigned int, 3> &&indices, CellFlags cellType, float fluidVolume) {
+
+    if (cellType == CellFlags::Solid || cellType == CellFlags::FluidSink) {
+      fluidVolume = 0.0f;
+    } else if (cellType == CellFlags::FluidSource) {
+      fluidVolume = 1.0f;
+    }
+
+    auto ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_WRITE_ONLY));
+    auto ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_WRITE_ONLY));
+    auto ptrInfo = reinterpret_cast<CellInfo *>(infoCellBuffer->map(GL_WRITE_ONLY));
+
+    for (auto [x, y, z] : indices) {
+      auto linearIndex = x + y * tankSize.x + z * tankSize.y * tankSize.x;
+      ptrRD[linearIndex].setFluidVolume(fluidVolume);
+      ptrInfo[linearIndex].setFlags(cellType);
+      ptrWR[linearIndex].setFluidVolume(fluidVolume);
+      ptrInfo[linearIndex].setFlags(cellType);
+    }
+
+    cellBuffers[0]->unmap();
+    cellBuffers[1]->unmap();
+    infoCellBuffer->unmap();
+  }
