@@ -59,21 +59,15 @@ void BasicSimulationCompute::simulate() {
 
    glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 
-/*  ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
+  ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
   ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_READ_WRITE));
   auto ptrInfo = reinterpret_cast<CellInfo *>(infoCellBuffer->map(GL_READ_ONLY));
-  auto linearIndex = 10 + 3 * tankSize.x + 10 * tankSize.y * tankSize.x;
-  auto linearIndex2 = 10 + 2 * tankSize.x + 10 * tankSize.y * tankSize.x;
-  auto linearIndex3 = 10 + 1 * tankSize.x + 10 * tankSize.y * tankSize.x;
-  auto linearIndex4 = 10 + 0 * tankSize.x + 10 * tankSize.y * tankSize.x;
+  auto linearIndex = 10 + 0 * tankSize.x + 0 * tankSize.y * tankSize.x;
   std::cout << linearIndex << " " << ptrInfo[linearIndex] << ptrWR[linearIndex] << std::endl;
-  std::cout << linearIndex2 << " " << ptrInfo[linearIndex2] << ptrWR[linearIndex2] << std::endl;
-  std::cout << linearIndex3 << " " << ptrInfo[linearIndex3] << ptrWR[linearIndex3] << std::endl;
-  std::cout << linearIndex4 << " " << ptrInfo[linearIndex4] << ptrWR[linearIndex4] << std::endl;
   std::cout << "--------" << std::endl;
   cellBuffers[0]->unmap();
   cellBuffers[1]->unmap();
-  infoCellBuffer->unmap();*/
+  infoCellBuffer->unmap();
 
   swapBuffers();
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
