@@ -6,23 +6,29 @@
 #define CELL_SINK 4
 #define FLOW_DOWN 8
 
-struct Cell{
+struct CellData{
+    vec3 velocity;
     float fluidVolume;
-    float solidVolume;
+};
+
+struct CellInfo{
     float fluidVerticalLefover;
     int flags;
 };
 
-
-layout(local_size_x = 2, local_size_y = 2, local_size_z = 2) in;
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 layout(std430, binding=0) buffer WriteBuffer{
-    Cell writeCells[];
+    CellData writeCells[];
 };
 layout(std430, binding=1) buffer ReadBuffer{
-    Cell readCells[];
+    CellData readCells[];
 };
+layout(std430, binding=2) buffer InfoBuffer{
+    CellInfo infoCells[];
+};
+layout(location = 0) uniform uvec3 globalSize;
 
-uvec3 globalSize = uvec3(gl_NumWorkGroups.x * gl_WorkGroupSize.x, gl_NumWorkGroups.y * gl_WorkGroupSize.y, gl_NumWorkGroups.z * gl_WorkGroupSize.z);
+//uvec3 globalSize = uvec3(gl_NumWorkGroups.x * gl_WorkGroupSize.x, gl_NumWorkGroups.y * gl_WorkGroupSize.y, gl_NumWorkGroups.z * gl_WorkGroupSize.z);
 
 const float maximumCellVolume = 1.0;
 const float minimumCellVolume = 0.005;
@@ -49,6 +55,7 @@ void main() {
     uint myCellID = (gl_GlobalInvocationID.z * globalSize.x * globalSize.y)+ (gl_GlobalInvocationID.y * globalSize.x) + gl_GlobalInvocationID.x;
     uint invocationCount = globalSize.x * globalSize.y * globalSize.z;
     if (myCellID < invocationCount){
+        float mySolidVolume = int((infoCells[myCellID].flags & CELL_SOLID) == CELL_SOLID) * maximumCellVolume;
         float inFlow = 0.0;
         float outFlow = 0.0;
 
@@ -63,14 +70,15 @@ void main() {
             for (int offsetIndex = 0; offsetIndex < verticalNeighbourSize; ++offsetIndex){
                 ivec3 currentNeighbour = ivec3(gl_GlobalInvocationID) + neighbourOffsets[offsetIndex];
                 if (neighborChecks[offsetIndex]) {
-                    inFlow += horizontalFlowVolume(readCells[to1DCoord(currentNeighbour)].fluidVerticalLefover,
+                    float neighbourSolidVolume = int((infoCells[to1DCoord(currentNeighbour)].flags & CELL_SOLID) == CELL_SOLID) * maximumCellVolume;
+                    inFlow += horizontalFlowVolume(infoCells[to1DCoord(currentNeighbour)].fluidVerticalLefover,
                     readCells[myCellID].fluidVolume,
-                    readCells[myCellID].solidVolume,
+                    mySolidVolume,
                     lowerVolumeNeighborCount);
 
-                    outFlow += horizontalFlowVolume(readCells[myCellID].fluidVerticalLefover,
+                    outFlow += horizontalFlowVolume(infoCells[myCellID].fluidVerticalLefover,
                     readCells[to1DCoord(currentNeighbour)].fluidVolume,
-                    readCells[to1DCoord(currentNeighbour)].solidVolume,
+                    neighbourSolidVolume,
                     lowerVolumeNeighborCount);
 
                 }
@@ -79,10 +87,10 @@ void main() {
         writeCells[myCellID].fluidVolume = readCells[myCellID].fluidVolume + (inFlow - outFlow);
 
         writeCells[myCellID].fluidVolume = writeCells[myCellID].fluidVolume * float(writeCells[myCellID].fluidVolume >= minimumCellVolume);
-        if (bool(writeCells[myCellID].flags & CELL_SOURCE)){
+        if (bool(infoCells[myCellID].flags & CELL_SOURCE)){
             writeCells[myCellID].fluidVolume = maximumCellVolume;
         }
-        if (bool(writeCells[myCellID].flags & CELL_SINK)){
+        if (bool(infoCells[myCellID].flags & CELL_SINK)){
             writeCells[myCellID].fluidVolume = 0.0;
         }
     }

@@ -6,8 +6,10 @@ layout(location = 2) in vec2 fragTexCoord;
 layout(location = 3) in vec3 fragNormal;
 layout(location = 4) in vec3 fragCameraPosition;
 layout(location = 10) in float fluidVolume;
+layout(location = 11) uniform int showIntensity;
 
 layout(location = 5) uniform mat4 View;
+
 
 
 float hash(float n) { return fract(sin(n) * 1e4); }
@@ -94,7 +96,7 @@ float snoiseFractal(vec3 m) {
     +0.1333333* snoise(4.0*tmp)
     +0.0666667* snoise(8.0*tmp)
     +0.0666667/2* snoise(16.0*m)
-    )
+)
     ;
 }
 
@@ -104,7 +106,7 @@ vec2 random2( vec2 p ) {
 
 float voronoi(vec3 Position) {
     vec2 st = Position.xz;
-    // st.x -= floor(st.x);
+   // st.x -= floor(st.x);
     //st.y -= floor(st.y);
 
     // Scale
@@ -167,8 +169,13 @@ void main() {
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
     vec3 specular = specularStrength * spec * lightColor;
 
-    vec3 color = fluidVolume >= 1.0f ? vec3(1, 0, 0) : fragColor.rgb;
+    vec3 color = fluidVolume >= 1.0f ? vec3(0, 1, 0) : fragColor.rgb;
 
     vec3 result = (ambient + diffuse + specular) * (color);
+
+    if (fluidVolume >= 0 && bool(showIntensity)) {
+        float fraction = 1f - fract(fluidVolume);
+        result.r += fraction;
+    }
     gl_FragColor = vec4(result, fragColor.a);
 }

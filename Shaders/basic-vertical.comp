@@ -6,20 +6,28 @@
 #define CELL_SINK 4
 #define FLOW_DOWN 8
 
-struct Cell{
+struct CellData{
+    vec3 velocity;
     float fluidVolume;
-    float solidVolume;
+};
+
+struct CellInfo{
     float fluidVerticalLefover;
     int flags;
 };
 
-layout(local_size_x = 2, local_size_y = 2, local_size_z = 2) in;
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 layout(std430, binding=0) buffer WriteBuffer{
-    Cell writeCells[];
+    CellData writeCells[];
 };
 layout(std430, binding=1) buffer ReadBuffer{
-    Cell readCells[];
+    CellData readCells[];
 };
+layout(std430, binding=2) buffer InfoBuffer{
+    CellInfo infoCells[];
+};
+
+layout(location = 0) uniform uvec3 globalSize;
 
 const float maximumCellVolume = 1.0;
 const float minimumCellVolume = 0.005;
@@ -40,7 +48,7 @@ float verticalFlowVolume(float sourceFluidVolume, float destinationFluidVolume/*
 }
 
 void main() {
-    uvec3 globalSize = uvec3(gl_NumWorkGroups.x * gl_WorkGroupSize.x, gl_NumWorkGroups.y * gl_WorkGroupSize.y, gl_NumWorkGroups.z * gl_WorkGroupSize.z);
+    //uvec3 globalSize = uvec3(gl_NumWorkGroups.x * gl_WorkGroupSize.x, gl_NumWorkGroups.y * gl_WorkGroupSize.y, gl_NumWorkGroups.z * gl_WorkGroupSize.z);
     uint myCellID = (gl_GlobalInvocationID.z * globalSize.x * globalSize.y)+ (gl_GlobalInvocationID.y * globalSize.x) + gl_GlobalInvocationID.x;
     uint invocationCount = globalSize.x * globalSize.y * globalSize.z;
     uint upperCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + (gl_GlobalInvocationID.y + 1) * globalSize.x + gl_GlobalInvocationID.x;
@@ -48,24 +56,26 @@ void main() {
 
 
     if (myCellID < invocationCount){
+        float mySolidVolume = int((infoCells[myCellID].flags & CELL_SOLID) == CELL_SOLID) * maximumCellVolume;
+        float bottomSolidVolume = int((infoCells[bottomCellID].flags & CELL_SOLID) == CELL_SOLID) * maximumCellVolume;
         writeCells[myCellID].fluidVolume = 0.0;
         float inFlow = 0.0;
         if (gl_GlobalInvocationID.y + 1 < globalSize.y){
-            inFlow = verticalFlowVolume(readCells[upperCellID].fluidVolume, readCells[myCellID].fluidVolume) - (readCells[myCellID].fluidVolume + readCells[myCellID].solidVolume);
+            inFlow = verticalFlowVolume(readCells[upperCellID].fluidVolume, readCells[myCellID].fluidVolume) - (readCells[myCellID].fluidVolume + mySolidVolume);
             inFlow = clamp(inFlow, 0, min(maximumFlow, readCells[upperCellID].fluidVolume));
-            inFlow = clamp(inFlow, 0, maximumCellVolume - readCells[myCellID].solidVolume);
+            inFlow = clamp(inFlow, 0, maximumCellVolume - mySolidVolume);
         }
         float outFlow = 0.0;
         if (int(gl_GlobalInvocationID.y) - 1 >= 0){
-            outFlow = verticalFlowVolume(readCells[myCellID].fluidVolume, readCells[bottomCellID].fluidVolume) - (readCells[bottomCellID].fluidVolume + readCells[bottomCellID].solidVolume);
+            outFlow = verticalFlowVolume(readCells[myCellID].fluidVolume, readCells[bottomCellID].fluidVolume) - (readCells[bottomCellID].fluidVolume + bottomSolidVolume);
             outFlow = clamp(outFlow, 0, min(maximumFlow, readCells[myCellID].fluidVolume));
-            outFlow = clamp(outFlow, 0, maximumCellVolume - readCells[bottomCellID].solidVolume);
+            outFlow = clamp(outFlow, 0, maximumCellVolume - bottomSolidVolume);
         }
         writeCells[myCellID].fluidVolume = readCells[myCellID].fluidVolume + (inFlow - outFlow);
 
         writeCells[myCellID].fluidVolume = writeCells[myCellID].fluidVolume * float(writeCells[myCellID].fluidVolume >= minimumCellVolume);
-        writeCells[myCellID].fluidVerticalLefover = writeCells[myCellID].fluidVerticalLefover * float(writeCells[myCellID].fluidVolume >= minimumCellVolume);
+        infoCells[myCellID].fluidVerticalLefover = infoCells[myCellID].fluidVerticalLefover * float(writeCells[myCellID].fluidVolume >= minimumCellVolume);
 
-        writeCells[myCellID].fluidVerticalLefover = readCells[myCellID].fluidVolume - outFlow;
+        infoCells[myCellID].fluidVerticalLefover = readCells[myCellID].fluidVolume - outFlow;
     }
 }

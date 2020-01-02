@@ -30,12 +30,13 @@ endif ()
 
 include_directories(misc)
 include_directories(Graphics)
-include_directories(Graphics/Renderers)
+include_directories(Graphics/Simulators)
 include_directories(ThirdParty)
 include_directories(Simulation)
 
 file(GLOB_RECURSE misc_src "misc/*.cpp")
 file(GLOB_RECURSE Graphics_src "Graphics/*.cpp")
+file(GLOB_RECURSE Simulators_src "Graphics/Simulators/*.cpp")
 file(GLOB_RECURSE imgui_src "ThirdParty/imgui/*.cpp")
 file(GLOB_RECURSE Simulation_src "Simulation/*.cpp")
 file(GLOB_RECURSE fmt_src "ThirdParty/fmt/*.cc")
@@ -45,7 +46,7 @@ add_compile_definitions(
         TINYOBJLOADER_IMPLEMENTATION
         )
 
-add_executable(GMU_fluid_simulation_cellular_automata ${misc_src} ${Graphics_src}
+add_executable(GMU_fluid_simulation_cellular_automata ${misc_src} ${Graphics_src} ${Simulators_src}
         ${imgui_src}
         ${fmt_src}
         ${Simulation_src} main.cpp ui.cpp ui.h)
