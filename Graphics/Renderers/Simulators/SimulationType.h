@@ -1,0 +1,13 @@
+//
+// Created by Igor Frank on 03.01.20.
+//
+
+#ifndef GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_SIMULATIONTYPE_H
+#define GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_SIMULATIONTYPE_H
+
+enum class SimulationType : unsigned int{
+  Basic,
+  Advanced,
+};
+
+#endif // GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_SIMULATIONTYPE_H

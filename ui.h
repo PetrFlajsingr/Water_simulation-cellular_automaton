@@ -5,6 +5,7 @@
 #ifndef GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_UI_H
 #define GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_UI_H
 
+#include "Renderers/Simulators/SimulationType.h"
 #include "time/FPSCounter.h"
 #include <Camera.h>
 #include <SDL2/include/SDL2/SDL_video.h>
@@ -31,6 +32,10 @@ public:
   [[nodiscard]] bool isWaterfallEnabled();
   [[nodiscard]] bool isResetPressed();
   [[nodiscard]] unsigned int selectedVisualisation();
+  [[nodiscard]] bool isVisualizeVolumes() const;
+  [[nodiscard]] int getSimulationSteps() const;
+  [[nodiscard]] SimulationType getSelectedMethod() const;
+  [[nodiscard]] float getCellSize() const;
 
   Camera camera{glm::vec3(1.0, 1.0, 5.0)};
 private:
@@ -40,24 +45,15 @@ private:
   bool waterfallEnabled = false;
   float simSpeed = 0.f;
   float cellSize = 0.5f;
-
-public:
-  float getCellSize() const;
-private:
   bool resetPressed = false;
-  unsigned int selected = 1;
+  unsigned int selectedMethod = 1;
+  unsigned int selectedGrid = 1;
   int simulationCycles = 1;
   bool visualizeVolumes = true;
-
-public:
-  bool isVisualizeVolumes() const;
-
-public:
-  int getSimulationSteps() const;
-private:
   FPSCounter fpsCounter;
 
   bool SDLHandler(const SDL_Event &event);
+
 };
 
 #endif // GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_UI_H

@@ -5,6 +5,7 @@
 #ifndef GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_SIMULATIONCOMPUTE_H
 #define GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_SIMULATIONCOMPUTE_H
 
+#include "SimulationType.h"
 #include <CellFlags.h>
 #include <geGL/geGL.h>
 #include <glm/glm.hpp>
@@ -20,9 +21,6 @@ protected:
   std::array<BufferPtr, 2> cellBuffers;
   BufferPtr infoCellBuffer;
 
-  virtual void simulate() = 0;
-  virtual void reset() = 0;
-
 public:
   [[nodiscard]] const BufferPtr &getInfoCellBuffer() const;
   [[nodiscard]] const BufferPtr &getCellBuffer() const;
@@ -31,6 +29,9 @@ public:
   virtual void setCells(int index, CellFlags cellType, std::vector<float> fluidVolumes = {0.0}) = 0;
   virtual void setCells(const std::vector<glm::uvec3>& indices, const CellFlags& cellType, std::vector<float> fluidVolumes = {0.0}) = 0;
   virtual void setRangeCells(MultiDimRange<unsigned int, 3> &&indices, CellFlags cellType, float fluidVolume = 0.0f) = 0;
+  static std::unique_ptr<SimulationCompute> CreateInstance(SimulationType type, glm::uvec3 tankSize);
+  virtual void simulate() = 0;
+  virtual void reset() = 0;
 
 
 private:
