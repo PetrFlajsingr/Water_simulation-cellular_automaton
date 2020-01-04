@@ -191,11 +191,11 @@ void main() {
             vec3 bReflectMul = vec3(float(reflect.x < 0),
             float(reflect.y < 0),
             float(reflect.z < 0));
-            infoCells[myCellID].reflectA.xyz += reflect * aReflectMul;
-            infoCells[myCellID].reflectB.xyz += reflect * bReflectMul;
+            infoCells[myCellID].reflectA.xyz += reflect * aReflectMul * reflectModifier;
+            infoCells[myCellID].reflectB.xyz += reflect * bReflectMul * reflectModifier;
 
-            tmpReflectA += getSpread(i, reflect) * -(aReflectMul - 1.0f) * reflectModifier;
-            tmpReflectB -= getSpread(i, reflect) * -(bReflectMul - 1.0f) * reflectModifier;
+            tmpReflectA += getSpread(i, reflect) * -(aReflectMul - 1.0f);
+            tmpReflectB -= getSpread(i, reflect) * -(bReflectMul - 1.0f);
             ++cntUsed;
         }
     }
