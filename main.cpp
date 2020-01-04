@@ -69,13 +69,13 @@ void testingAreaInit(std::unique_ptr<SimulationCompute> &simulation, glm::uvec3 
                             CellFlags::Solid);
   simulation->setRangeCells(MakeRange::range<unsigned int, 3>({0, 1, 0}, {tankSize.x, 5, tankSize.z}, {tankSize.x - 1, 1, 1}),
                             CellFlags::Solid);
-  simulation->setRangeCells(MakeRange::range<unsigned int, 3>({9, 1, 9}, {19, 5, 19}, {1, 1, 9}), CellFlags::Solid);
+  /*simulation->setRangeCells(MakeRange::range<unsigned int, 3>({9, 1, 9}, {19, 5, 19}, {1, 1, 9}), CellFlags::Solid);
   simulation->setRangeCells(MakeRange::range<unsigned int, 3>({9, 1, 9}, {19, 5, 19}, {9, 1, 1}), CellFlags::Solid);
-  simulation->setRangeCells(MakeRange::range<unsigned int, 3>({testAreaStart.x, testAreaStart.y, testAreaStart.z},
+  */simulation->setRangeCells(MakeRange::range<unsigned int, 3>({testAreaStart.x, testAreaStart.y, testAreaStart.z},
                                                               {testAreaStart.x + testAreaDims.x, testAreaStart.y + testAreaDims.y,
                                                                testAreaStart.z + testAreaDims.z},
                                                               {1, 1, 1}),
-                            CellFlags::NoFlag, .9f);
+                            CellFlags::NoFlag, .4f);
 }
 
 int main() {

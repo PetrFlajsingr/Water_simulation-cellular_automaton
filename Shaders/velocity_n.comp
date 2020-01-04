@@ -178,6 +178,8 @@ void main() {
         const uint neighborID = dirToID(i);
         if (isFlagSet(infoCells[neighborID].flags, CELL_SOLID)
         || readCells[neighborID].fluidVolume >= maximumCellVolume) {
+            float reflectModifier = 0.5 * float(isFlagSet(infoCells[neighborID].flags, CELL_SOLID))
+                                    + 0.1 * float(readCells[neighborID].fluidVolume >= maximumCellVolume);
             if (intersectsPlane(writeCells[myCellID].velocity, getNormal(i))) {
                 reflect = reflectVelocity(writeCells[myCellID].velocity, getNormal(i));
             } else {
@@ -192,8 +194,8 @@ void main() {
             infoCells[myCellID].reflectA.xyz += reflect * aReflectMul;
             infoCells[myCellID].reflectB.xyz += reflect * bReflectMul;
 
-            tmpReflectA += getSpread(i, reflect) * -(aReflectMul - 1.0f);
-            tmpReflectB -= getSpread(i, reflect) * -(bReflectMul - 1.0f);
+            tmpReflectA += getSpread(i, reflect) * -(aReflectMul - 1.0f) * reflectModifier;
+            tmpReflectB -= getSpread(i, reflect) * -(bReflectMul - 1.0f) * reflectModifier;
             ++cntUsed;
         }
     }
