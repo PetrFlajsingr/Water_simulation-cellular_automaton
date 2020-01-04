@@ -105,7 +105,6 @@ void UI::loop() {
       ImGui::Text(" Are you sure?");
       if (ImGui::Button("OK")) {
         selectedMethod = selected;
-        resetPressed = true;
         ImGui::CloseCurrentPopup();
       }
       ImGui::SameLine();
