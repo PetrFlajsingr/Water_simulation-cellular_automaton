@@ -47,7 +47,7 @@ int to1DCoord(uvec3 coord){
 }
 
 
-const float timeStep = 0.01;
+const float timeStep = 1;
 float getDragCoefficient() {
     return 0.9;
 }
@@ -163,23 +163,20 @@ void main() {
         return;
     }
 
-    writeCells[myCellID].velocity = (readCells[myCellID].velocity + getGlobalForces());
-    writeCells[myCellID].velocity *= getDragCoefficient();
-    writeCells[myCellID].velocity *= float(!isFlagSet(infoCells[myCellID].flags, CELL_SOLID) && readCells[myCellID].fluidVolume > 0);
 
     int cntUsed = 0;
     vec3 reflect = vec3(0);
     infoCells[myCellID].reflectA = vec4(0);
     infoCells[myCellID].reflectB = vec4(0);
 
-    vec3 tmpReflectA = vec3(max(0, readCells[myCellID].fluidVolume - maximumCellVolume) * 10000.0);
-    vec3 tmpReflectB = vec3(-max(0, readCells[myCellID].fluidVolume - maximumCellVolume) * 10000.0);
+    vec3 tmpReflectA = vec3(max(0, readCells[myCellID].fluidVolume - maximumCellVolume) * 1.0);
+    vec3 tmpReflectB = vec3(-max(0, readCells[myCellID].fluidVolume - maximumCellVolume) * 1.0);
     for (int i = 0; i < 6; ++i) {
         const uint neighborID = dirToID(i);
         if (isFlagSet(infoCells[neighborID].flags, CELL_SOLID)
         || readCells[neighborID].fluidVolume >= maximumCellVolume) {
             float reflectModifier = 0.5 * float(isFlagSet(infoCells[neighborID].flags, CELL_SOLID))
-                                    + 0.1 * float(readCells[neighborID].fluidVolume >= maximumCellVolume);
+            + 0.1 * float(readCells[neighborID].fluidVolume >= maximumCellVolume);
             if (intersectsPlane(writeCells[myCellID].velocity, getNormal(i))) {
                 reflect = reflectVelocity(writeCells[myCellID].velocity, getNormal(i));
             } else {
@@ -194,8 +191,8 @@ void main() {
             infoCells[myCellID].reflectA.xyz += reflect * aReflectMul * reflectModifier;
             infoCells[myCellID].reflectB.xyz += reflect * bReflectMul * reflectModifier;
 
-            tmpReflectA += getSpread(i, reflect) * -(aReflectMul - 1.0f);
-            tmpReflectB -= getSpread(i, reflect) * -(bReflectMul - 1.0f);
+            tmpReflectA += getSpread(i, reflect) * -(aReflectMul - 1.0f) * reflectModifier;
+            tmpReflectB -= getSpread(i, reflect) * -(bReflectMul - 1.0f) * reflectModifier;
             ++cntUsed;
         }
     }
@@ -206,4 +203,7 @@ void main() {
         infoCells[myCellID].reflectB.xyz /= cntUsed;
         writeCells[myCellID].velocity = vec3(0);
     }
+    writeCells[myCellID].velocity = (readCells[myCellID].velocity + getGlobalForces());
+    writeCells[myCellID].velocity *= getDragCoefficient();
+    writeCells[myCellID].velocity *= float(!isFlagSet(infoCells[myCellID].flags, CELL_SOLID) && readCells[myCellID].fluidVolume > 0);
 }
