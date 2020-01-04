@@ -47,7 +47,7 @@ int to1DCoord(uvec3 coord){
 }
 
 
-const float timeStep = 1;
+const float timeStep = 0.01f;
 float getDragCoefficient() {
     return 0.9;
 }
@@ -162,6 +162,7 @@ void main() {
     if (myCellID >= invocationCount){
         return;
     }
+    writeCells[myCellID].velocity = readCells[myCellID].velocity * getDragCoefficient();
 
 
     int cntUsed = 0;
@@ -203,7 +204,6 @@ void main() {
         infoCells[myCellID].reflectB.xyz /= cntUsed;
         writeCells[myCellID].velocity = vec3(0);
     }
-    writeCells[myCellID].velocity = (readCells[myCellID].velocity + getGlobalForces());
-    writeCells[myCellID].velocity *= getDragCoefficient();
+    writeCells[myCellID].velocity += getGlobalForces();
     writeCells[myCellID].velocity *= float(!isFlagSet(infoCells[myCellID].flags, CELL_SOLID) && readCells[myCellID].fluidVolume > 0);
 }
