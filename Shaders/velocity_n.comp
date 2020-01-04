@@ -164,7 +164,6 @@ void main() {
     }
     writeCells[myCellID].velocity = readCells[myCellID].velocity * getDragCoefficient();
 
-
     int cntUsed = 0;
     vec3 reflect = vec3(0);
     infoCells[myCellID].reflectA = vec4(0);
@@ -176,7 +175,7 @@ void main() {
         const uint neighborID = dirToID(i);
         if (isFlagSet(infoCells[neighborID].flags, CELL_SOLID)
         || readCells[neighborID].fluidVolume >= maximumCellVolume) {
-            float reflectModifier = 0.5 * float(isFlagSet(infoCells[neighborID].flags, CELL_SOLID))
+            float reflectModifier = 0.1 * float(isFlagSet(infoCells[neighborID].flags, CELL_SOLID))
             + 0.1 * float(readCells[neighborID].fluidVolume >= maximumCellVolume);
             if (intersectsPlane(writeCells[myCellID].velocity, getNormal(i))) {
                 reflect = reflectVelocity(writeCells[myCellID].velocity, getNormal(i));

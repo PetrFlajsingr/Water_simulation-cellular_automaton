@@ -142,5 +142,6 @@ void main() {
     infoCells[myCellID].reflectA = vec4(out_velocityPlus, 0);
     infoCells[myCellID].reflectB = vec4(out_velocityMinus, 0);
 
+    writeCells[myCellID].velocity += -out_velocityMinus + out_velocityPlus;
     writeCells[myCellID].fluidVolume = max(readCells[myCellID].fluidVolume - (sumComponents(out_velocityMinus) + sumComponents(out_velocityPlus)), 0);
 }

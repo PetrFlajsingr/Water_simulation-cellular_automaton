@@ -112,6 +112,7 @@ void main() {
     if (myCellID >= invocationCount){
         return;
     }
+
     const vec3 out_velocityPlus = infoCells[myCellID].reflectA.xyz;
     const vec3 out_velocityMinus = infoCells[myCellID].reflectB.xyz;
 
