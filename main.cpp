@@ -143,7 +143,10 @@ int main() {
     }
     if (ui.isResetPressed()) {
       simulation->reset();
-      initWaterFall(simulation);
+      if(simulationType == SimulationType::Basic)
+        initWaterFall(simulation);
+      else
+        testingAreaInit(simulation, tankSize);
     }
     if(ui.isShowVolumes()) {
       ui.setVolumeText(std::to_string(simulation->getFluidVolume()));
