@@ -62,10 +62,6 @@ bool isFull(float volume) {
     return volume >= 1.0f;
 }
 
-float getRatioNeighbor(CellData currentCell, CellData neighbor) {
-    return neighbor.fluidVolume / (currentCell.fluidVolume + neighbor.fluidVolume + 0.000001);
-}
-
 
     #define LEFT 0
     #define RIGHT 1
@@ -73,23 +69,6 @@ float getRatioNeighbor(CellData currentCell, CellData neighbor) {
     #define DOWN 3
     #define FRONT 4
     #define BACK 5
-float getNeighborVel(CellData currentCell, CellData cell, int direction) {
-    switch (direction) {
-        case LEFT:
-        return float(cell.velocity.x < 0) * (currentCell.velocity.x - cell.velocity.x);
-        case RIGHT:
-        return float(cell.velocity.x > 0) * (currentCell.velocity.x - cell.velocity.x);
-        case UP:
-        return float(cell.velocity.y > 0) * (currentCell.velocity.y - cell.velocity.y);
-        case DOWN:
-        return float(cell.velocity.y < 0) * (currentCell.velocity.y - cell.velocity.y);
-        case FRONT:
-        return float(cell.velocity.z < 0) * (currentCell.velocity.z - cell.velocity.z);
-        case BACK:
-        return float(cell.velocity.z > 0) * (currentCell.velocity.z - cell.velocity.z);
-    }
-    return 0;
-}
 
 bool isFlagSet(int flags, int flag) {
     return (flags & flag) == flag;
@@ -114,47 +93,60 @@ uint rightCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + gl_Gl
 #define FRONT_ID frontCellID
 #define BACK_ID backCellID
 
-uint dirToID(int direction) {
-    switch (direction) {
-        case LEFT: return LEFT_ID;
-        case RIGHT: return RIGHT_ID;
-        case UP: return UP_ID;
-        case DOWN: return DOWN_ID;
-        case FRONT: return FRONT_ID;
-        case BACK: return BACK_ID;
-    }
-    return 0;
-}
+uint dirToID[6] = {
+LEFT_ID,
+RIGHT_ID,
+UP_ID,
+DOWN_ID,
+FRONT_ID,
+BACK_ID
+};
 
-vec3 getNormal(int direction) {
-    switch (direction) {
-        case LEFT: return vec3(-1, 0, 0);
-        case RIGHT: return vec3(1, 0, 0);
-        case UP: return vec3(0, 1, 0);
-        case DOWN: return vec3(0, -1, 0);
-        case FRONT: return vec3(0, 0, 1);
-        case BACK: return vec3(0, 0, -1);
-    }
-    return vec3(0, 0, 0);
-}
+
+const vec3 normals[6] = {
+vec3(-1, 0, 0),
+vec3(1, 0, 0),
+vec3(0, 1, 0),
+vec3(0, -1, 0),
+vec3(0, 0, 1),
+vec3(0, 0, -1)
+};
+
+const vec3 spreadDirs[6] = {
+vec3(0, 1, 1),
+vec3(0, 1, 1),
+vec3(1, 0, 1),
+vec3(1, 0, 1),
+vec3(1, 1, 0),
+vec3(1, 1, 0)
+};
 
 vec3 getSpread(int direction, vec3 velocity) {
     const float spreadValue = length(velocity) / 4;
-    switch (direction) {
-        case RIGHT:
-        case LEFT: return vec3(0, spreadValue, spreadValue);
-        case UP:
-        case DOWN: return vec3(spreadValue, 0, spreadValue);
-        case FRONT:
-        case BACK: return vec3(spreadValue, spreadValue, 0);
-    }
-    return vec3(0, 0, 0);
+    return spreadDirs[direction] * spreadValue;
 }
 
 bool intersectsPlane(vec3 normal, vec3 direction) {
     float denom = dot(normal, direction);
     return abs(denom) > 0.00001f;
 }
+
+float positive(float value) {
+    return value * float(value > 0);
+}
+
+vec3 positive(vec3 value) {
+    return vec3(positive(value.x), positive(value.y), positive(value.z));
+}
+
+float negative(float value) {
+    return value * float(value < 0);
+}
+
+vec3 negative(vec3 value) {
+    return vec3(negative(value.x), negative(value.y), negative(value.z));
+}
+
 
 void main() {
     uint myCellID = (gl_GlobalInvocationID.z * globalSize.x * globalSize.y)+ (gl_GlobalInvocationID.y * globalSize.x) + gl_GlobalInvocationID.x;
@@ -169,30 +161,27 @@ void main() {
     infoCells[myCellID].reflectA = vec4(0);
     infoCells[myCellID].reflectB = vec4(0);
 
-    vec3 tmpReflectA = vec3(max(0, readCells[myCellID].fluidVolume - maximumCellVolume) * 1.0);
-    vec3 tmpReflectB = vec3(-max(0, readCells[myCellID].fluidVolume - maximumCellVolume) * 1.0);
+    const float extraFluid = max(0, readCells[myCellID].fluidVolume - maximumCellVolume);
+    const float innerPressure = pow(extraFluid, 2);
+    vec3 tmpReflectA = vec3(innerPressure);
+    vec3 tmpReflectB = vec3(-innerPressure);
     for (int i = 0; i < 6; ++i) {
-        const uint neighborID = dirToID(i);
+        const uint neighborID = dirToID[i];
         if (isFlagSet(infoCells[neighborID].flags, CELL_SOLID)
         || readCells[neighborID].fluidVolume >= maximumCellVolume) {
-            float reflectModifier = 0.1 * float(isFlagSet(infoCells[neighborID].flags, CELL_SOLID))
-            + 0.1 * float(readCells[neighborID].fluidVolume >= maximumCellVolume);
-            if (intersectsPlane(writeCells[myCellID].velocity, getNormal(i))) {
-                reflect = reflectVelocity(writeCells[myCellID].velocity, getNormal(i));
+            const float reflectModifierMultiplier = 0.1f;
+            const float reflectModifier = reflectModifierMultiplier * float(isFlagSet(infoCells[neighborID].flags, CELL_SOLID))
+            + reflectModifierMultiplier * float(readCells[neighborID].fluidVolume >= 1.5f);
+            if (intersectsPlane(writeCells[myCellID].velocity, normals[i])) {
+                reflect = reflectVelocity(writeCells[myCellID].velocity, normals[i]);
             } else {
-                reflect = writeCells[myCellID].velocity;
+                continue;//reflect = writeCells[myCellID].velocity;
             }
-            vec3 aReflectMul = vec3(float(reflect.x > 0),
-            float(reflect.y > 0),
-            float(reflect.z > 0));
-            vec3 bReflectMul = vec3(float(reflect.x < 0),
-            float(reflect.y < 0),
-            float(reflect.z < 0));
-            infoCells[myCellID].reflectA.xyz += reflect * aReflectMul * reflectModifier;
-            infoCells[myCellID].reflectB.xyz += reflect * bReflectMul * reflectModifier;
+            infoCells[myCellID].reflectA.xyz += positive(reflect) * reflectModifier;
+            infoCells[myCellID].reflectB.xyz += negative(reflect) * reflectModifier;
 
-            tmpReflectA += getSpread(i, reflect) * -(aReflectMul - 1.0f) * reflectModifier;
-            tmpReflectB -= getSpread(i, reflect) * -(bReflectMul - 1.0f) * reflectModifier;
+            tmpReflectA += getSpread(i, reflect);
+            tmpReflectB -= getSpread(i, reflect);
             ++cntUsed;
         }
     }

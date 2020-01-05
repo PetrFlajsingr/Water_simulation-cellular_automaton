@@ -75,7 +75,7 @@ void testingAreaInit(std::unique_ptr<SimulationCompute> &simulation, glm::uvec3 
                                                               {testAreaStart.x + testAreaDims.x, testAreaStart.y + testAreaDims.y,
                                                                testAreaStart.z + testAreaDims.z},
                                                               {1, 1, 1}),
-                            CellFlags::NoFlag, .99999f);
+                            CellFlags::NoFlag, .9f);
 }
 
 int main() {
