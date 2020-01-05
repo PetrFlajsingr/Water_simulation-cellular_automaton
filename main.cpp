@@ -61,8 +61,8 @@ void initWaterCube(std::unique_ptr<SimulationCompute> &simulation) {
 }
 
 void testingAreaInit(std::unique_ptr<SimulationCompute> &simulation, glm::uvec3 tankSize) {
-  const glm::uvec3 testAreaStart{10, 2, 10};
-  const glm::uvec3 testAreaDims{18, 20, 18};
+  const glm::uvec3 testAreaStart{2, 2, 2};
+  const glm::uvec3 testAreaDims{20, 20, 20};
   simulation->setRangeCells(MakeRange::range<unsigned int, 3>({0, 0, 0}, {tankSize.x, 1, tankSize.z}, {1, 1, 1}),
                             CellFlags::Solid);
   simulation->setRangeCells(MakeRange::range<unsigned int, 3>({0, 1, 0}, {tankSize.x, 5, tankSize.z}, {1, 1, tankSize.z - 1}),
@@ -81,7 +81,7 @@ void testingAreaInit(std::unique_ptr<SimulationCompute> &simulation, glm::uvec3 
 int main() {
   /*Create Window*/
   auto mainLoop = std::make_shared<sdl2cpp::MainLoop>();
-  auto tankSize = glm::uvec3(50, 50, 50);
+  auto tankSize = glm::uvec3(32, 32, 32);
   const auto fieldOfView = 45.f;
   const auto [windowWidth, windowHeight] = getWindowSize();
   const auto nearPlane = 0.1f;

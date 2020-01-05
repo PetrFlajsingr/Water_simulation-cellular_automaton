@@ -162,7 +162,7 @@ void main() {
     infoCells[myCellID].reflectB = vec4(0);
 
     const float extraFluid = max(0, readCells[myCellID].fluidVolume - maximumCellVolume);
-    const float innerPressure = pow(extraFluid, 2);
+    const float innerPressure = extraFluid;
     vec3 tmpReflectA = vec3(innerPressure);
     vec3 tmpReflectB = vec3(-innerPressure);
     for (int i = 0; i < 6; ++i) {
@@ -171,7 +171,7 @@ void main() {
         || readCells[neighborID].fluidVolume >= maximumCellVolume) {
             const float reflectModifierMultiplier = 0.1f;
             const float reflectModifier = reflectModifierMultiplier * float(isFlagSet(infoCells[neighborID].flags, CELL_SOLID))
-            + reflectModifierMultiplier * float(readCells[neighborID].fluidVolume >= 1.5f);
+            + reflectModifierMultiplier * float(readCells[neighborID].fluidVolume >= maximumCellVolume);
             if (intersectsPlane(writeCells[myCellID].velocity, normals[i])) {
                 reflect = reflectVelocity(writeCells[myCellID].velocity, normals[i]);
             } else {
