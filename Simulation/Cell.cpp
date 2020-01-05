@@ -15,3 +15,4 @@ std::ostream &operator<<(std::ostream &out, const Cell &cell) {
     out << " Fluid: " << cell.velocityFluidVolume.w << " Velocity: " << cell.velocityFluidVolume.x << " " << cell.velocityFluidVolume.y << " " << cell.velocityFluidVolume.z;
     return out;
 }
+float Cell::getFluidVolume() { return velocityFluidVolume.w; }

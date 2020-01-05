@@ -32,6 +32,7 @@ public:
   static std::unique_ptr<SimulationCompute> CreateInstance(SimulationType type, glm::uvec3 tankSize);
   virtual void simulate() = 0;
   virtual void reset() = 0;
+  float getFluidVolume();
 
 
 private:

@@ -43,6 +43,11 @@ private:
   std::pair<int, int> fps = {0, 0};
   bool isSimRunning = false;
   bool waterfallEnabled = false;
+  bool showVolumes = true;
+
+public:
+  bool isShowVolumes() const;
+private:
   float simSpeed = 0.f;
   float cellSize = 0.5f;
   bool resetPressed = false;
@@ -51,7 +56,11 @@ private:
   int simulationCycles = 1;
   bool visualizeVolumes = true;
   FPSCounter fpsCounter;
+  std::string volumeText = "0.0";
 
+public:
+  void setVolumeText(const std::string &volumeText);
+private:
   bool SDLHandler(const SDL_Event &event);
 
 };

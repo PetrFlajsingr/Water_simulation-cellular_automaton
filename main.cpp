@@ -145,6 +145,9 @@ int main() {
       simulation->reset();
       initWaterFall(simulation);
     }
+    if(ui.isShowVolumes()) {
+      ui.setVolumeText(std::to_string(simulation->getFluidVolume()));
+    }
 
     gridRenderer.draw(ui.camera.GetViewMatrix(), DrawType(ui.selectedVisualisation()), ui.getCellSize());
 
