@@ -5,6 +5,7 @@
 #include "SimulationCompute.h"
 #include "AdvancedSimulationCompute.h"
 #include "BasicSimulationCompute.h"
+#include <glm/gtx/component_wise.hpp>
 
 const SimulationCompute::BufferPtr &SimulationCompute::getInfoCellBuffer() const { return infoCellBuffer; }
 const SimulationCompute::BufferPtr &SimulationCompute::getCellBuffer() const { return cellBuffers[currentBuffer]; }
@@ -21,4 +22,16 @@ std::unique_ptr<SimulationCompute> SimulationCompute::CreateInstance(SimulationT
   case SimulationType::Advanced:
     return std::make_unique<AdvancedSimulationCompute>(tankSize);
   }
+}
+
+float SimulationCompute::getFluidVolume() {
+
+  auto ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_WRITE_ONLY));
+
+  float volume = 0;
+  for (auto i : MakeRange::range(glm::compMul(tankSize))) {
+    volume += ptrWR[i].getFluidVolume();
+  }
+  cellBuffers[0]->unmap();
+  return volume;
 }

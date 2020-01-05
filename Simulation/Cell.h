@@ -14,6 +14,8 @@ class Cell {
 public:
   void setFluidVolume(float fluidVolume);
 
+  float getFluidVolume();
+
   explicit Cell(float fluidVolume = 0.0, glm::vec4 velocity = glm::vec4(0.0));
 
 private:

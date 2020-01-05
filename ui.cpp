@@ -115,6 +115,11 @@ void UI::loop() {
       ImGui::EndPopup();
     }
   }
+  ImGui::Checkbox("Query volumes: ", &showVolumes);
+  ImGui::SameLine();
+  ImGui::Text("Volume: ");
+  ImGui::SameLine();
+  ImGui::Text(volumeText.c_str());
   ImGui::End();
 
   ImGui::Begin("Visual", showStatus, ImGuiWindowFlags_AlwaysAutoResize);
@@ -201,3 +206,5 @@ float UI::getCellSize() const { return cellSize; }
 int UI::getSimulationSteps() const { return simulationCycles; }
 bool UI::isVisualizeVolumes() const { return visualizeVolumes; }
 SimulationType UI::getSelectedMethod() const { return SimulationType(selectedMethod); }
+void UI::setVolumeText(const std::string &volumeText) { UI::volumeText = volumeText; }
+bool UI::isShowVolumes() const { return showVolumes; }
