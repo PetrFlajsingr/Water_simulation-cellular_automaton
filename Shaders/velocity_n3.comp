@@ -126,9 +126,9 @@ void main() {
     writeCells[myCellID].velocity.y -= infoCells[UP_ID].reflectB.y;
     writeCells[myCellID].velocity.y += infoCells[DOWN_ID].reflectA.y;
     writeCells[myCellID].velocity.x -= infoCells[RIGHT_ID].reflectB.x;
-    writeCells[myCellID].velocity.x += infoCells[LEFT_ID].reflectB.x;
+    writeCells[myCellID].velocity.x += infoCells[LEFT_ID].reflectA.x;
     writeCells[myCellID].velocity.z -= infoCells[BACK_ID].reflectB.z;
-    writeCells[myCellID].velocity.z += infoCells[FRONT_ID].reflectB.z;
+    writeCells[myCellID].velocity.z += infoCells[FRONT_ID].reflectA.z;
 
 /*
     writeCells[UP_ID].fluidVolume += out_velocityPlus.y;
