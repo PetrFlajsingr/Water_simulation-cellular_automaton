@@ -113,7 +113,7 @@ void main() {
         return;
     }
 
-    if (DOWN_ID < 0){
+    if ((int(gl_GlobalInvocationID.y) - 1) < 0){
         writeCells[myCellID].velocity.y = 0;
     }
     const vec3 cellVelocity = writeCells[myCellID].velocity;
