@@ -60,7 +60,7 @@ void AdvancedSimulationCompute::simulate() {
   ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
   ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_READ_WRITE));
   auto ptrInfo = reinterpret_cast<CellInfo *>(infoCellBuffer->map(GL_READ_ONLY));
-  auto linearIndex = 2 + 4 * tankSize.x + 2 * tankSize.y * tankSize.x;
+  auto linearIndex = 48 + 1 * tankSize.x + 48 * tankSize.y * tankSize.x;
   auto linearIndex2 = 2 + 3 * tankSize.x + 2 * tankSize.y * tankSize.x;
   auto linearIndex3 = 2 + 2 * tankSize.x + 2 * tankSize.y * tankSize.x;
   auto linearIndex4 = 2 + 1 * tankSize.x + 2 * tankSize.y * tankSize.x;
