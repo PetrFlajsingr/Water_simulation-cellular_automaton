@@ -12,7 +12,7 @@
 #include <geGL/geGL.h>
 #include <glm/glm.hpp>
 
-class AdvancedSimulationCompute : public SimulationCompute{
+class AdvancedSimulationCompute : public SimulationCompute {
 
 public:
   explicit AdvancedSimulationCompute(glm::uvec3 tankSize);
@@ -22,7 +22,8 @@ public:
 
   void setCells(glm::vec3 index, CellFlags cellType, std::vector<float> fluidVolumes = {0.0}) override;
   void setCells(int index, CellFlags cellType, std::vector<float> fluidVolumes = {0.0}) override;
-  void setCells(const std::vector<glm::uvec3>& indices, const CellFlags& cellType, std::vector<float> fluidVolumes = {0.0}) override;
+  void setCells(const std::vector<glm::uvec3> &indices, const CellFlags &cellType,
+                std::vector<float> fluidVolumes = {0.0}) override;
   void setRangeCells(MultiDimRange<unsigned int, 3> &&indices, CellFlags cellType, float fluidVolume = 0.0f) override;
 
 private:

@@ -11,7 +11,7 @@
 #include <glm/glm.hpp>
 #include <types/Range.h>
 
-class SimulationCompute{
+class SimulationCompute {
 
 protected:
   using ProgramPtr = std::shared_ptr<ge::gl::Program>;
@@ -27,13 +27,13 @@ public:
   void swapBuffers();
   virtual void setCells(glm::vec3 index, CellFlags cellType, std::vector<float> fluidVolumes = {0.0}) = 0;
   virtual void setCells(int index, CellFlags cellType, std::vector<float> fluidVolumes = {0.0}) = 0;
-  virtual void setCells(const std::vector<glm::uvec3>& indices, const CellFlags& cellType, std::vector<float> fluidVolumes = {0.0}) = 0;
+  virtual void setCells(const std::vector<glm::uvec3> &indices, const CellFlags &cellType,
+                        std::vector<float> fluidVolumes = {0.0}) = 0;
   virtual void setRangeCells(MultiDimRange<unsigned int, 3> &&indices, CellFlags cellType, float fluidVolume = 0.0f) = 0;
   static std::unique_ptr<SimulationCompute> CreateInstance(SimulationType type, glm::uvec3 tankSize);
   virtual void simulate() = 0;
   virtual void reset() = 0;
   float getFluidVolume();
-
 
 private:
   unsigned int currentBuffer = 0;

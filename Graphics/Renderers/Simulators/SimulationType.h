@@ -5,7 +5,7 @@
 #ifndef GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_SIMULATIONTYPE_H
 #define GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_SIMULATIONTYPE_H
 
-enum class SimulationType : unsigned int{
+enum class SimulationType : unsigned int {
   Basic,
   Advanced,
 };

@@ -34,7 +34,7 @@ CellRenderer::CellRenderer([[maybe_unused]] const std::string &cellModelPath, co
 
 float t = 0;
 void CellRenderer::drawAdvanced(const glm::mat4 &viewMat, const glm::vec3 &cameraPos, const BufferPtr &cellBuffer,
-                        const BufferPtr &cellInfoBuffer, bool visualizeVolumes, float cellSize) {
+                                const BufferPtr &cellInfoBuffer, bool visualizeVolumes, float cellSize) {
   programAdvanced->use();
 
   vao->bind();
@@ -53,11 +53,11 @@ void CellRenderer::drawAdvanced(const glm::mat4 &viewMat, const glm::vec3 &camer
   cellInfoBuffer->unbindBase(GL_SHADER_STORAGE_BUFFER, 2);
   vao->unbind();
 
-  t+=0.001;
+  t += 0.001;
 }
 
 void CellRenderer::drawBasic(const glm::mat4 &viewMat, const glm::vec3 &cameraPos, const BufferPtr &cellBuffer,
-                        const BufferPtr &cellInfoBuffer, bool visualizeVolumes, float cellSize) {
+                             const BufferPtr &cellInfoBuffer, bool visualizeVolumes, float cellSize) {
   programBasic->use();
 
   vao->bind();
@@ -76,5 +76,5 @@ void CellRenderer::drawBasic(const glm::mat4 &viewMat, const glm::vec3 &cameraPo
   cellInfoBuffer->unbindBase(GL_SHADER_STORAGE_BUFFER, 2);
   vao->unbind();
 
-  t+=0.001;
+  t += 0.001;
 }

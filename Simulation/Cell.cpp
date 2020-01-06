@@ -4,7 +4,7 @@
 
 #include "Cell.h"
 
-Cell::Cell(float fluidVolume, glm::vec4 velocity) : velocityFluidVolume(fluidVolume, fluidVolume, fluidVolume, velocity) {}
+Cell::Cell(float fluidVolume, glm::vec4 velocity) : velocityFluidVolume(velocity.x, velocity.y, velocity.z, fluidVolume) {}
 
 void Cell::setFluidVolume(float fluidVolume) { Cell::velocityFluidVolume.w = fluidVolume; }
 

@@ -25,12 +25,9 @@ public:
   explicit Model(const std::string &modelPath);
 
   [[nodiscard]] const std::vector<VertexData> &getVertices() const;
-
-  uint32_t verticesCount();
-
+  [[nodiscard]] uint32_t verticesCount();
   [[nodiscard]] const std::vector<uint32_t> &getIndices() const;
-
-  uint32_t indicesCount();
+  [[nodiscard]] uint32_t indicesCount();
 
   void loadFromObj(const std::string &modelPath, bool clearBeforeLoad = false);
 

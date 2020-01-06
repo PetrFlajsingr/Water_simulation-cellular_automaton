@@ -7,12 +7,12 @@
 
 #include <geGL/Generated/OpenGLTypes.h>
 
-struct DrawElementsIndirectCommand{
-    GLuint  count;
-    GLuint  instanceCount;
-    GLuint  firstIndex;
-    GLuint  baseVertex;
-    GLuint  baseInstance;
+struct DrawElementsIndirectCommand {
+  GLuint count;
+  GLuint instanceCount;
+  GLuint firstIndex;
+  GLuint baseVertex;
+  GLuint baseInstance;
 };
 
-#endif //GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_IBOBUFFER_H
+#endif // GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_IBOBUFFER_H

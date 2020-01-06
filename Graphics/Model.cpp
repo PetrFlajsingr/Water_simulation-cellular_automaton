@@ -14,8 +14,8 @@ const std::vector<uint32_t> &Model::getIndices() const { return indices; }
 namespace std {
 template <> struct hash<Model::VertexData> {
   size_t operator()(Model::VertexData const &vertex) const {
-    return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
-           (hash<glm::vec2>()(vertex.texCoord) << 1);
+    return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ // NOLINT(hicpp-signed-bitwise)
+           (hash<glm::vec2>()(vertex.texCoord) << 1);                                        // NOLINT(hicpp-signed-bitwise)
   }
 };
 } // namespace std
@@ -51,7 +51,7 @@ void Model::loadFromObj(const std::string &modelPath, bool clearBeforeLoad) {
       vertex.pos = {attrib.vertices[3 * index.vertex_index + 0], attrib.vertices[3 * index.vertex_index + 1],
                     attrib.vertices[3 * index.vertex_index + 2]};
 
-      if (attrib.texcoords.size() != 0)
+      if (!attrib.texcoords.empty())
         vertex.texCoord = {attrib.texcoords[2 * index.texcoord_index + 0], 1.0f - attrib.texcoords[2 * index.texcoord_index + 1]};
 
       vertex.color = color;
