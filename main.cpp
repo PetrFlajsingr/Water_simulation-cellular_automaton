@@ -1,7 +1,9 @@
 #include "GlslShaderLoader.h"
 #include "io/print.h"
 #include "ui.h"
+#include <BaseMap.h>
 #include <Camera.h>
+#include <MapType.h>
 #include <Renderers/CellRenderer.h>
 #include <Renderers/GridRenderer.h>
 #include <Renderers/Simulators/AdvancedSimulationCompute.h>
@@ -27,54 +29,6 @@ std::pair<unsigned int, unsigned int> getWindowSize() {
   unsigned int w = DM.w * 0.8;
   unsigned int h = DM.h * 0.8;
   return {w, h};
-}
-void initWaterFall(std::unique_ptr<SimulationCompute> &simulation) {
-  simulation->setCells({{23, 48, 0}, {24, 48, 0}, {25, 48, 0}, {26, 48, 0}, {27, 48, 0}}, CellFlags::Solid);
-  {
-    std::vector<glm::uvec3> result{};
-    for (auto z : MakeRange::range(10)) {
-      result.emplace_back(glm::uvec3{20, 0, z});
-      result.emplace_back(glm::uvec3{20, 1, z});
-      result.emplace_back(glm::uvec3{30, 0, z});
-      result.emplace_back(glm::uvec3{30, 1, z});
-    }
-    for (auto x : MakeRange::range(20, 30)) {
-      result.emplace_back(glm::uvec3{x, 0, 10});
-      result.emplace_back(glm::uvec3{x, 1, 10});
-    }
-    simulation->setCells(result, CellFlags::Solid);
-    simulation->setCells({{23, 49, 0}, {24, 49, 0}, {25, 49, 0}, {26, 49, 0}, {27, 49, 0}}, CellFlags::FluidSource);
-  }
-}
-
-void initWaterCube(std::unique_ptr<SimulationCompute> &simulation) {
-  {
-    using namespace MakeRange;
-    std::vector<glm::uvec3> positions;
-    std::vector<float> volumes;
-    for (auto [x, y, z] : range<unsigned int, 3>({5, 5, 5}, {40, 40, 40}, {1, 1, 1})) {
-      positions.emplace_back(glm::vec3{x, y, z});
-      volumes.emplace_back(1.0);
-    }
-    simulation->setCells(positions, CellFlags::NoFlag, volumes);
-  }
-}
-
-void testingAreaInit(std::unique_ptr<SimulationCompute> &simulation, glm::uvec3 tankSize) {
-  const glm::uvec3 testAreaStart{2, 3, 2};
-  const glm::uvec3 testAreaDims{7, 7, 7};
-  simulation->setRangeCells(MakeRange::range<unsigned int, 3>({0, 0, 0}, {tankSize.x, 1, tankSize.z}, {1, 1, 1}),
-                            CellFlags::Solid);
-  simulation->setRangeCells(MakeRange::range<unsigned int, 3>({0, 49, 0}, {tankSize.x, 50, tankSize.z}, {1, 1, 1}),
-                            CellFlags::Solid);
-  simulation->setRangeCells(MakeRange::range<unsigned int, 3>({0, 1, 0}, {tankSize.x, 5, tankSize.z}, {1, 1, tankSize.z - 1}),
-                            CellFlags::Solid);
-  simulation->setRangeCells(MakeRange::range<unsigned int, 3>({0, 1, 0}, {tankSize.x, 5, tankSize.z}, {tankSize.x - 1, 1, 1}),
-  simulation->setRangeCells(MakeRange::range<unsigned int, 3>({testAreaStart.x, testAreaStart.y, testAreaStart.z},
-                                                              {testAreaStart.x + testAreaDims.x, testAreaStart.y + testAreaDims.y,
-                                                               testAreaStart.z + testAreaDims.z},
-                                                              {1, 1, 1}),
-                            CellFlags::NoFlag, 1.0f);
 }
 
 int main() {
@@ -112,9 +66,8 @@ int main() {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glPointSize(5);
 
-  // initWaterFall(simulation);
-
-  testingAreaInit(simulation, tankSize);
+  auto map = BaseMap::CreateInstance(MapType::BasicBowl);
+  map->setup(*simulation, tankSize);
 
   auto start = std::chrono::system_clock::now();
   mainLoop->setIdleCallback([&]() {
@@ -123,8 +76,7 @@ int main() {
     if (simulationType != ui.getSelectedMethod()) {
       simulationType = ui.getSelectedMethod();
       simulation = SimulationCompute::CreateInstance(simulationType, tankSize);
-      initWaterFall(simulation);
-      testingAreaInit(simulation, tankSize);
+      map->setup(*simulation, tankSize);
     }
 
     const auto simSpeed = ui.simulationSpeed();
@@ -138,14 +90,11 @@ int main() {
       }
     }
     if (ui.isWaterfallEnabled()) {
-      simulation->setCells({{10, 10, 10}, {10, 10, 11}, {10, 10, 12}}, CellFlags::NoFlag, {.9f, .9f, .9f});
+      map->operator()(*simulation, 0);
     }
     if (ui.isResetPressed()) {
       simulation->reset();
-      if(simulationType == SimulationType::Basic)
-        initWaterFall(simulation);
-      else
-        testingAreaInit(simulation, tankSize);
+      map->setup(*simulation, tankSize);
     }
     if(ui.isShowVolumes()) {
       ui.setVolumeText(std::to_string(simulation->getFluidVolume()));
