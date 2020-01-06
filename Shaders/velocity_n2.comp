@@ -120,6 +120,13 @@ void main() {
     out_velocityMinus.z *= float((int(gl_GlobalInvocationID.z) - 1) >= 0) * float(!isFlagSet(infoCells[FRONT_ID].flags, CELL_SOLID));
     out_velocityPlus.z *= float(BACK_ID < invocationCount) * float(!isFlagSet(infoCells[BACK_ID].flags, CELL_SOLID));
 
+    out_velocityMinus.y *= float(readCells[DOWN_ID].fluidVolume < maximumCellVolume);
+    out_velocityPlus.y *= float(readCells[UP_ID].fluidVolume < maximumCellVolume);
+    out_velocityMinus.x *= float(readCells[LEFT_ID].fluidVolume < maximumCellVolume);
+    out_velocityPlus.x *= float(readCells[RIGHT_ID].fluidVolume < maximumCellVolume);
+    out_velocityMinus.z *= float(readCells[FRONT_ID].fluidVolume < maximumCellVolume);
+    out_velocityPlus.z *= float(readCells[BACK_ID].fluidVolume < maximumCellVolume);
+
     infoCells[myCellID].reflectA = vec4(out_velocityPlus, 0);
     infoCells[myCellID].reflectB = vec4(out_velocityMinus, 0);
 
