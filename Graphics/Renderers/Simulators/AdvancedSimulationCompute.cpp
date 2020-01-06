@@ -57,7 +57,7 @@ void AdvancedSimulationCompute::simulate() {
 
   glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 
-  ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
+  /*ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
   ptrRD = reinterpret_cast<Cell *>(cellBuffers[1]->map(GL_READ_WRITE));
   auto ptrInfo = reinterpret_cast<CellInfo *>(infoCellBuffer->map(GL_READ_ONLY));
   auto linearIndex = 48 + 1 * tankSize.x + 48 * tankSize.y * tankSize.x;
@@ -71,7 +71,7 @@ void AdvancedSimulationCompute::simulate() {
   std::cout << "--------" << std::endl;
   cellBuffers[0]->unmap();
   cellBuffers[1]->unmap();
-  infoCellBuffer->unmap();
+  infoCellBuffer->unmap();*/
 
   velocity3Program->use();
   velocity3Program->set3v("globalSize", glm::value_ptr(tankSize));

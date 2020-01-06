@@ -74,7 +74,7 @@ bool isFlagSet(int flags, int flag) {
     return (flags & flag) == flag;
 }
 
-vec3 reflectVelocity(vec3 velocity, vec3 normal) {
+vec3 reflectVelocity(vec3 velocity, vec3  normal) {
     vec3 reflected = reflect(velocity, normal);
     return reflected;
 }
@@ -177,8 +177,8 @@ void main() {
             } else {
                 continue;//reflect = writeCells[myCellID].velocity;
             }
-            infoCells[myCellID].reflectA.xyz += positive(reflect) * reflectModifier;
-            infoCells[myCellID].reflectB.xyz += negative(reflect) * reflectModifier;
+            tmpReflectA += positive(reflect) * reflectModifier;
+            tmpReflectB += negative(reflect) * reflectModifier;
 
             tmpReflectA += getSpread(i, reflect);
             tmpReflectB -= getSpread(i, reflect);

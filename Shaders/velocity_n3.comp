@@ -124,105 +124,22 @@ void main() {
     writeCells[myCellID].fluidVolume += infoCells[FRONT_ID].reflectA.z;
 
     writeCells[myCellID].velocity.y -= infoCells[UP_ID].reflectB.y;
-    writeCells[myCellID].velocity.x -= infoCells[UP_ID].reflectB.x;
-    writeCells[myCellID].velocity.x += infoCells[UP_ID].reflectA.x;
-    writeCells[myCellID].velocity.z -= infoCells[UP_ID].reflectB.z;
-    writeCells[myCellID].velocity.z += infoCells[UP_ID].reflectA.z;
+    writeCells[myCellID].velocity.xz += infoCells[UP_ID].reflectA.xz - infoCells[UP_ID].reflectB.xz;
 
     writeCells[myCellID].velocity.y += infoCells[DOWN_ID].reflectA.y;
-    writeCells[myCellID].velocity.x -= infoCells[DOWN_ID].reflectB.x;
-    writeCells[myCellID].velocity.x += infoCells[DOWN_ID].reflectA.x;
-    writeCells[myCellID].velocity.z -= infoCells[DOWN_ID].reflectB.z;
-    writeCells[myCellID].velocity.z += infoCells[DOWN_ID].reflectA.z;
+    writeCells[myCellID].velocity.xz += infoCells[DOWN_ID].reflectA.xz - infoCells[DOWN_ID].reflectB.xz;
 
     writeCells[myCellID].velocity.x -= infoCells[RIGHT_ID].reflectB.x;
-    writeCells[myCellID].velocity.y += infoCells[RIGHT_ID].reflectA.y;
-    writeCells[myCellID].velocity.y -= infoCells[RIGHT_ID].reflectB.y;
-    writeCells[myCellID].velocity.z -= infoCells[RIGHT_ID].reflectB.z;
-    writeCells[myCellID].velocity.z += infoCells[RIGHT_ID].reflectA.z;
+    writeCells[myCellID].velocity.yz += infoCells[RIGHT_ID].reflectA.yz - infoCells[RIGHT_ID].reflectB.yz;
 
     writeCells[myCellID].velocity.x += infoCells[LEFT_ID].reflectA.x;
-    writeCells[myCellID].velocity.y += infoCells[LEFT_ID].reflectA.y;
-    writeCells[myCellID].velocity.y -= infoCells[LEFT_ID].reflectB.y;
-    writeCells[myCellID].velocity.z -= infoCells[LEFT_ID].reflectB.z;
-    writeCells[myCellID].velocity.z += infoCells[LEFT_ID].reflectA.z;
-
+    writeCells[myCellID].velocity.yz += infoCells[LEFT_ID].reflectA.yz - infoCells[LEFT_ID].reflectB.yz;
 
     writeCells[myCellID].velocity.z -= infoCells[BACK_ID].reflectB.z;
-    writeCells[myCellID].velocity.y += infoCells[BACK_ID].reflectA.y;
-    writeCells[myCellID].velocity.y -= infoCells[BACK_ID].reflectB.y;
-    writeCells[myCellID].velocity.x += infoCells[BACK_ID].reflectA.x;
-    writeCells[myCellID].velocity.x -= infoCells[BACK_ID].reflectB.x;
+    writeCells[myCellID].velocity.xy += infoCells[BACK_ID].reflectA.xy - infoCells[BACK_ID].reflectB.xy;
 
     writeCells[myCellID].velocity.z += infoCells[FRONT_ID].reflectA.z;
-    writeCells[myCellID].velocity.y += infoCells[FRONT_ID].reflectA.y;
-    writeCells[myCellID].velocity.y -= infoCells[FRONT_ID].reflectB.y;
-    writeCells[myCellID].velocity.x -= infoCells[FRONT_ID].reflectB.x;
-    writeCells[myCellID].velocity.x += infoCells[FRONT_ID].reflectA.x;
-
-
-    /*
-        writeCells[UP_ID].fluidVolume += out_velocityPlus.y;
-
-        writeCells[UP_ID].velocity.y += out_velocityPlus.y;
-        writeCells[UP_ID].velocity.x += out_velocityPlus.x;
-        writeCells[UP_ID].velocity.x -= out_velocityMinus.x;
-        writeCells[UP_ID].velocity.z += out_velocityPlus.z;
-        writeCells[UP_ID].velocity.z -= out_velocityMinus.z;
-
-        barrier();
-
-        writeCells[DOWN_ID].fluidVolume += out_velocityMinus.y;
-
-        writeCells[DOWN_ID].velocity.y -= out_velocityMinus.y;
-        writeCells[DOWN_ID].velocity.x += out_velocityPlus.x;
-        writeCells[DOWN_ID].velocity.x -= out_velocityMinus.x;
-        writeCells[DOWN_ID].velocity.z += out_velocityPlus.z;
-        writeCells[DOWN_ID].velocity.z -= out_velocityMinus.z;
-
-        barrier();
-
-        writeCells[LEFT_ID].fluidVolume += out_velocityMinus.x;
-
-        writeCells[LEFT_ID].velocity.x -= out_velocityMinus.x;
-        writeCells[LEFT_ID].velocity.y += out_velocityPlus.y;
-        writeCells[LEFT_ID].velocity.y -= out_velocityMinus.y;
-        writeCells[LEFT_ID].velocity.z += out_velocityPlus.z;
-        writeCells[LEFT_ID].velocity.z -= out_velocityMinus.z;
-
-        barrier();
-
-        writeCells[RIGHT_ID].fluidVolume += out_velocityPlus.x;
-
-        writeCells[RIGHT_ID].velocity.x += out_velocityPlus.x;
-        writeCells[RIGHT_ID].velocity.y += out_velocityPlus.y;
-        writeCells[RIGHT_ID].velocity.y -= out_velocityMinus.y;
-        writeCells[RIGHT_ID].velocity.z += out_velocityPlus.z;
-        writeCells[RIGHT_ID].velocity.z -= out_velocityMinus.z;
-
-        barrier();
-
-        writeCells[FRONT_ID].fluidVolume += out_velocityMinus.z;
-
-        writeCells[FRONT_ID].velocity.z -= out_velocityMinus.z;
-        writeCells[FRONT_ID].velocity.y += out_velocityPlus.y;
-        writeCells[FRONT_ID].velocity.y -= out_velocityMinus.y;
-        writeCells[FRONT_ID].velocity.x += out_velocityPlus.x;
-        writeCells[FRONT_ID].velocity.x -= out_velocityMinus.x;
-
-        barrier();
-
-        writeCells[BACK_ID].fluidVolume += out_velocityPlus.z;
-
-        writeCells[BACK_ID].velocity.z += out_velocityPlus.z;
-        writeCells[BACK_ID].velocity.x += out_velocityPlus.x;
-        writeCells[BACK_ID].velocity.x -= out_velocityMinus.x;
-        writeCells[BACK_ID].velocity.y += out_velocityPlus.y;
-        writeCells[BACK_ID].velocity.y -= out_velocityMinus.y;
-
-        barrier();
-    */
-
+    writeCells[myCellID].velocity.xy += infoCells[FRONT_ID].reflectA.xy - infoCells[FRONT_ID].reflectB.xy;
 
     if (bool(infoCells[myCellID].flags & CELL_SOURCE)){
         writeCells[myCellID].fluidVolume = maximumCellVolume;

@@ -67,23 +67,6 @@ uint rightCellID = gl_GlobalInvocationID.z * globalSize.x * globalSize.y + gl_Gl
 #define FRONT_ID frontCellID
 #define BACK_ID backCellID
 
-float getNeighborVel(CellData cell, int direction) {
-    switch (direction) {
-        case LEFT:
-        return float(cell.velocity.x < 0) * cell.velocity.x;
-        case RIGHT:
-        return float(cell.velocity.x > 0) * cell.velocity.x;
-        case UP:
-        return float(cell.velocity.y > 0) * cell.velocity.y;
-        case DOWN:
-        return float(cell.velocity.y < 0) * cell.velocity.y;
-        case FRONT:
-        return float(cell.velocity.z < 0) * cell.velocity.z;
-        case BACK:
-        return float(cell.velocity.z > 0) * cell.velocity.z;
-    }
-    return 0;
-}
 const float waterWeight = 1;
 
 float positive(float value) {
@@ -103,7 +86,7 @@ vec3 negative(vec3 value) {
 }
 
 float sumComponents(vec3 value) {
-    return value.x + value.y + value.z;
+    return abs(value.x) + abs(value.y) + abs(value.z);
 }
 
 void main() {
@@ -117,10 +100,6 @@ void main() {
         writeCells[myCellID].velocity.y = 0;
     }
     const vec3 cellVelocity = writeCells[myCellID].velocity;
-    //const vec3 reflectA = infoCells[myCellID].reflectA.xyz;
-    //const vec3 reflectB = infoCells[myCellID].reflectB.xyz;
-    //vec3 out_velocityPlus = (positive(cellVelocity) + reflectA) * waterWeight;
-    //vec3 out_velocityMinus = (-(negative(cellVelocity) + reflectB)) * waterWeight;
     const vec3 reflectA = infoCells[myCellID].reflectA.xyz + cellVelocity;
     const vec3 reflectB = infoCells[myCellID].reflectB.xyz + cellVelocity;
     vec3 out_velocityPlus = positive(reflectA);
