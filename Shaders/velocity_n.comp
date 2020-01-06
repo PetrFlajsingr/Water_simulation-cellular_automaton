@@ -151,7 +151,7 @@ vec3 negative(vec3 value) {
 void main() {
     uint myCellID = (gl_GlobalInvocationID.z * globalSize.x * globalSize.y)+ (gl_GlobalInvocationID.y * globalSize.x) + gl_GlobalInvocationID.x;
     uint invocationCount = globalSize.x * globalSize.y * globalSize.z;
-    if (myCellID >= invocationCount){
+    if (myCellID >= invocationCount || isFlagSet(infoCells[myCellID].flags, CELL_SOLID) || readCells[myCellID].fluidVolume == 0){
         return;
     }
     writeCells[myCellID].velocity = readCells[myCellID].velocity * getDragCoefficient();
@@ -186,10 +186,8 @@ void main() {
         }
     }
     if (cntUsed > 0) {
-        infoCells[myCellID].reflectA.xyz += tmpReflectA;
-        infoCells[myCellID].reflectB.xyz += tmpReflectB;
-        infoCells[myCellID].reflectA.xyz /= cntUsed;
-        infoCells[myCellID].reflectB.xyz /= cntUsed;
+        infoCells[myCellID].reflectA.xyz += tmpReflectA / cntUsed;
+        infoCells[myCellID].reflectB.xyz += tmpReflectB / cntUsed;
         writeCells[myCellID].velocity = vec3(0);
     }
     writeCells[myCellID].velocity += getGlobalForces();

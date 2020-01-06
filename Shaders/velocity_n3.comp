@@ -113,9 +113,6 @@ void main() {
         return;
     }
 
-    const vec3 out_velocityPlus = infoCells[myCellID].reflectA.xyz;
-    const vec3 out_velocityMinus = infoCells[myCellID].reflectB.xyz;
-
     writeCells[myCellID].fluidVolume += infoCells[UP_ID].reflectB.y;
     writeCells[myCellID].fluidVolume += infoCells[DOWN_ID].reflectA.y;
     writeCells[myCellID].fluidVolume += infoCells[RIGHT_ID].reflectB.x;
