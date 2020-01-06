@@ -46,9 +46,9 @@ private:
   bool showVolumes = true;
 
 public:
-  bool isShowVolumes() const;
+  [[nodiscard]] bool isShowVolumes() const;
 private:
-  float simSpeed = 0.f;
+  float simSpeed = 1.f;
   float cellSize = 0.5f;
   bool resetPressed = false;
   unsigned int selectedMethod = 1;
