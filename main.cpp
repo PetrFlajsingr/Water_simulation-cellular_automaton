@@ -62,7 +62,7 @@ void initWaterCube(std::unique_ptr<SimulationCompute> &simulation) {
 
 void testingAreaInit(std::unique_ptr<SimulationCompute> &simulation, glm::uvec3 tankSize) {
   const glm::uvec3 testAreaStart{2, 3, 2};
-  const glm::uvec3 testAreaDims{10, 10, 10};
+  const glm::uvec3 testAreaDims{7, 7, 7};
   simulation->setRangeCells(MakeRange::range<unsigned int, 3>({0, 0, 0}, {tankSize.x, 1, tankSize.z}, {1, 1, 1}),
                             CellFlags::Solid);
   simulation->setRangeCells(MakeRange::range<unsigned int, 3>({0, 49, 0}, {tankSize.x, 50, tankSize.z}, {1, 1, 1}),
@@ -72,12 +72,12 @@ void testingAreaInit(std::unique_ptr<SimulationCompute> &simulation, glm::uvec3 
   simulation->setRangeCells(MakeRange::range<unsigned int, 3>({0, 1, 0}, {tankSize.x, 5, tankSize.z}, {tankSize.x - 1, 1, 1}),
                             CellFlags::Solid);
 
-  simulation->setRangeCells(MakeRange::range<unsigned int, 3>({0, 1, 16}, {15, 20, 17}, {1, 1, tankSize.x}),
+/*  simulation->setRangeCells(MakeRange::range<unsigned int, 3>({0, 1, 16}, {15, 20, 17}, {1, 1, tankSize.x}),
                             CellFlags::Solid);
   simulation->setRangeCells(MakeRange::range<unsigned int, 3>({16, 1, 16}, {32, 20, 17}, {1, 1, tankSize.x}),
                             CellFlags::Solid);
   simulation->setRangeCells(MakeRange::range<unsigned int, 3>({0, 5, 16}, {32, 20, 17}, {1, 1, tankSize.x}),
-                            CellFlags::Solid);
+                            CellFlags::Solid);*/
 
   //simulation->setCells({{2,1,1}, {2,1,2}, {1,1,2}}, CellFlags::Solid);
   //simulation->setCells({1, 10, 1}, CellFlags::NoFlag, {1.0});
