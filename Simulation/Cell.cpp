@@ -4,15 +4,13 @@
 
 #include "Cell.h"
 
-Cell::Cell(float fluidVolume, glm::vec4 velocity)/* : fluidVolume(fluidVolume), velocity(velocity)*/ {
-  this->velocityFluidVolume = velocity;
-  this->velocityFluidVolume.w = fluidVolume;
-}
+Cell::Cell(float fluidVolume, glm::vec4 velocity) : velocityFluidVolume(fluidVolume, fluidVolume, fluidVolume, velocity) {}
 
 void Cell::setFluidVolume(float fluidVolume) { Cell::velocityFluidVolume.w = fluidVolume; }
 
 std::ostream &operator<<(std::ostream &out, const Cell &cell) {
-    out << " Fluid: " << cell.velocityFluidVolume.w << " Velocity: " << cell.velocityFluidVolume.x << " " << cell.velocityFluidVolume.y << " " << cell.velocityFluidVolume.z;
-    return out;
+  out << " Fluid: " << cell.velocityFluidVolume.w << " Velocity: " << cell.velocityFluidVolume.x << " "
+      << cell.velocityFluidVolume.y << " " << cell.velocityFluidVolume.z;
+  return out;
 }
 float Cell::getFluidVolume() { return velocityFluidVolume.w; }

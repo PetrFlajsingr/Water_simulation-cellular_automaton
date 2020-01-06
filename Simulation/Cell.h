@@ -20,7 +20,6 @@ public:
 
 private:
   glm::vec4 velocityFluidVolume;
-  //float fluidVolume;
 
   friend std::ostream &operator<<(std::ostream &out, const Cell &cell);
 };
