@@ -17,7 +17,7 @@ UI::UI(sdl2cpp::Window &window, sdl2cpp::MainLoop &mainLoop) : window(window) {
 
 void UI::loop() {
   fpsCounter.frame();
-  setFps(fpsCounter.current(), fpsCounter.average());
+  setFps(static_cast<int>(fpsCounter.current()), static_cast<int>(fpsCounter.average()));
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplSDL2_NewFrame(window.getWindow());
   ImGui::NewFrame();
@@ -25,7 +25,8 @@ void UI::loop() {
   bool *showStatus = nullptr;
   ImGui::SetNextWindowBgAlpha(0.35f);
   ImGui::Begin("Simulation status", showStatus,
-               ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
+               ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
+                   ImGuiWindowFlags_NoSavedSettings | // NOLINT(hicpp-signed-bitwise)
                    ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav);
 
   ImGui::Text("FPS (avg): %d\nFPS (cur): %d", fps.first, fps.second);
@@ -119,7 +120,7 @@ void UI::loop() {
   ImGui::SameLine();
   ImGui::Text("Volume: ");
   ImGui::SameLine();
-  ImGui::Text(volumeText.c_str());
+  ImGui::Text("%s", volumeText.c_str());
   ImGui::End();
 
   ImGui::Begin("Visual", showStatus, ImGuiWindowFlags_AlwaysAutoResize);

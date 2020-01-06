@@ -14,6 +14,7 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_opengl3.h>
 #include <imgui/imgui_impl_sdl.h>
+#include <utility>
 
 class UI {
 public:
@@ -37,17 +38,18 @@ public:
   [[nodiscard]] SimulationType getSelectedMethod() const;
   [[nodiscard]] float getCellSize() const;
 
+  [[nodiscard]] bool isShowVolumes() const;
+
+  void setVolumeText(const std::string &volumeText);
   Camera camera{glm::vec3(1.0, 1.0, 5.0)};
+
 private:
   sdl2cpp::Window &window;
-  std::pair<int, int> fps = {0, 0};
+  std::pair<int, int> fps{0, 0};
   bool isSimRunning = false;
   bool waterfallEnabled = false;
-  bool showVolumes = true;
 
-public:
-  [[nodiscard]] bool isShowVolumes() const;
-private:
+  bool showVolumes = true;
   float simSpeed = 1.f;
   float cellSize = 0.5f;
   bool resetPressed = false;
@@ -56,13 +58,10 @@ private:
   int simulationCycles = 1;
   bool visualizeVolumes = true;
   FPSCounter fpsCounter;
+
   std::string volumeText = "0.0";
 
-public:
-  void setVolumeText(const std::string &volumeText);
-private:
   bool SDLHandler(const SDL_Event &event);
-
 };
 
 #endif // GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_UI_H
