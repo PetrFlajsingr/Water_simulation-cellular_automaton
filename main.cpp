@@ -6,8 +6,6 @@
 #include <MapType.h>
 #include <Renderers/CellRenderer.h>
 #include <Renderers/GridRenderer.h>
-#include <Renderers/Simulators/AdvancedSimulationCompute.h>
-#include <Renderers/Simulators/BasicSimulationCompute.h>
 #include <Renderers/Simulators/SimulationCompute.h>
 #include <SDL2CPP/MainLoop.h>
 #include <SDL2CPP/Window.h>
@@ -26,8 +24,8 @@ std::pair<unsigned int, unsigned int> getWindowSize() {
   if (SDL_GetDesktopDisplayMode(0, &DM) != 0) {
     throw exc::Error("SDL_GetDesktopDisplayMode failed");
   }
-  unsigned int w = DM.w * 0.8;
-  unsigned int h = DM.h * 0.8;
+  const auto w = static_cast<unsigned int>(DM.w * 0.8);
+  const auto h = static_cast<unsigned int>(DM.h * 0.8);
   return {w, h};
 }
 
@@ -39,7 +37,8 @@ int main() {
   const auto [windowWidth, windowHeight] = getWindowSize();
   const auto nearPlane = 0.1f;
   const auto farPlane = 100.f;
-  auto proj = glm::perspective(glm::radians(fieldOfView), static_cast<float>(windowWidth) / windowHeight, nearPlane, farPlane);
+  const auto proj =
+      glm::perspective(glm::radians(fieldOfView), static_cast<float>(windowWidth) / windowHeight, nearPlane, farPlane);
 
   auto window = std::make_shared<sdl2cpp::Window>(windowWidth, windowHeight);
   window->createContext("rendering");
@@ -71,7 +70,7 @@ int main() {
 
   auto start = std::chrono::system_clock::now();
   mainLoop->setIdleCallback([&]() {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // NOLINT(hicpp-signed-bitwise)
 
     if (simulationType != ui.getSelectedMethod()) {
       simulationType = ui.getSelectedMethod();
@@ -96,7 +95,7 @@ int main() {
       simulation->reset();
       map->setup(*simulation, tankSize);
     }
-    if(ui.isShowVolumes()) {
+    if (ui.isShowVolumes()) {
       ui.setVolumeText(std::to_string(simulation->getFluidVolume()));
     }
 
