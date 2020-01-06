@@ -127,6 +127,11 @@ void main() {
     out_velocityMinus.z *= float(readCells[FRONT_ID].fluidVolume < maximumCellVolume);
     out_velocityPlus.z *= float(readCells[BACK_ID].fluidVolume < maximumCellVolume);
 
+    out_velocityPlus.x *= float(out_velocityPlus.x > 0.00001 || out_velocityPlus.x < -0.00001);
+    out_velocityPlus.z *= float(out_velocityPlus.z > 0.00001 || out_velocityPlus.z < -0.00001);
+    out_velocityMinus.x *= float(out_velocityMinus.x > 0.00001 || out_velocityMinus.x < -0.00001);
+    out_velocityMinus.z *= float(out_velocityMinus.z > 0.00001 || out_velocityMinus.z < -0.00001);
+
     infoCells[myCellID].reflectA = vec4(out_velocityPlus, 0);
     infoCells[myCellID].reflectB = vec4(out_velocityMinus, 0);
 
