@@ -86,6 +86,8 @@ uvec3(7, 2, 6),
 uvec3(7, 0, 3)
 };
 
+const float minimumCellVolume = 0.005;
+
 float[8] avgVolume() {
     float result[8] = { 1, 1, 1, 1, 0.f, 0.f, 0.f, 0.f };
     if (bool(infoCells[instanceID[0]].flags & (CELL_SOLID | FLOW_DOWN))){
@@ -129,7 +131,7 @@ float[8] avgVolume() {
 
 
 void main() {
-    if (readCells[instanceID[0]].fluidVolume > 0.0 || bool(infoCells[instanceID[0]].flags & CELL_SOLID)){
+    if (readCells[instanceID[0]].fluidVolume > minimumCellVolume || bool(infoCells[instanceID[0]].flags & CELL_SOLID)){
         float vols[8] = avgVolume();
         for (uint i = 0; i < 12; ++i) {
             vec4 poly[3];
