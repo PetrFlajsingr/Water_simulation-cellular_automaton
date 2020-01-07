@@ -128,22 +128,24 @@ void UI::loop() {
 
   ImGui::Text("Show:");
   ImGui::SameLine();
-  std::array<std::string, 3> items{"None", "Box", "Grid"};
-  float w = ImGui::CalcItemWidth();
-  float spacing = 24.f;
-  float button_sz = ImGui::GetFrameHeight();
-  ImGui::PushItemWidth(w - spacing * 2.0f - button_sz * 2.0f);
-  if (ImGui::BeginCombo("", items[selectedGrid].c_str())) {
-    for (std::size_t n = 0; n < items.size(); n++) {
-      bool is_selected = (n == selectedGrid);
-      if (ImGui::Selectable(items[n].c_str(), is_selected))
-        selectedGrid = n;
-      if (is_selected)
-        ImGui::SetItemDefaultFocus();
+  {
+    std::array<std::string, 3> items{"None", "Box", "Grid"};
+    float w = ImGui::CalcItemWidth();
+    float spacing = 24.f;
+    float button_sz = ImGui::GetFrameHeight();
+    ImGui::PushItemWidth(w - spacing * 2.0f - button_sz * 2.0f);
+    if (ImGui::BeginCombo("", items[selectedGrid].c_str())) {
+      for (std::size_t n = 0; n < items.size(); n++) {
+        bool is_selected = (n == selectedGrid);
+        if (ImGui::Selectable(items[n].c_str(), is_selected))
+          selectedGrid = n;
+        if (is_selected)
+          ImGui::SetItemDefaultFocus();
+      }
+      ImGui::EndCombo();
     }
-    ImGui::EndCombo();
+    ImGui::PopItemWidth();
   }
-  ImGui::PopItemWidth();
 
   ImGui::Text("Cell size");
   ImGui::SameLine();
@@ -151,6 +153,49 @@ void UI::loop() {
   if (cellSize < 0.0)
     cellSize = 0.0;
   ImGui::SetWindowPos(ImVec2(window.getWidth() - ImGui::GetWindowWidth(), previousSize.y));
+
+  {
+    ImGui::Text("Map");
+    ImGui::SameLine();
+    std::array<std::string, 2> items{"Basic bowl", "Waterfall"};
+    float w = ImGui::CalcItemWidth();
+    float spacing = 24.f;
+    float button_sz = ImGui::GetFrameHeight();
+    static unsigned int selected2 = 1;
+    ImGui::PushItemWidth(w - spacing * 2.0f - button_sz * 2.0f);
+    if (ImGui::BeginCombo(" ", items[selected2].c_str())) {
+      for (std::size_t n = 0; n < items.size(); n++) {
+        bool is_selected = (n == selected2);
+        if (ImGui::Selectable(items[n].c_str(), is_selected)) {
+          selected2 = n;
+        }
+
+        if (is_selected)
+          ImGui::SetItemDefaultFocus();
+      }
+      ImGui::EndCombo();
+    }
+    ImGui::PopItemWidth();
+
+    if (selectedMap != selected2)
+      ImGui::OpenPopup("Modal window2");
+    if (ImGui::BeginPopupModal("Modal window2")) {
+      ImGui::AlignTextToFramePadding();
+      ImGui::Text("This will reset the simulation!");
+      ImGui::Text(" Are you sure?");
+      if (ImGui::Button("OK")) {
+        selectedMap = selected2;
+        ImGui::CloseCurrentPopup();
+      }
+      ImGui::SameLine();
+      if (ImGui::Button("Cancel")) {
+        selected2 = selectedMap;
+        ImGui::CloseCurrentPopup();
+      }
+      ImGui::EndPopup();
+    }
+  }
+
   ImGui::End();
 }
 
@@ -209,3 +254,4 @@ bool UI::isVisualizeVolumes() const { return visualizeVolumes; }
 SimulationType UI::getSelectedMethod() const { return SimulationType(selectedMethod); }
 void UI::setVolumeText(const std::string &volumeText) { UI::volumeText = volumeText; }
 bool UI::isShowVolumes() const { return showVolumes; }
+MapType UI::getSelectedMap() const { return MapType(selectedMap); }

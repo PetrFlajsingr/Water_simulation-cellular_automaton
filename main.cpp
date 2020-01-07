@@ -72,6 +72,12 @@ int main() {
   mainLoop->setIdleCallback([&]() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // NOLINT(hicpp-signed-bitwise)
 
+    if(ui.getSelectedMap() != map->getType()){
+      simulation->reset();
+      map = BaseMap::CreateInstance(ui.getSelectedMap());
+      map->setup(*simulation, tankSize);
+    }
+
     if (simulationType != ui.getSelectedMethod()) {
       simulationType = ui.getSelectedMethod();
       simulation = SimulationCompute::CreateInstance(simulationType, tankSize);

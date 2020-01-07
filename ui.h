@@ -8,6 +8,7 @@
 #include "Renderers/Simulators/SimulationType.h"
 #include "time/FPSCounter.h"
 #include <Camera.h>
+#include <MapType.h>
 #include <SDL2/include/SDL2/SDL_video.h>
 #include <SDL2CPP/Window.h>
 #include <glm/vec3.hpp>
@@ -54,6 +55,11 @@ private:
   float cellSize = 0.5f;
   bool resetPressed = false;
   unsigned int selectedMethod = 1;
+  unsigned int selectedMap = 1;
+
+public:
+  MapType getSelectedMap() const;
+private:
   unsigned int selectedGrid = 1;
   int simulationCycles = 1;
   bool visualizeVolumes = true;
