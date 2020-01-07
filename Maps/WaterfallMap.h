@@ -7,7 +7,7 @@
 
 #include "BaseMap.h"
 class WaterfallMap : public BaseMap{
-
+public:
   void setup(SimulationCompute &simulation, glm::uvec3 tankSize) override;
 
   void operator()(SimulationCompute &simulation, Time time) override ;
