@@ -42,7 +42,7 @@ public:
   [[nodiscard]] bool isShowVolumes() const;
 
   void setVolumeText(const std::string &volumeText);
-  Camera camera{glm::vec3(1.0, 1.0, 5.0)};
+  Camera camera{glm::vec3(10.0, 10.0, 40.0)};
 
 private:
   sdl2cpp::Window &window;
