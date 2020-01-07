@@ -16,6 +16,8 @@ public:
 
   virtual void operator()(SimulationCompute &simulation, Time time) = 0;
 
+  virtual MapType getType() = 0;
+
   static std::unique_ptr<BaseMap>CreateInstance(MapType type);
 };
 

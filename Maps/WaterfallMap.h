@@ -11,6 +11,8 @@ public:
   void setup(SimulationCompute &simulation, glm::uvec3 tankSize) override;
 
   void operator()(SimulationCompute &simulation, Time time) override ;
+
+  MapType getType() override ;
 };
 
 #endif // GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_WATERFALLMAP_H

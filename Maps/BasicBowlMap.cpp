@@ -27,3 +27,4 @@ void BasicBowlMap::setup(SimulationCompute &simulation, glm::uvec3 tankSize) {
 void BasicBowlMap::operator()(SimulationCompute &simulation, BaseMap::Time time) {
   simulation.setCells({{10, 10, 10}, {10, 10, 11}, {10, 10, 12}}, CellFlags::NoFlag, {.9f, .9f, .9f});
 }
+MapType BasicBowlMap::getType() { return MapType::BasicBowl;}

@@ -25,3 +25,5 @@ void WaterfallMap::setup(SimulationCompute &simulation, glm::uvec3 tankSize) {
   }
 }
 void WaterfallMap::operator()(SimulationCompute &simulation, BaseMap::Time time) {}
+
+MapType WaterfallMap::getType() { return MapType::Waterfall; }
