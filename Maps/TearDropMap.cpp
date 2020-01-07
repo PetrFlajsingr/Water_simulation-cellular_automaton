@@ -4,6 +4,7 @@
 
 #include "TearDropMap.h"
 #include <chrono>
+
 void TearDropMap::setup(SimulationCompute &simulation, glm::uvec3 tankSize) {
   simulation.setRangeCells(MakeRange::range<unsigned int, 3>({0, 0, 0}, {tankSize.x, 1, tankSize.z}, {1, 1, 1}),
                            CellFlags::Solid);
@@ -23,7 +24,7 @@ void TearDropMap::operator()(SimulationCompute &simulation, BaseMap::Time time) 
 
   auto now = std::chrono::system_clock::now();
   if(now - start >= std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<float>(time))){
-    simulation.setRangeCells(MakeRange::range<unsigned int, 3>({15, 31, 15}, {17, 32, 17}, {1, 1, 1}),
+    simulation.setRangeCells(MakeRange::range<unsigned int, 3>({15, 31, 15}, {16, 32, 16}, {1, 1, 1}),
                              CellFlags::NoFlag, 1.0);
     start = std::chrono::system_clock::now();
   }

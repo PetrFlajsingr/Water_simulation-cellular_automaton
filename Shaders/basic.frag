@@ -157,7 +157,7 @@ void main() {
     vec3 ambient = ambientStrength * lightColor;
 
     vec3 norm = normalize(fragNormal);
-    norm = (13*norm + getNormal(fragPosition/5)) / 14f;
+    norm = fluidVolume > 0 ? (13*norm + getNormal(fragPosition/5)) / 14f : norm;
     norm = normalize(norm);
     vec3 lightDirection = normalize(lightPosition - fragPosition);
     float diff = max(dot(norm, lightDirection), 0.0);
