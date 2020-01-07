@@ -8,7 +8,8 @@
 enum class MapType{
   BasicBowl,
   Waterfall,
-  Overflow
+  Overflow,
+  Stairs
 };
 
 #endif // GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_MAPTYPE_H

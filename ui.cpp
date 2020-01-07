@@ -157,7 +157,7 @@ void UI::loop() {
   {
     ImGui::Text("Map");
     ImGui::SameLine();
-    std::array<std::string, 3> items{"Basic bowl", "Waterfall", "Overflow"};
+    std::array<std::string, 4> items{"Basic bowl", "Waterfall", "Overflow", "Stairs"};
     float w = ImGui::CalcItemWidth();
     float spacing = 24.f;
     float button_sz = ImGui::GetFrameHeight();
