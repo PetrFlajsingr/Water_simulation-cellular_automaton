@@ -129,9 +129,20 @@ float[8] avgVolume() {
     return result;
 }
 
+bool shouldNeighborBeDrawn(uint id) {
+    return readCells[id].fluidVolume > minimumCellVolume;
+}
+
+bool shouldBeDrawn(uint id) {
+    return bool(infoCells[id].flags & CELL_SOLID) || (
+        readCells[id].fluidVolume > minimumCellVolume
+    && shouldNeighborBeDrawn(instanceID[0] + 1)
+    && shouldNeighborBeDrawn(instanceID[0] - 1)
+    );
+}
 
 void main() {
-    if (readCells[instanceID[0]].fluidVolume > minimumCellVolume || bool(infoCells[instanceID[0]].flags & CELL_SOLID)){
+    if (shouldBeDrawn(instanceID[0])){
         float vols[8] = avgVolume();
         for (uint i = 0; i < 12; ++i) {
             vec4 poly[3];
