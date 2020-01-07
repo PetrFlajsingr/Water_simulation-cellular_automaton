@@ -174,6 +174,27 @@ void main() {
             + reflectModifierMultiplier * float(readCells[neighborID].fluidVolume >= maximumCellVolume);
             if (intersectsPlane(writeCells[myCellID].velocity, normals[i])) {
                 reflect = reflectVelocity(writeCells[myCellID].velocity, normals[i]);
+                const vec3 globals = getGlobalForces();
+                const uvec3 reflSigns = uvec3(
+                uint(reflect.x > 0),
+                uint(reflect.y > 0),
+                uint(reflect.z > 0)
+                );
+                const vec3 tmp = reflect + globals;
+                const uvec3 reflGlobSigns = uvec3(
+                uint(tmp.x > 0),
+                uint(tmp.y > 0),
+                uint(tmp.z > 0)
+                );
+                reflect *= vec3(
+                float(reflSigns.x == reflGlobSigns.x),
+                float(reflSigns.y == reflGlobSigns.y),
+                float(reflSigns.z == reflGlobSigns.z)
+                );
+
+                if (length(reflect) == 0) {
+                    continue;
+                }
             } else {
                 continue;//reflect = writeCells[myCellID].velocity;
             }
