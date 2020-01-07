@@ -65,7 +65,7 @@ int main() {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glPointSize(5);
 
-  auto map = BaseMap::CreateInstance(MapType::BasicBowl);
+  auto map = BaseMap::CreateInstance(MapType::Waterfall);
   map->setup(*simulation, tankSize);
 
   auto start = std::chrono::system_clock::now();
@@ -88,15 +88,16 @@ int main() {
         }
       }
     }
-    if (ui.isWaterfallEnabled()) {
-      map->operator()(*simulation, 0);
-    }
     if (ui.isResetPressed()) {
       simulation->reset();
       map->setup(*simulation, tankSize);
     }
     if (ui.isShowVolumes()) {
       ui.setVolumeText(std::to_string(simulation->getFluidVolume()));
+    }
+
+    if (ui.isWaterfallEnabled()) {
+      (*map)(*simulation, 0);
     }
 
     gridRenderer.draw(ui.camera.GetViewMatrix(), DrawType(ui.selectedVisualisation()), ui.getCellSize());
