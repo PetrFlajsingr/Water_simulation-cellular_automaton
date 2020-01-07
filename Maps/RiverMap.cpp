@@ -3,7 +3,10 @@
 //
 
 #include "RiverMap.h"
+#include <various/loc_assert.h>
 void RiverMap::setup(SimulationCompute &simulation, glm::uvec3 tankSize) {
+  loc_assert(glm::all(glm::equal(tankSize, glm::uvec3(32))), "Selected map does not match tank size!");
+
   simulation.setRangeCells(MakeRange::range<unsigned int, 3>({0, 3, 8}, {8, 4, 25}, {1, 1, 1}),
                            CellFlags::Solid);
   simulation.setRangeCells(MakeRange::range<unsigned int, 3>({0, 3, 8}, {8, 8, 25}, {1, 1, 16}),
