@@ -4,6 +4,7 @@
 
 #include "ui.h"
 #include "misc/types/Range.h"
+#include <imgui/imgui_internal.h>
 
 using namespace MakeRange;
 UI::UI(sdl2cpp::Window &window, sdl2cpp::MainLoop &mainLoop) : window(window) {
@@ -62,9 +63,19 @@ void UI::loop() {
   if (resetPressed) {
     isSimRunning = false;
   }
+
+  if(selectedMap != 5) { // Tear drop
+    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+  }
+
   auto waterfallButtonLabel = waterfallEnabled ? "Disable waterfall" : "Enable waterfall";
   if (ImGui::Button(waterfallButtonLabel)) {
     waterfallEnabled = !waterfallEnabled;
+  }
+  if(selectedMap != 5) { // Tear drop
+    ImGui::PopItemFlag();
+    ImGui::PopStyleVar();
   }
 
   ImGui::SliderFloat("Simulation speed", &simSpeed, 0.0f, 1.0f);
