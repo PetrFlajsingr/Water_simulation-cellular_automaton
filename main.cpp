@@ -103,7 +103,7 @@ int main() {
     }
 
     if (ui.isWaterfallEnabled()) {
-      (*map)(*simulation, 0);
+      (*map)(*simulation, 1);
     }
 
     gridRenderer.draw(ui.camera.GetViewMatrix(), DrawType(ui.selectedVisualisation()), ui.getCellSize());

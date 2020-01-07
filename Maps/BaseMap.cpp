@@ -6,6 +6,7 @@
 #include "OverflowMap.h"
 #include "RiverMap.h"
 #include "StairsMap.h"
+#include "TearDropMap.h"
 #include "WaterfallMap.h"
 #include <BasicBowlMap.h>
 #include <error_handling/exceptions.h>
@@ -21,6 +22,8 @@ std::unique_ptr<BaseMap> BaseMap::CreateInstance(MapType type) {
     return std::make_unique<StairsMap>();
   case MapType::River:
     return std::make_unique<RiverMap>();
+  case MapType::TearDrop:
+    return std::make_unique<TearDropMap>();
   default:
     throw exc::InternalError{"Unsupported MapType value."};
   }

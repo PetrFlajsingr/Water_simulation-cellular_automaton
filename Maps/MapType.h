@@ -10,7 +10,8 @@ enum class MapType{
   Waterfall,
   Overflow,
   Stairs,
-  River
+  River,
+  TearDrop
 };
 
 #endif // GMU_FLUID_SIMULATION_CELLULAR_AUTOMATA_MAPTYPE_H
