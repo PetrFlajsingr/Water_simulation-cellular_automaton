@@ -64,8 +64,6 @@ void BasicSimulationCompute::simulate() {
                     static_cast<int>(std::ceil(tankSize.y / static_cast<float>(localSizes.y))),
                     static_cast<int>(std::ceil(tankSize.z / static_cast<float>(localSizes.z))));
 
-  glDispatchCompute(12, 12, 12);
-
   glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT); // NOLINT(hicpp-signed-bitwise)
 
   ptrWR = reinterpret_cast<Cell *>(cellBuffers[0]->map(GL_READ_WRITE));
